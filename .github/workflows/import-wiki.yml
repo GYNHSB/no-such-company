@@ -1,0 +1,100 @@
+# 위키 화면에서 만들거나 고친 페이지를 레포 wiki/로 가져오는 브랜치와 이슈를 만든다.
+# 가져오는 규칙은 scripts/wiki/pull.ts에 있다. PR은 이슈의 "PR 만들기" 링크로 사람이 연다.
+# gollum은 위키 페이지가 만들어지거나 고쳐질 때 GitHub이 보내는 이벤트다. 이 파일이 main에 있어야 동작한다.
+name: Import wiki
+
+on:
+  gollum:
+  workflow_dispatch:
+
+concurrency:
+  group: import-wiki
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+
+env:
+  ISSUE_TITLE: 'docs: 위키에서 작성한 페이지 가져오기'
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: 의존성 설치 (가져온 문서를 Prettier로 정리하는 데 쓴다)
+        run: |
+          npm install --global --silent "$(node -p "require('./package.json').packageManager")"
+          pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: 위키 저장소 받기
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git" "$RUNNER_TEMP/wiki"
+
+      - name: 가져오기 브랜치와 이슈 만들기
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WIKI_DIR: ${{ runner.temp }}/wiki
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config core.quotepath false
+
+          # 1. main과 비교해 가져올 페이지가 있는지 본다.
+          node scripts/wiki/pull.ts "$WIKI_DIR"
+          if [ -z "$(git status --porcelain -- wiki)" ]; then
+            echo 'main과 같음. 가져올 페이지 없음'
+            exit 0
+          fi
+          git checkout -- wiki
+          git clean -fdq -- wiki
+
+          # 2. 열린 가져오기 이슈가 있으면 그 이슈를, 없으면 새 이슈를 쓴다.
+          issue=$(gh issue list --state open --limit 100 --json number,title \
+            --jq "map(select(.title == env.ISSUE_TITLE)) | first | .number // empty")
+          new_issue=false
+          if [ -z "$issue" ]; then
+            issue_url=$(gh issue create --title "$ISSUE_TITLE" --label docs \
+              --body '위키에서 직접 만들거나 고친 페이지를 레포 `wiki/`로 가져온다.')
+            issue=${issue_url##*/}
+            new_issue=true
+          fi
+          branch="docs/${issue}-wiki-import"
+
+          # 3. 가져오기 브랜치(없으면 main에서 새로 만든다)에 페이지를 넣고 push한다.
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null; then
+            git fetch --quiet origin "$branch"
+            git switch --quiet -C "$branch" FETCH_HEAD
+          else
+            git switch --quiet -c "$branch"
+          fi
+          node scripts/wiki/pull.ts "$WIKI_DIR"
+          git add -- wiki
+          if git diff --cached --quiet; then
+            echo '가져오기 브랜치에 이미 들어 있음'
+            exit 0
+          fi
+          pages=$(git diff --cached --name-only -- wiki | sed 's/^/- /')
+          git commit --quiet -m "$ISSUE_TITLE"
+          git push --quiet origin "$branch"
+
+          # 4. 이슈에 가져온 페이지와, 팀 PR 형식이 채워진 "PR 만들기" 링크를 남긴다.
+          if [ "$new_issue" = true ]; then
+            title="$ISSUE_TITLE (#$issue)"
+            pr_body=$(printf '## 관련 이슈\nCloses #%s\n\n## 작업 내용\n- 위키에서 직접 만들거나 고친 페이지를 `wiki/`로 가져옴\n' "$issue")
+            link="https://github.com/${GITHUB_REPOSITORY}/compare/main...${branch}?expand=1&title=$(jq -rn --arg s "$title" '$s|@uri')&body=$(jq -rn --arg s "$pr_body" '$s|@uri')"
+            gh issue edit "$issue" --body "$(printf '위키에서 직접 만들거나 고친 페이지를 레포 `wiki/`로 가져온다.\n\n- 브랜치: `%s`\n- [PR 만들기](%s)\n\n가져온 페이지:\n%s\n' "$branch" "$link" "$pages")"
+          else
+            gh issue comment "$issue" --body "$(printf '가져오기 브랜치 `%s`에 페이지를 더했다.\n\n%s\n' "$branch" "$pages")"
+          fi
