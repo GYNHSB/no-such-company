@@ -25,15 +25,15 @@ feat/12-login-page
 
 ## 타입 표
 
-| 타입       | 언제 쓰나요?                                                 | 브랜치 예                | PR 제목 예                                  |
-| ---------- | ------------------------------------------------------------ | ------------------------ | ------------------------------------------- |
-| `feat`     | 새로운 기능 추가                                             | `feat/12-login-page`     | `feat: 로그인 페이지 UI 구현 (#12)`         |
-| `fix`      | 버그 및 오류 수정                                            | `fix/31-signup-error`    | `fix: 회원가입 이메일 중복 오류 수정 (#31)` |
-| `docs`     | README, `docs/` 등 레포 문서 작성·수정 (Wiki는 PR 없이 수정) | `docs/5-readme-setup`    | `docs: README 실행 방법 추가 (#5)`          |
-| `style`    | 코드 동작과 무관한 서식·포맷 변경                            | `style/40-format-code`   | `style: 코드 포맷 정리 (#40)`               |
-| `refactor` | 기능 변화 없는 코드 구조 개선                                | `refactor/22-api-client` | `refactor: API 호출 코드 분리 (#22)`        |
-| `chore`    | 빌드, 패키지, 설정 등 기타 작업                              | `chore/3-eslint-setup`   | `chore: ESLint 설정 추가 (#3)`              |
-| `design`   | UI/UX 디자인 관련 작업                                       | `design/18-main-color`   | `design: 메인 화면 색상 변경 (#18)`         |
+| 타입       | 언제 쓰나요?                                                                            | 브랜치 예                | PR 제목 예                                  |
+| ---------- | --------------------------------------------------------------------------------------- | ------------------------ | ------------------------------------------- |
+| `feat`     | 새로운 기능 추가                                                                        | `feat/12-login-page`     | `feat: 로그인 페이지 UI 구현 (#12)`         |
+| `fix`      | 버그 및 오류 수정                                                                       | `fix/31-signup-error`    | `fix: 회원가입 이메일 중복 오류 수정 (#31)` |
+| `docs`     | README, `docs/`, `wiki/` 등 레포 문서 작성·수정 (위키에서 고친 내용을 가져오는 PR 포함) | `docs/5-readme-setup`    | `docs: README 실행 방법 추가 (#5)`          |
+| `style`    | 코드 동작과 무관한 서식·포맷 변경                                                       | `style/40-format-code`   | `style: 코드 포맷 정리 (#40)`               |
+| `refactor` | 기능 변화 없는 코드 구조 개선                                                           | `refactor/22-api-client` | `refactor: API 호출 코드 분리 (#22)`        |
+| `chore`    | 빌드, 패키지, 설정 등 기타 작업                                                         | `chore/3-eslint-setup`   | `chore: ESLint 설정 추가 (#3)`              |
+| `design`   | UI/UX 디자인 관련 작업                                                                  | `design/18-main-color`   | `design: 메인 화면 색상 변경 (#18)`         |
 
 > `question`, `blocked`는 작업 종류가 아니라 **상태 라벨**이에요. 브랜치 이름이나 PR 제목에는 쓰지 않아요.
 > 자세한 내용은 [라벨 및 보드 가이드](라벨-및-보드-가이드.md)를 보세요.
