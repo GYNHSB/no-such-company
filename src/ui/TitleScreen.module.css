@@ -1,0 +1,29 @@
+.root {
+  display: grid;
+  place-content: center;
+  gap: 24px;
+  height: 100%;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(28px, 6vw, 56px);
+  letter-spacing: -0.02em;
+}
+
+.start {
+  justify-self: center;
+  min-width: 160px;
+  min-height: 48px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 999px;
+  background: #e8eaf0;
+  color: #0b0d12;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}

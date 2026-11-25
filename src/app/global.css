@@ -1,0 +1,67 @@
+:root {
+  color-scheme: dark;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Apple SD Gothic Neo',
+    'Noto Sans KR',
+    sans-serif;
+  background: #0b0d12;
+  color: #e8eaf0;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+body {
+  /* 모바일에서 당겨서 새로고침, 바운스 스크롤 방지 */
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 3D 캔버스 영역: 브라우저 기본 터치 제스처(핀치 줌, 스크롤)를 끄고 게임 입력으로만 쓴다 */
+.game-canvas {
+  position: fixed;
+  inset: 0;
+  touch-action: none;
+}
+
+/* 개발 모드 성능 패널(drei StatsGl) */
+.dev-stats {
+  position: fixed;
+  top: env(safe-area-inset-top);
+  left: env(safe-area-inset-left);
+  z-index: 20;
+}
+
+.loading {
+  display: grid;
+  place-content: center;
+  height: 100%;
+  margin: 0;
+}
+
+/* 가상 조이스틱 등 터치 전용 UI: 손가락 입력 기기에서만 보인다 */
+.touch-only {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .touch-only {
+    display: contents;
+  }
+}
