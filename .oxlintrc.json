@@ -1,0 +1,41 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "jsPlugins": ["./lint-rules/r3f.js"],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+    "r3f/no-set-state-in-frame": "error",
+    "r3f/no-subscribed-store-in-frame": "error"
+  },
+  "overrides": [
+    {
+      // 첫 화면 번들에 들어가는 코드. 3D 라이브러리와 src/game은 lazy(() => import(...))로만 불러온다.
+      // importNamePattern을 지정하면 이름을 가져오는 정적 import만 걸리고, 동적 import()와 import type은 통과한다.
+      "files": ["src/main.tsx", "src/app/**", "src/ui/**", "src/stores/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "three",
+                  "three/*",
+                  "@react-three/*",
+                  "ecctrl",
+                  "ecctrl/*",
+                  "**/game",
+                  "**/game/**"
+                ],
+                "importNamePattern": ".*",
+                "allowTypeImports": true,
+                "message": "첫 화면 번들에 3D 코드가 들어간다. lazy(() => import(...))로 불러온다."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
