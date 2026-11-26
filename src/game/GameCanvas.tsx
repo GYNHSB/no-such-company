@@ -1,9 +1,8 @@
 import { KeyboardControls, PerformanceMonitor, StatsGl } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
-import { Joystick, VirtualButton } from 'ecctrl/input'
 import { Suspense, useState } from 'react'
-import { JUMP_BUTTON_ID, keyboardMap } from '@/game/input/controls'
+import { keyboardMap } from '@/game/input/controls'
 import { Player } from '@/game/player/Player'
 import { World } from '@/game/world/World'
 
@@ -26,32 +25,13 @@ export default function GameCanvas() {
             <Suspense fallback={null}>
               <Physics>
                 <World />
-                <Player />
+                <Player active lockSelector=".game-canvas" />
               </Physics>
             </Suspense>
           </KeyboardControls>
           {/* 개발 모드에서만 FPS·CPU·GPU 표시 (프로덕션 번들에서는 제거됨) */}
           {import.meta.env.DEV && <StatsGl className="dev-stats" />}
         </Canvas>
-      </div>
-
-      {/* 터치 기기에서만 보이는 가상 조이스틱과 점프 버튼 */}
-      <div className="touch-only">
-        <Joystick
-          joystickWrapperStyle={{
-            left: 'calc(16px + env(safe-area-inset-left))',
-            bottom: 'calc(16px + env(safe-area-inset-bottom))',
-          }}
-        />
-        <VirtualButton
-          id={JUMP_BUTTON_ID}
-          label="점프"
-          buttonWrapperStyle={{
-            position: 'fixed',
-            right: 'calc(32px + env(safe-area-inset-right))',
-            bottom: 'calc(48px + env(safe-area-inset-bottom))',
-          }}
-        />
       </div>
     </>
   )
