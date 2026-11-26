@@ -176,3 +176,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Claude Code 세션 기록 원재료 (scripts/session-log.ts). 각자 로컬에만 둔다.
+.claude/session-logs/
