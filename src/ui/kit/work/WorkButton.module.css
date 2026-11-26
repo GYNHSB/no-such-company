@@ -1,0 +1,35 @@
+.button {
+  min-height: 2.25em;
+  padding: 0 14px;
+  border-radius: var(--work-radius);
+  font-family: var(--work-font);
+  font-size: var(--work-text-body);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--work-link);
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.primary {
+  border: 1px solid var(--work-action);
+  background: var(--work-action);
+  color: var(--work-bg);
+}
+
+.secondary {
+  border: 1px solid var(--work-line);
+  background: var(--work-bg);
+  color: var(--work-ink);
+}
+
+.secondary:hover:not(:disabled) {
+  background: var(--work-hover);
+}
