@@ -37,7 +37,7 @@ Node 26, pnpm 12를 써요. (`.nvmrc`, `package.json`의 `packageManager`)
 - 협업 규칙의 원본은 [git.md](git.md)예요. 브랜치 이름, PR 제목, 병합 방식은 여기를 따라요.
 - `main`에 직접 push하지 않아요. 이슈 1개에 PR 1개로 작업해요.
 - 커밋하기 전에 `pnpm format`, push하기 전에 `pnpm check`를 통과시켜요. `.md` 파일도 포맷 검사 대상이에요.
-- PR 본문은 템플릿에 맞춰 결정과 근거, 결과와 영향을 적어요.
+- PR 본문은 템플릿(`.github/pull_request_template.md`)에 맞춰 쓰고, 의사결정 로그를 꼭 채워요.
 - 사람에게 보여 주는 글(문서, PR, 커밋 메시지)은 한국어로 써요.
 
 ## 읽을 문서
