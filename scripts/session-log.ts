@@ -3,6 +3,7 @@
 //   node scripts/session-log.ts                   UserPromptSubmit hook. stdin으로 JSON을 받는다
 //   node scripts/session-log.ts pending           아직 정리하지 않은 기록을 출력한다
 //   node scripts/session-log.ts done <세션ID...>  정리한 세션의 줄을 logged.jsonl로 옮긴다
+//   node scripts/session-log.ts dir               기록 폴더의 위치를 출력한다
 //
 // 기록은 메인 작업 폴더의 .claude/session-logs/에 둔다(.gitignore 대상).
 // 워크트리가 아니라 메인 작업 폴더에 두는 이유: 워크트리를 지울 때 기록이 같이 사라지지 않게 하기 위해서다.
@@ -26,7 +27,7 @@ export interface Entry {
 }
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url)
-const USAGE = '사용법: node scripts/session-log.ts [pending | done <세션ID...>]'
+const USAGE = '사용법: node scripts/session-log.ts [pending | done <세션ID...> | dir]'
 
 export function toEntry(stdin: string, branch: string, now: Date): Entry {
   const input = JSON.parse(stdin) as { session_id?: unknown; prompt?: unknown }
@@ -64,6 +65,11 @@ function main(): void {
     const entry = toEntry(readFileSync(0, 'utf8'), git('branch', '--show-current'), new Date())
     mkdirSync(logDir, { recursive: true })
     appendFileSync(pendingPath, `${JSON.stringify(entry)}\n`)
+    return
+  }
+
+  if (mode === 'dir') {
+    process.stdout.write(`${logDir}\n`)
     return
   }
 
