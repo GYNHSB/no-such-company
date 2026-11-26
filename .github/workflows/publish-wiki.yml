@@ -1,0 +1,50 @@
+# 레포의 wiki/ 폴더를 GitHub 위키에 반영한다. 반영 규칙은 scripts/wiki/publish.ts에 있다.
+# 처음 한 번은 GitHub 위키 탭에서 페이지를 하나 직접 만들어야 위키 저장소가 생긴다.
+name: Publish wiki
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - wiki/**
+      - scripts/wiki/**
+      - .github/workflows/publish-wiki.yml
+  workflow_dispatch:
+
+concurrency:
+  group: publish-wiki
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: 위키 저장소 받기
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git" "$RUNNER_TEMP/wiki"
+
+      - name: 레포 문서를 위키에 반영
+        run: node scripts/wiki/publish.ts "$RUNNER_TEMP/wiki"
+
+      - name: 위키에 커밋하고 push
+        working-directory: ${{ runner.temp }}/wiki
+        run: |
+          # 이 이름으로 커밋한 페이지를 publish.ts와 pull.ts가 "레포에서 반영한 페이지"로 알아본다.
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo '바뀐 내용 없음'
+            exit 0
+          fi
+          git commit --quiet -m "Publish from ${GITHUB_SHA::7}"
+          git push --quiet
