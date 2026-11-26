@@ -23,9 +23,3 @@
 
 - Blender 5.3 Cycles, Diffuse(Direct + Indirect, Color 끔), 1024px, 512 샘플, 여백 2px(Extend), 2026-11-26.
 - 빛: 창 안쪽 Area Light(차가운 낮빛), 책상 스탠드 Point Light(따뜻한 빛).
-
-## 손과 휴대폰 (`public/images/hand_phone_day.webp`, 원본 `assets-src/room/room.blend`의 `hand_phone` 장면)
-
-- Blender 5.3에서 직접 만든 3D 모델을 Cycles로 렌더한 그림 (2026-11-26, Claude Code + Blender MCP). 외부 자료를 쓰지 않았다.
-- 1280 x 1200, 배경 투명, 128 샘플. 빛은 방과 같은 두 빛(차가운 창 빛, 따뜻한 스탠드 빛).
-- 휴대폰 화면 자리(그림 크기에 대한 비율): 왼쪽 0.3597, 위 0.0512, 너비 0.2805, 높이 0.6743.

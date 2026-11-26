@@ -56,14 +56,3 @@ body {
   height: 100%;
   margin: 0;
 }
-
-/* 가상 조이스틱 등 터치 전용 UI: 손가락 입력 기기에서만 보인다 */
-.touch-only {
-  display: none;
-}
-
-@media (pointer: coarse) {
-  .touch-only {
-    display: contents;
-  }
-}
