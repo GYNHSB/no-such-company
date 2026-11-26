@@ -1,0 +1,33 @@
+.root {
+  display: grid;
+  gap: 8px;
+}
+
+.label {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 타이틀의 시작하기 버튼보다 눈에 덜 띄게 테두리 버튼으로 둔다 */
+.link {
+  display: grid;
+  place-content: center;
+  min-width: 96px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid #3a4054;
+  border-radius: 999px;
+  color: inherit;
+  text-decoration: none;
+}

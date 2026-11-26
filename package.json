@@ -15,11 +15,12 @@
     "typecheck": "tsc -b",
     "lint": "oxlint",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format:check": "node scripts/format-check.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
     "e2e:install": "playwright install chromium webkit",
+    "wiki:pull": "node scripts/wiki/pull.ts",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
     "prepare": "husky"
   },
