@@ -1,6 +1,16 @@
 import { PointerLockControls, useGLTF, useTexture } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Suspense, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react'
+import { Monologue } from './hyeopseong/Monologue'
+import { useMonologue } from './hyeopseong/useMonologue'
 import {
   Box3,
   CanvasTexture,
@@ -390,6 +400,12 @@ function Body({ seated, walking, phoneOnDesk, onAim, onPick }: BodyProps) {
   return <PointerLockControls enabled={walking} selector={`#${VIEW_ID}`} />
 }
 
+/** Suspense 안에 두면 그 안의 방과 그림을 다 불러온 뒤에 한 번 알린다 */
+function Loaded({ onLoad }: { onLoad: () => void }) {
+  useEffect(onLoad, [onLoad])
+  return null
+}
+
 const panel: CSSProperties = {
   margin: 0,
   padding: '8px 12px',
@@ -522,6 +538,16 @@ export default function SandboxPage() {
     return () => window.removeEventListener('keydown', press)
   }, [scene, hasPhone])
 
+  // 방이 다 보이면 첫 독백을 한 번만 한다. 개발 모드에서 효과가 두 번 돌아도 한 번만 말하게 막는다.
+  const monologue = useMonologue()
+  const greeted = useRef(false)
+  const { say } = monologue
+  const greet = useCallback(() => {
+    if (greeted.current) return
+    greeted.current = true
+    say('휴대폰을 어디에 뒀지...')
+  }, [say])
+
   return (
     <main style={{ position: 'fixed', inset: 0, background: '#b9c2c9' }}>
       <div id={VIEW_ID} style={{ position: 'absolute', inset: 0 }}>
@@ -540,11 +566,14 @@ export default function SandboxPage() {
               onAim={setAim}
               onPick={open}
             />
+            <Loaded onLoad={greet} />
           </Suspense>
         </Canvas>
       </div>
 
       {scene === 'phone' && <PhoneInHand />}
+
+      <Monologue line={monologue.line} onDone={monologue.next} />
 
       {scene === 'room' ? (
         <>
