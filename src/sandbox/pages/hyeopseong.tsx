@@ -55,6 +55,8 @@ const LAPTOP_FILL = 0.9
 const PHONE_SCREEN = { left: 0.339, top: 0.1182, width: 0.3204, height: 0.6698 }
 /** 손 그림을 화면 아래로 내리는 정도(그림 높이에 대한 비율). 소매가 잘린 그림 아래 좌우 끝을 화면 밖으로 숨긴다. */
 const HAND_SINK = 0.06
+/** 휴대폰을 집은 뒤 휴대폰을 꺼내는 키. code는 KeyboardEvent.code, label은 화면에 보이는 이름이다. */
+const PHONE_KEY = { code: 'KeyQ', label: 'Q' }
 /** 클릭하면 커서를 잠그는 영역. 버튼을 누를 때는 잠기지 않게 3D 화면으로만 한정한다. */
 const VIEW_ID = 'hyeopseong-view'
 
@@ -238,6 +240,8 @@ const CENTER = new Vector2(0, 0)
 interface BodyProps {
   seated: boolean
   walking: boolean
+  /** 휴대폰이 아직 책상 위에 있는지. 집은 뒤에는 가리킬 수 없다. */
+  phoneOnDesk: boolean
   /** 화면 가운데 점이 가리키는 물건이 바뀔 때 알린다 */
   onAim: (aim: Aim) => void
   /** 가리키던 물건을 클릭했을 때 알린다 */
@@ -248,7 +252,7 @@ interface BodyProps {
  * 1인칭으로 걷는 몸. W A S D(또는 방향키)로 걷고, 벽과 가구(col_* 상자)는 지나가지 못한다.
  * 화면 가운데 점이 가리키는 물건을 클릭하면 그 물건의 장면으로 넘어간다.
  */
-function Body({ seated, walking, onAim, onPick }: BodyProps) {
+function Body({ seated, walking, phoneOnDesk, onAim, onPick }: BodyProps) {
   const { scene } = useGLTF(ROOM_URL)
   const camera = useThree((state) => state.camera)
   const keys = useRef(new Set<string>())
@@ -332,11 +336,14 @@ function Body({ seated, walking, onAim, onPick }: BodyProps) {
       aimed.current = null
       return
     }
-    // 화면 가운데가 가리키는 맨 앞 물체를 찾는다. 보이지 않는 충돌 상자는 건너뛴다.
+    // 화면 가운데가 가리키는 맨 앞 물체를 찾는다. 보이지 않는 충돌 상자와 이미 집은 휴대폰은 건너뛴다.
     reach.setFromCamera(CENTER, camera)
     const front = reach
       .intersectObject(scene, true)
-      .find((hit) => !hit.object.name.startsWith('col_'))
+      .find(
+        (hit) =>
+          !hit.object.name.startsWith('col_') && (phoneOnDesk || aimOf(hit.object) !== 'phone'),
+      )
     const aim = aimOf(front?.object ?? null)
     if (aim !== aimed.current) {
       aimed.current = aim
@@ -482,18 +489,38 @@ function PhoneInHand() {
  * 협성의 테스트 페이지. 개발 서버에서 `?sandbox=hyeopseong` 주소로 연다.
  * 주인이 자유롭게 고친다. 이 페이지만 따로 불러오므로 three·R3F·src/game을 import해도 된다.
  *
- * 방을 1인칭으로 걸어 다닌다. 노트북을 누르면 의자에 앉아 화면을 가득 채워 보는 시점으로, 휴대폰을 누르면 손에 쥔 휴대폰 장면으로 바뀐다.
+ * 방을 1인칭으로 걸어 다닌다. 노트북을 누르면 의자에 앉아 화면을 가득 채워 보는 시점으로 바뀐다.
+ * 책상 위 휴대폰을 누르면 휴대폰을 집어 손에 쥔 장면으로 바뀌고, 책상에서는 사라진다.
+ * 그 뒤로는 오른쪽 아래 휴대폰 버튼이나 Q로 꺼내고, 내려놓기 버튼이나 Esc로 닫는다.
  */
 export default function SandboxPage() {
   const [scene, setScene] = useState<Scene>('room')
   const [aim, setAim] = useState<Aim>(null)
+  const [hasPhone, setHasPhone] = useState(false)
 
-  // 다른 장면으로 넘어가면 버튼을 누를 수 있게 잠근 커서를 돌려준다
+  // 다른 장면으로 넘어가면 버튼을 누를 수 있게 잠근 커서를 돌려준다. 휴대폰을 한 번 열면 집은 것으로 친다.
   const open = (next: Scene) => {
     if (next !== 'room') document.exitPointerLock()
+    if (next === 'phone') setHasPhone(true)
     setAim(null)
     setScene(next)
   }
+
+  // 방에서는 휴대폰 꺼내기 키로 휴대폰을 열고, 휴대폰을 보는 중에는 Esc로 닫는다
+  useEffect(() => {
+    const press = (e: KeyboardEvent) => {
+      if (e.repeat) return
+      if (scene === 'room' && hasPhone && e.code === PHONE_KEY.code) {
+        document.exitPointerLock()
+        setAim(null)
+        setScene('phone')
+      } else if (scene === 'phone' && e.code === 'Escape') {
+        setScene('room')
+      }
+    }
+    window.addEventListener('keydown', press)
+    return () => window.removeEventListener('keydown', press)
+  }, [scene, hasPhone])
 
   return (
     <main style={{ position: 'fixed', inset: 0, background: '#b9c2c9' }}>
@@ -505,10 +532,11 @@ export default function SandboxPage() {
           <ambientLight intensity={1.2} />
           <Suspense fallback={null}>
             <Room />
-            <DeskPhone />
+            {!hasPhone && <DeskPhone />}
             <Body
               seated={scene === 'laptop'}
               walking={scene === 'room'}
+              phoneOnDesk={!hasPhone}
               onAim={setAim}
               onPick={open}
             />
@@ -524,8 +552,19 @@ export default function SandboxPage() {
           <p style={{ ...panel, position: 'absolute', left: 16, bottom: 16 }}>
             화면을 클릭하면 마우스로 둘러보고 W A S D로 걸어요. Esc를 누르면 커서가 나와요.
             <br />
-            가운데 점을 노트북이나 휴대폰에 맞추고 클릭해 보세요.
+            {hasPhone
+              ? `가운데 점을 노트북에 맞추고 클릭해 보세요. ${PHONE_KEY.label}를 누르면 휴대폰을 꺼내요.`
+              : '가운데 점을 노트북이나 휴대폰에 맞추고 클릭해 보세요.'}
           </p>
+          {hasPhone && (
+            <button
+              type="button"
+              style={{ ...panel, position: 'absolute', right: 16, bottom: 16, cursor: 'pointer' }}
+              onClick={() => open('phone')}
+            >
+              휴대폰 ({PHONE_KEY.label})
+            </button>
+          )}
         </>
       ) : (
         <button
