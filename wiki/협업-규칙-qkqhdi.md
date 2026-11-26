@@ -1,7 +1,7 @@
 # 협업 규칙
 
 > 이 페이지만 따라 하면 **이슈 생성부터 PR 병합까지** 혼자 진행할 수 있어요.
-
+> nbnmbnb
 > 📌 협업 규칙의 **원본은 레포의 [`git.md`](https://github.com/GYNHSB/no-such-company/blob/main/git.md)** 예요. Wiki는 자세한 안내를 담아요.
 > 규칙을 바꿀 때는 **`git.md`를 먼저 PR로 고치고**, Wiki에는 바뀐 내용 안내와 링크만 반영해요.
 
