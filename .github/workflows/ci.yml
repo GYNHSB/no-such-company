@@ -1,0 +1,35 @@
+# PR과 main push마다 pnpm check(타입 검사, 린트, 포맷 검사, 단위 테스트)를 돌린다.
+# 로컬 husky(pre-push)와 같은 검사다. husky를 거치지 않은 변경(웹 편집 등)도 여기서 걸린다.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      HUSKY: 0
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: pnpm 설치 (package.json의 packageManager 버전)
+        run: npm install --global --silent "$(node -p "require('./package.json').packageManager")"
+
+      - name: 의존성 설치
+        run: pnpm install --frozen-lockfile
+
+      - name: 검사
+        run: pnpm check
