@@ -15,7 +15,7 @@
     "typecheck": "tsc -b",
     "lint": "oxlint",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format:check": "node scripts/format-check.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
