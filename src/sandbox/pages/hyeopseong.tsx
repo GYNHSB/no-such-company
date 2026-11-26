@@ -1,11 +1,27 @@
 import { PointerLockControls, useGLTF, useTexture } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Suspense, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react'
+import { Monologue } from './hyeopseong/Monologue'
+import { useMonologue } from './hyeopseong/useMonologue'
 import {
   Box3,
+  CanvasTexture,
+  ExtrudeGeometry,
+  Group,
+  Mesh as ThreeMesh,
   MeshBasicMaterial,
   Quaternion,
   Raycaster,
+  Shape,
+  ShapeGeometry,
   SRGBColorSpace,
   Vector2,
   Vector3,
@@ -17,7 +33,7 @@ import {
 
 const ROOM_URL = `${import.meta.env.BASE_URL}models/room.glb`
 const LIGHTMAP_URL = `${import.meta.env.BASE_URL}models/room_lightmap.png`
-// Blender에서 손과 휴대폰을 만들어 렌더한 그림(1280 x 1200, 배경 투명). 원본은 assets-src/room/room.blend의 hand_phone 장면
+// 두 손으로 쥔 휴대폰 그림(1239 x 1269, 배경 투명). 소매가 그림 아래 좌우 끝에서 잘려 있다.
 const HAND_URL = `${import.meta.env.BASE_URL}images/hand_phone_day.webp`
 
 /** 어떤 장면을 보고 있는지. room: 방을 걸어 다님, laptop: 의자에 앉아 노트북을 봄, phone: 휴대폰을 손에 쥠 */
@@ -46,7 +62,11 @@ const LAPTOP_SCREEN: { center: Vec3; facing: Vec3; width: number; height: number
 /** 노트북 화면이 브라우저 화면에서 차지하는 비율. 1이면 가장자리까지 꽉 찬다. */
 const LAPTOP_FILL = 0.9
 /** 손 그림 안에서 휴대폰 화면이 차지하는 자리. 그림 크기에 대한 비율이라 그림을 바꾸면 이 값도 바꾼다. */
-const PHONE_SCREEN = { left: 0.3597, top: 0.0512, width: 0.2805, height: 0.6743 }
+const PHONE_SCREEN = { left: 0.339, top: 0.1182, width: 0.3204, height: 0.6698 }
+/** 손 그림을 화면 아래로 내리는 정도(그림 높이에 대한 비율). 소매가 잘린 그림 아래 좌우 끝을 화면 밖으로 숨긴다. */
+const HAND_SINK = 0.06
+/** 휴대폰을 집은 뒤 휴대폰을 꺼내는 키. code는 KeyboardEvent.code, label은 화면에 보이는 이름이다. */
+const PHONE_KEY = { code: 'KeyQ', label: 'Q' }
 /** 클릭하면 커서를 잠그는 영역. 버튼을 누를 때는 잠기지 않게 3D 화면으로만 한정한다. */
 const VIEW_ID = 'hyeopseong-view'
 
@@ -57,6 +77,105 @@ function aimOf(object: Object3D | null): Aim {
     if (o.name.startsWith('interact_phone')) return 'phone'
   }
   return null
+}
+
+/**
+ * 책상 위 휴대폰의 크기(m). room.glb의 interact_phone은 이 크기의 납작한 상자 하나라서, 화면에는 이 모델을 대신 그린다.
+ * 상자는 책상 위에서 세로축 기준 17도쯤 돌아가 있다(angle, 라디안).
+ */
+const DESK_PHONE = { width: 0.075, length: 0.15, height: 0.0095, corner: 0.0095, angle: 0.3 }
+
+/** 모서리가 둥근 네모 모양. 가운데가 원점이다. */
+function roundedRect(width: number, height: number, radius: number) {
+  const x = width / 2
+  const y = height / 2
+  const shape = new Shape()
+  shape.moveTo(-x + radius, -y)
+  shape.lineTo(x - radius, -y)
+  shape.quadraticCurveTo(x, -y, x, -y + radius)
+  shape.lineTo(x, y - radius)
+  shape.quadraticCurveTo(x, y, x - radius, y)
+  shape.lineTo(-x + radius, y)
+  shape.quadraticCurveTo(-x, y, -x, y - radius)
+  shape.lineTo(-x, -y + radius)
+  shape.quadraticCurveTo(-x, -y, -x + radius, -y)
+  return shape
+}
+
+/** 꺼진 휴대폰 화면 그림: 검은 유리에 비스듬한 반사광과 앞면 카메라 구멍 */
+function phoneGlass() {
+  const canvas = document.createElement('canvas')
+  canvas.width = 256
+  canvas.height = 512
+  const g = canvas.getContext('2d')!
+  g.fillStyle = '#08090c'
+  g.fillRect(0, 0, 256, 512)
+  const shine = g.createLinearGradient(0, 0, 256, 512)
+  shine.addColorStop(0.3, 'rgb(255 255 255 / 0)')
+  shine.addColorStop(0.42, 'rgb(190 205 230 / 0.13)')
+  shine.addColorStop(0.5, 'rgb(255 255 255 / 0)')
+  g.fillStyle = shine
+  g.fillRect(0, 0, 256, 512)
+  g.fillStyle = '#1c1f26'
+  g.beginPath()
+  g.arc(128, 26, 9, 0, Math.PI * 2)
+  g.fill()
+  g.fillStyle = '#000'
+  g.beginPath()
+  g.arc(128, 26, 6, 0, Math.PI * 2)
+  g.fill()
+  const texture = new CanvasTexture(canvas)
+  texture.colorSpace = SRGBColorSpace
+  return texture
+}
+
+/** 책상 위에 화면을 위로 두고 놓인 휴대폰. 바닥 가운데가 원점이다. */
+function deskPhone() {
+  const { width, length, height, corner, angle } = DESK_PHONE
+  const bevel = 0.0012
+  const body = new ExtrudeGeometry(roundedRect(width, length, corner), {
+    depth: height - bevel * 2,
+    bevelEnabled: true,
+    bevelThickness: bevel,
+    bevelSize: bevel,
+    bevelSegments: 3,
+    curveSegments: 8,
+  })
+  // 두께 방향을 위(y)로 세우고 바닥을 책상에 붙인다
+  body.rotateX(-Math.PI / 2)
+  body.translate(0, bevel, 0)
+
+  // 앞뒷면은 검은 유리, 옆면은 금속 테두리
+  const phone = new Group()
+  phone.add(
+    new ThreeMesh(body, [
+      new MeshBasicMaterial({ color: '#111216' }),
+      new MeshBasicMaterial({ color: '#6c7079' }),
+    ]),
+  )
+
+  // 테두리 안쪽에 화면을 얹는다. 모양 좌표를 그림 좌표(0~1)로 바꿔 화면 그림이 꽉 차게 한다.
+  const inset = 0.0028
+  const screen = new ShapeGeometry(
+    roundedRect(width - inset * 2, length - inset * 2, corner - inset),
+    8,
+  )
+  const position = screen.attributes.position
+  const uv = screen.attributes.uv
+  for (let i = 0; i < position.count; i++) {
+    uv.setXY(
+      i,
+      position.getX(i) / (width - inset * 2) + 0.5,
+      position.getY(i) / (length - inset * 2) + 0.5,
+    )
+  }
+  screen.rotateX(-Math.PI / 2)
+  const glass = new ThreeMesh(screen, new MeshBasicMaterial({ map: phoneGlass() }))
+  glass.position.y = height + 0.0002
+  phone.add(glass)
+
+  phone.rotation.y = angle
+  return phone
 }
 
 /**
@@ -96,10 +215,30 @@ function Room() {
         })
       }
     })
+
+    // 납작한 상자인 휴대폰은 감춘다. 그 자리에는 DeskPhone이 휴대폰 모델을 그린다.
+    const slab = copy.getObjectByName('interact_phone')
+    if (slab) slab.visible = false
     return copy
   }, [scene, loaded])
 
   return <primitive object={room} />
+}
+
+/**
+ * 책상 위에 놓인 휴대폰. room.glb의 interact_phone 상자 자리에 휴대폰 모델을 놓는다.
+ * 가리키기 판정은 원본 장면(Body)의 상자로 한다.
+ */
+function DeskPhone() {
+  const { scene } = useGLTF(ROOM_URL)
+  const phone = useMemo(() => {
+    const model = deskPhone()
+    const slab = scene.getObjectByName('interact_phone')
+    if (slab) model.position.copy(slab.position)
+    return model
+  }, [scene])
+
+  return <primitive object={phone} />
 }
 
 // 매 프레임 새로 만들지 않고 돌려 쓰는 계산용 값
@@ -111,6 +250,8 @@ const CENTER = new Vector2(0, 0)
 interface BodyProps {
   seated: boolean
   walking: boolean
+  /** 휴대폰이 아직 책상 위에 있는지. 집은 뒤에는 가리킬 수 없다. */
+  phoneOnDesk: boolean
   /** 화면 가운데 점이 가리키는 물건이 바뀔 때 알린다 */
   onAim: (aim: Aim) => void
   /** 가리키던 물건을 클릭했을 때 알린다 */
@@ -121,7 +262,7 @@ interface BodyProps {
  * 1인칭으로 걷는 몸. W A S D(또는 방향키)로 걷고, 벽과 가구(col_* 상자)는 지나가지 못한다.
  * 화면 가운데 점이 가리키는 물건을 클릭하면 그 물건의 장면으로 넘어간다.
  */
-function Body({ seated, walking, onAim, onPick }: BodyProps) {
+function Body({ seated, walking, phoneOnDesk, onAim, onPick }: BodyProps) {
   const { scene } = useGLTF(ROOM_URL)
   const camera = useThree((state) => state.camera)
   const keys = useRef(new Set<string>())
@@ -205,11 +346,14 @@ function Body({ seated, walking, onAim, onPick }: BodyProps) {
       aimed.current = null
       return
     }
-    // 화면 가운데가 가리키는 맨 앞 물체를 찾는다. 보이지 않는 충돌 상자는 건너뛴다.
+    // 화면 가운데가 가리키는 맨 앞 물체를 찾는다. 보이지 않는 충돌 상자와 이미 집은 휴대폰은 건너뛴다.
     reach.setFromCamera(CENTER, camera)
     const front = reach
       .intersectObject(scene, true)
-      .find((hit) => !hit.object.name.startsWith('col_'))
+      .find(
+        (hit) =>
+          !hit.object.name.startsWith('col_') && (phoneOnDesk || aimOf(hit.object) !== 'phone'),
+      )
     const aim = aimOf(front?.object ?? null)
     if (aim !== aimed.current) {
       aimed.current = aim
@@ -254,6 +398,12 @@ function Body({ seated, walking, onAim, onPick }: BodyProps) {
 
   // 화면을 클릭하면 커서가 잠기고 마우스 움직임으로 둘러본다. 다른 장면에서는 끈다.
   return <PointerLockControls enabled={walking} selector={`#${VIEW_ID}`} />
+}
+
+/** Suspense 안에 두면 그 안의 방과 그림을 다 불러온 뒤에 한 번 알린다 */
+function Loaded({ onLoad }: { onLoad: () => void }) {
+  useEffect(onLoad, [onLoad])
+  return null
 }
 
 const panel: CSSProperties = {
@@ -312,10 +462,19 @@ function PhoneInHand() {
         justifyContent: 'center',
         background: 'rgb(0 0 0 / 0.45)',
         backdropFilter: 'blur(6px)',
+        overflow: 'hidden',
       }}
     >
-      {/* 손이 화면 아래에서 올라온 것처럼 보이게 아래에 붙인다 */}
-      <div style={{ position: 'relative', height: '96vh', aspectRatio: '1280 / 1200' }}>
+      {/* 손이 화면 아래에서 올라온 것처럼 보이게 아래에 붙이고, 잘린 소매 끝은 화면 밖으로 내린다 */}
+      <div
+        style={{
+          position: 'relative',
+          flexShrink: 0,
+          height: '100vh',
+          aspectRatio: '1239 / 1269',
+          transform: `translateY(${HAND_SINK * 100}%)`,
+        }}
+      >
         <img
           src={HAND_URL}
           alt="두 손으로 세로로 쥔 휴대폰"
@@ -330,7 +489,7 @@ function PhoneInHand() {
             height: `${PHONE_SCREEN.height * 100}%`,
             display: 'grid',
             placeItems: 'center',
-            borderRadius: '6% / 2.7%',
+            borderRadius: '8.8% / 4.1%',
             background: '#e9edf2',
             color: '#30343a',
           }}
@@ -346,18 +505,48 @@ function PhoneInHand() {
  * 협성의 테스트 페이지. 개발 서버에서 `?sandbox=hyeopseong` 주소로 연다.
  * 주인이 자유롭게 고친다. 이 페이지만 따로 불러오므로 three·R3F·src/game을 import해도 된다.
  *
- * 방을 1인칭으로 걸어 다닌다. 노트북을 누르면 의자에 앉아 화면을 가득 채워 보는 시점으로, 휴대폰을 누르면 손에 쥔 휴대폰 장면으로 바뀐다.
+ * 방을 1인칭으로 걸어 다닌다. 노트북을 누르면 의자에 앉아 화면을 가득 채워 보는 시점으로 바뀐다.
+ * 책상 위 휴대폰을 누르면 휴대폰을 집어 손에 쥔 장면으로 바뀌고, 책상에서는 사라진다.
+ * 그 뒤로는 오른쪽 아래 휴대폰 버튼이나 Q로 꺼내고, 내려놓기 버튼이나 Esc로 닫는다.
  */
 export default function SandboxPage() {
   const [scene, setScene] = useState<Scene>('room')
   const [aim, setAim] = useState<Aim>(null)
+  const [hasPhone, setHasPhone] = useState(false)
 
-  // 다른 장면으로 넘어가면 버튼을 누를 수 있게 잠근 커서를 돌려준다
+  // 다른 장면으로 넘어가면 버튼을 누를 수 있게 잠근 커서를 돌려준다. 휴대폰을 한 번 열면 집은 것으로 친다.
   const open = (next: Scene) => {
     if (next !== 'room') document.exitPointerLock()
+    if (next === 'phone') setHasPhone(true)
     setAim(null)
     setScene(next)
   }
+
+  // 방에서는 휴대폰 꺼내기 키로 휴대폰을 열고, 휴대폰을 보는 중에는 Esc로 닫는다
+  useEffect(() => {
+    const press = (e: KeyboardEvent) => {
+      if (e.repeat) return
+      if (scene === 'room' && hasPhone && e.code === PHONE_KEY.code) {
+        document.exitPointerLock()
+        setAim(null)
+        setScene('phone')
+      } else if (scene === 'phone' && e.code === 'Escape') {
+        setScene('room')
+      }
+    }
+    window.addEventListener('keydown', press)
+    return () => window.removeEventListener('keydown', press)
+  }, [scene, hasPhone])
+
+  // 방이 다 보이면 첫 독백을 한 번만 한다. 개발 모드에서 효과가 두 번 돌아도 한 번만 말하게 막는다.
+  const monologue = useMonologue()
+  const greeted = useRef(false)
+  const { say } = monologue
+  const greet = useCallback(() => {
+    if (greeted.current) return
+    greeted.current = true
+    say('휴대폰을 어디에 뒀지...')
+  }, [say])
 
   return (
     <main style={{ position: 'fixed', inset: 0, background: '#b9c2c9' }}>
@@ -369,17 +558,22 @@ export default function SandboxPage() {
           <ambientLight intensity={1.2} />
           <Suspense fallback={null}>
             <Room />
+            {!hasPhone && <DeskPhone />}
             <Body
               seated={scene === 'laptop'}
               walking={scene === 'room'}
+              phoneOnDesk={!hasPhone}
               onAim={setAim}
               onPick={open}
             />
+            <Loaded onLoad={greet} />
           </Suspense>
         </Canvas>
       </div>
 
       {scene === 'phone' && <PhoneInHand />}
+
+      <Monologue line={monologue.line} onDone={monologue.next} />
 
       {scene === 'room' ? (
         <>
@@ -387,8 +581,19 @@ export default function SandboxPage() {
           <p style={{ ...panel, position: 'absolute', left: 16, bottom: 16 }}>
             화면을 클릭하면 마우스로 둘러보고 W A S D로 걸어요. Esc를 누르면 커서가 나와요.
             <br />
-            가운데 점을 노트북이나 휴대폰에 맞추고 클릭해 보세요.
+            {hasPhone
+              ? `가운데 점을 노트북에 맞추고 클릭해 보세요. ${PHONE_KEY.label}를 누르면 휴대폰을 꺼내요.`
+              : '가운데 점을 노트북이나 휴대폰에 맞추고 클릭해 보세요.'}
           </p>
+          {hasPhone && (
+            <button
+              type="button"
+              style={{ ...panel, position: 'absolute', right: 16, bottom: 16, cursor: 'pointer' }}
+              onClick={() => open('phone')}
+            >
+              휴대폰 ({PHONE_KEY.label})
+            </button>
+          )}
         </>
       ) : (
         <button
