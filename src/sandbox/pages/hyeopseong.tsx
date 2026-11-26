@@ -1,4 +1,4 @@
-import { PointerLockControls, useGLTF, useTexture } from '@react-three/drei'
+import { PointerLockControls, useGLTF } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import {
   Suspense,
@@ -9,6 +9,9 @@ import {
   useState,
   type CSSProperties,
 } from 'react'
+import { EYE, LAPTOP_SCREEN, START } from '@/game/world/anchors'
+import { ROOM_URL } from '@/game/world/assets'
+import { Room } from '@/game/world/Room'
 import { Monologue } from './hyeopseong/Monologue'
 import { useMonologue } from './hyeopseong/useMonologue'
 import {
@@ -25,14 +28,10 @@ import {
   SRGBColorSpace,
   Vector2,
   Vector3,
-  type Mesh,
-  type MeshStandardMaterial,
   type Object3D,
   type PerspectiveCamera,
 } from 'three'
 
-const ROOM_URL = `${import.meta.env.BASE_URL}models/room.glb`
-const LIGHTMAP_URL = `${import.meta.env.BASE_URL}models/room_lightmap.png`
 // 두 손으로 쥔 휴대폰 그림(1239 x 1269, 배경 투명). 소매가 그림 아래 좌우 끝에서 잘려 있다.
 const HAND_URL = `${import.meta.env.BASE_URL}images/hand_phone_day.webp`
 
@@ -41,24 +40,11 @@ type Scene = 'room' | 'laptop' | 'phone'
 /** 화면 가운데 점이 가리키는 누를 수 있는 물건 */
 type Aim = 'laptop' | 'phone' | null
 
-type Vec3 = [number, number, number]
-/** 서 있을 때의 눈높이(m) */
-const EYE = 1.35
 /** 걷는 속도(m/초)와 몸의 반지름(m). 벽과 가구에 이만큼 가까워지면 멈춘다. */
 const SPEED = 1.8
 const BODY = 0.22
 /** 물건을 가리킬 수 있는 거리(m) */
 const REACH = 3
-/** 시작 위치(현관 안쪽)와 처음 바라보는 곳(방 안쪽). room.glb의 spawn_start와 같은 자리다. */
-const START: { position: Vec3; target: Vec3 } = { position: [0.9, EYE, -1], target: [0.9, EYE, 1] }
-/** 노트북 화면(밝은 네모)의 가운데 위치와 크기(m). 노트북을 쓰는 장면에서는 이 화면이 가득 차도록 다가간다. */
-const LAPTOP_SCREEN: { center: Vec3; facing: Vec3; width: number; height: number } = {
-  center: [-1.3, 0.8637, 0.3783],
-  // 뒤로 젖힌 화면이 바라보는 방향(길이 1)
-  facing: [0, 0.2571, 0.9664],
-  width: 0.31,
-  height: 0.19,
-}
 /** 노트북 화면이 브라우저 화면에서 차지하는 비율. 1이면 가장자리까지 꽉 찬다. */
 const LAPTOP_FILL = 0.9
 /** 손 그림 안에서 휴대폰 화면이 차지하는 자리. 그림 크기에 대한 비율이라 그림을 바꾸면 이 값도 바꾼다. */
@@ -178,52 +164,8 @@ function deskPhone() {
   return phone
 }
 
-/**
- * Blender에서 만든 원룸(room.glb)에 미리 구운 조명(room_lightmap.png)을 입혀서 보여 준다.
- * 원본은 assets-src/room/room.blend, 출처는 assets-src/CREDITS.md에 있다.
- */
-function Room() {
-  // Draco로 압축한 파일이라 해제기가 필요하다. drei 기본값(구글 CDN의 해제기)을 그대로 쓴다.
-  const { scene } = useGLTF(ROOM_URL)
-  const loaded = useTexture(LIGHTMAP_URL)
-
-  const room = useMemo(() => {
-    const lightmap = loaded.clone()
-    lightmap.flipY = false // glTF의 UV 방향에 맞춘다
-    lightmap.colorSpace = SRGBColorSpace
-    lightmap.channel = 1 // 두 번째 UV(Lightmap)
-    lightmap.needsUpdate = true
-
-    const copy = scene.clone()
-    copy.traverse((child) => {
-      // col_*는 충돌 판정용 상자라 화면에는 그리지 않는다
-      if (child.name.startsWith('col_')) child.visible = false
-      const mesh = child as Mesh
-      if (!mesh.isMesh) return
-      const baked = mesh.material as MeshStandardMaterial
-      if (baked.emissive.getHex() !== 0) {
-        // 스스로 빛나는 면(노트북 화면, 베란다 유리)
-        mesh.material = new MeshBasicMaterial({ color: baked.emissive })
-      } else if (mesh.geometry.attributes.uv1) {
-        // 두 번째 UV가 있는 메시만 조명을 구웠다. 구운 값은 "색 x 빛" 그대로라 계산 없는 재질에 입힌다.
-        mesh.material = new MeshBasicMaterial({
-          map: baked.map,
-          color: baked.color,
-          lightMap: lightmap,
-          transparent: baked.transparent,
-          opacity: baked.opacity,
-        })
-      }
-    })
-
-    // 납작한 상자인 휴대폰은 감춘다. 그 자리에는 DeskPhone이 휴대폰 모델을 그린다.
-    const slab = copy.getObjectByName('interact_phone')
-    if (slab) slab.visible = false
-    return copy
-  }, [scene, loaded])
-
-  return <primitive object={room} />
-}
+/** 납작한 상자인 휴대폰은 감춘다. 그 자리에는 DeskPhone이 휴대폰 모델을 그린다. */
+const HIDDEN = ['interact_phone']
 
 /**
  * 책상 위에 놓인 휴대폰. room.glb의 interact_phone 상자 자리에 휴대폰 모델을 놓는다.
@@ -557,7 +499,7 @@ export default function SandboxPage() {
           {/* 조명을 굽지 않은 물건(휴대폰, 우편물, 공유기 플러그)을 비추는 약한 빛 */}
           <ambientLight intensity={1.2} />
           <Suspense fallback={null}>
-            <Room />
+            <Room hide={HIDDEN} />
             {!hasPhone && <DeskPhone />}
             <Body
               seated={scene === 'laptop'}

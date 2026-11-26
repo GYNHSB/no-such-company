@@ -1,7 +1,8 @@
-import { Html, OrbitControls, useGLTF, useTexture } from '@react-three/drei'
+import { Html, OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-import { Suspense, useEffect, useMemo, useState } from 'react'
-import { MeshBasicMaterial, SRGBColorSpace, type Mesh, type MeshStandardMaterial } from 'three'
+import { Suspense, useEffect, useState } from 'react'
+import { LAPTOP_SCREEN } from '@/game/world/anchors'
+import { Room } from '@/game/world/Room'
 import { Bubble } from '../../ui/kit/phone/Bubble'
 import { Notification } from '../../ui/kit/phone/Notification'
 import { PhoneScreen } from '../../ui/kit/phone/PhoneScreen'
@@ -30,12 +31,10 @@ export default function SandboxPage() {
 const SCREEN_W = 1280
 const SCREEN_H = 800
 
-const ROOM_URL = `${import.meta.env.BASE_URL}models/room.glb`
-const LIGHTMAP_URL = `${import.meta.env.BASE_URL}models/room_lightmap.png`
-// 노트북 화면 자리. hyeopseong.tsx의 LAPTOP_SCREEN 값을 옮겨 왔다(가운데, 바라보는 방향, 0.31 x 0.19m)
-const SCREEN_CENTER: [number, number, number] = [-1.3, 0.8637, 0.3783]
-const SCREEN_FACING: [number, number, number] = [0, 0.2571, 0.9664]
-const SCREEN_WIDTH_M = 0.31
+// 노트북 화면 자리(가운데, 바라보는 방향, 너비)
+const SCREEN_CENTER = LAPTOP_SCREEN.center
+const SCREEN_FACING = LAPTOP_SCREEN.facing
+const SCREEN_WIDTH_M = LAPTOP_SCREEN.width
 // 화면을 뒤로 젖힌 각도. +Z를 보던 판을 X축으로 돌려 FACING 방향을 보게 한다
 const SCREEN_TILT = -Math.asin(SCREEN_FACING[1])
 // drei Html(transform)은 1px을 distanceFactor/400 m로 그린다. 1280px이 화면 너비가 되도록 맞춘다
@@ -72,45 +71,6 @@ function RoomLaptopTest() {
       </Canvas>
     </div>
   )
-}
-
-/**
- * 원룸(room.glb)에 구운 조명(room_lightmap.png)을 입힌다.
- * shortcut: hyeopseong.tsx의 Room을 그대로 옮겨 온 사본이다. 공용 컴포넌트가 생기면 그걸 쓴다.
- */
-function Room() {
-  const { scene } = useGLTF(ROOM_URL)
-  const loaded = useTexture(LIGHTMAP_URL)
-
-  const room = useMemo(() => {
-    const lightmap = loaded.clone()
-    lightmap.flipY = false
-    lightmap.colorSpace = SRGBColorSpace
-    lightmap.channel = 1
-    lightmap.needsUpdate = true
-
-    const copy = scene.clone()
-    copy.traverse((child) => {
-      if (child.name.startsWith('col_')) child.visible = false
-      const mesh = child as Mesh
-      if (!mesh.isMesh) return
-      const baked = mesh.material as MeshStandardMaterial
-      if (baked.emissive.getHex() !== 0) {
-        mesh.material = new MeshBasicMaterial({ color: baked.emissive })
-      } else if (mesh.geometry.attributes.uv1) {
-        mesh.material = new MeshBasicMaterial({
-          map: baked.map,
-          color: baked.color,
-          lightMap: lightmap,
-          transparent: baked.transparent,
-          opacity: baked.opacity,
-        })
-      }
-    })
-    return copy
-  }, [scene, loaded])
-
-  return <primitive object={room} />
 }
 
 // 2D로만 보는 노트북 테스트. 다시 보려면 SandboxPage에서 <RoomLaptopTest /> 대신 <LaptopTest />
