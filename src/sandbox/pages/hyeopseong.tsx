@@ -17,7 +17,7 @@ import {
 
 const ROOM_URL = `${import.meta.env.BASE_URL}models/room.glb`
 const LIGHTMAP_URL = `${import.meta.env.BASE_URL}models/room_lightmap.png`
-// Blender에서 손과 휴대폰을 만들어 렌더한 그림(1280 x 1200, 배경 투명). 원본은 assets-src/room/room.blend의 hand_phone 장면
+// 두 손으로 쥔 휴대폰 그림(1239 x 1269, 배경 투명). 소매가 그림 아래 좌우 끝에서 잘려 있다.
 const HAND_URL = `${import.meta.env.BASE_URL}images/hand_phone_day.webp`
 
 /** 어떤 장면을 보고 있는지. room: 방을 걸어 다님, laptop: 의자에 앉아 노트북을 봄, phone: 휴대폰을 손에 쥠 */
@@ -46,7 +46,9 @@ const LAPTOP_SCREEN: { center: Vec3; facing: Vec3; width: number; height: number
 /** 노트북 화면이 브라우저 화면에서 차지하는 비율. 1이면 가장자리까지 꽉 찬다. */
 const LAPTOP_FILL = 0.9
 /** 손 그림 안에서 휴대폰 화면이 차지하는 자리. 그림 크기에 대한 비율이라 그림을 바꾸면 이 값도 바꾼다. */
-const PHONE_SCREEN = { left: 0.3597, top: 0.0512, width: 0.2805, height: 0.6743 }
+const PHONE_SCREEN = { left: 0.339, top: 0.1182, width: 0.3204, height: 0.6698 }
+/** 손 그림을 화면 아래로 내리는 정도(그림 높이에 대한 비율). 소매가 잘린 그림 아래 좌우 끝을 화면 밖으로 숨긴다. */
+const HAND_SINK = 0.06
 /** 클릭하면 커서를 잠그는 영역. 버튼을 누를 때는 잠기지 않게 3D 화면으로만 한정한다. */
 const VIEW_ID = 'hyeopseong-view'
 
@@ -312,10 +314,19 @@ function PhoneInHand() {
         justifyContent: 'center',
         background: 'rgb(0 0 0 / 0.45)',
         backdropFilter: 'blur(6px)',
+        overflow: 'hidden',
       }}
     >
-      {/* 손이 화면 아래에서 올라온 것처럼 보이게 아래에 붙인다 */}
-      <div style={{ position: 'relative', height: '96vh', aspectRatio: '1280 / 1200' }}>
+      {/* 손이 화면 아래에서 올라온 것처럼 보이게 아래에 붙이고, 잘린 소매 끝은 화면 밖으로 내린다 */}
+      <div
+        style={{
+          position: 'relative',
+          flexShrink: 0,
+          height: '100vh',
+          aspectRatio: '1239 / 1269',
+          transform: `translateY(${HAND_SINK * 100}%)`,
+        }}
+      >
         <img
           src={HAND_URL}
           alt="두 손으로 세로로 쥔 휴대폰"
@@ -330,7 +341,7 @@ function PhoneInHand() {
             height: `${PHONE_SCREEN.height * 100}%`,
             display: 'grid',
             placeItems: 'center',
-            borderRadius: '6% / 2.7%',
+            borderRadius: '8.8% / 4.1%',
             background: '#e9edf2',
             color: '#30343a',
           }}
