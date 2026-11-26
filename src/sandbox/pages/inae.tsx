@@ -57,6 +57,7 @@ function RoomLaptopTest() {
         <ambientLight intensity={1.2} />
         <Suspense fallback={null}>
           <Room />
+          <Laptop />
           <Html
             transform
             position={SCREEN_CENTER}
@@ -72,6 +73,14 @@ function RoomLaptopTest() {
       </Canvas>
     </div>
   )
+}
+
+const LAPTOP_URL = `${import.meta.env.BASE_URL}models/laptop.glb`
+
+/** 새 노트북 모델(laptop.glb)을 room.glb의 interact_laptop 자리에 둔다. 화면 위치는 옛 모델과 같다 */
+function Laptop() {
+  const { scene } = useGLTF(LAPTOP_URL)
+  return <primitive object={scene} position={[-1.3, 0.74, 0.489]} />
 }
 
 /**
@@ -92,6 +101,8 @@ function Room() {
     const copy = scene.clone()
     copy.traverse((child) => {
       if (child.name.startsWith('col_')) child.visible = false
+      // 옛 노트북은 숨기고 laptop.glb로 바꿔 보여 준다
+      if (child.name === 'interact_laptop') child.visible = false
       const mesh = child as Mesh
       if (!mesh.isMesh) return
       const baked = mesh.material as MeshStandardMaterial
