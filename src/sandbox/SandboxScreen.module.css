@@ -1,0 +1,14 @@
+.root {
+  display: grid;
+  place-content: center;
+  gap: 16px;
+  height: 100%;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+}
