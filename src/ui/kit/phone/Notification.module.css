@@ -1,0 +1,29 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pt) * 2);
+  width: 100%;
+  padding: calc(var(--pt) * 12) calc(var(--pt) * 14);
+  border: 0;
+  border-radius: calc(var(--pt) * 20);
+  background: rgb(44 44 46 / 0.82);
+  backdrop-filter: blur(20px);
+  color: var(--phone-ink);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.head {
+  display: flex;
+  justify-content: space-between;
+  font-size: calc(var(--pt) * 13);
+  color: var(--phone-muted);
+}
+.title {
+  font-size: calc(var(--pt) * 15);
+  font-weight: 600;
+}
+.body {
+  font-size: calc(var(--pt) * 15);
+  line-height: 1.3;
+}
