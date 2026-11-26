@@ -1,5 +1,5 @@
 // 「기획 질문 답변」 문서의 결정을 코드 값으로 옮긴 것.
-import type { EndingId } from './types'
+// 값만 둔다. 이 값으로 판정하는 코드는 src/engine에 있다(엔딩 판정: src/engine/ending.ts).
 
 export const SUSPICION = {
   start: 10,
@@ -28,21 +28,3 @@ export const SUSPICION = {
 
 /** 같은 문장을 연달아 틀리면 그날 밤엔 더 못 맞춘다 */
 export const BLANK_MAX_WRONG_IN_A_ROW = 2
-
-/** 엔딩 판정에 쓰는 기록 */
-export interface EndingInput {
-  signedInauguration: boolean // 5일차 취임 서류 서명
-  gaveNewInfo: boolean // 영상 재촬영, 인증번호 등 새 정보 넘김
-  vanished: boolean // 경계심 100으로 잠적
-  reported: boolean // 신고함
-  allSentencesSolved: boolean
-  laptopWiped: boolean // 원격 초기화를 못 막음
-}
-
-/** 판정 순서: 공범 → 서류 위의 주범 → 잡히지 않은 사람 → 휴 위험했다 */
-export function decideEnding(s: EndingInput): EndingId {
-  if (s.signedInauguration || s.gaveNewInfo) return 'accomplice'
-  if (s.vanished || !s.reported || !s.allSentencesSolved) return 'scapegoat'
-  if (s.laptopWiped) return 'escaped'
-  return 'safe'
-}

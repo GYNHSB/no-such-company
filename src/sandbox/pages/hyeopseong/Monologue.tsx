@@ -1,14 +1,14 @@
 import { useEffect, useState, type CSSProperties } from 'react'
-import type { MonologueLine } from './useMonologue'
+import type { MonologueLine } from '@/stores/monologueStore'
 
 /**
  * 주인공의 독백을 화면 아래 반투명 창에 한 줄씩 보여 준다.
  * 나중에 공용(src/ui 등)으로 옮길 것을 생각해 페이지와 상관없는 것만 둔다.
  *
  * 쓰는 법:
- *   const monologue = useMonologue()
- *   monologue.say('휴대폰을 어디에 뒀지...')
- *   <Monologue line={monologue.line} onDone={monologue.next} />
+ *   useMonologueStore.getState().say('휴대폰을 어디에 뒀지...')
+ *   const line = useMonologueStore((s) => s.queue[0] ?? null)
+ *   <Monologue line={line} onDone={useMonologueStore.getState().next} />
  */
 
 /** 글자가 하나씩 나오는 간격(ms) */
