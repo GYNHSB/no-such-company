@@ -1,0 +1,97 @@
+/* 화면 영역 너비를 390pt로 보고 1pt 크기를 계산 */
+.root {
+  --pt: calc(100cqw / 390);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--phone-bg);
+  color: var(--phone-ink);
+  font-size: calc(var(--pt) * 17);
+  line-height: 1.3;
+}
+
+.status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: calc(var(--pt) * 54);
+  padding: 0 calc(var(--pt) * 28);
+  font-size: calc(var(--pt) * 17);
+  font-weight: 600;
+}
+
+.icons {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 6);
+}
+
+.signal {
+  width: calc(var(--pt) * 18);
+  height: calc(var(--pt) * 11);
+  background: linear-gradient(
+    90deg,
+    var(--phone-ink) 20%,
+    transparent 20% 27%,
+    var(--phone-ink) 27% 47%,
+    transparent 47% 53%,
+    var(--phone-ink) 53% 73%,
+    transparent 73% 80%,
+    var(--phone-ink) 80%
+  );
+  clip-path: polygon(0 100%, 100% 0, 100% 100%);
+}
+
+.battery {
+  width: calc(var(--pt) * 25);
+  height: calc(var(--pt) * 12);
+  border: calc(var(--pt) * 1.2) solid var(--phone-muted);
+  border-radius: calc(var(--pt) * 3.5);
+  background: linear-gradient(90deg, var(--phone-ink) 70%, transparent 70%) content-box;
+  padding: calc(var(--pt) * 1.5);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--pt) * 4) calc(var(--pt) * 16) calc(var(--pt) * 8);
+}
+
+.back {
+  align-self: flex-start;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--phone-blue);
+  font-size: calc(var(--pt) * 28);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.title {
+  margin: 0;
+  font-size: calc(var(--pt) * 34);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 calc(var(--pt) * 16);
+  scrollbar-width: none;
+}
+
+.body::-webkit-scrollbar {
+  display: none;
+}
+
+.home {
+  align-self: center;
+  width: calc(var(--pt) * 134);
+  height: calc(var(--pt) * 5);
+  margin: calc(var(--pt) * 8) 0 calc(var(--pt) * 8);
+  border-radius: var(--radius-pill);
+  background: var(--phone-ink);
+}
