@@ -1,0 +1,65 @@
+.row {
+  display: grid;
+  grid-template-columns: var(--work-avatar) 1fr;
+  gap: 8px;
+  padding: 8px 20px;
+  font-family: var(--work-font);
+  color: var(--work-ink);
+}
+.row:hover {
+  background: var(--work-hover);
+}
+.continued {
+  padding-top: 2px;
+}
+.avatar {
+  display: block;
+  width: var(--work-avatar);
+  height: var(--work-avatar);
+  border-radius: var(--work-radius);
+  background: var(--work-line);
+  object-fit: cover;
+}
+.meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.name {
+  font-size: var(--work-text-name);
+  font-weight: 700;
+}
+.time {
+  font-size: var(--work-text-meta);
+  color: var(--work-muted);
+}
+.text {
+  margin: 2px 0 0;
+  font-size: var(--work-text-body);
+  line-height: 1.47;
+  white-space: pre-wrap;
+}
+.deleted {
+  color: var(--work-muted);
+  font-style: italic;
+}
+/* 사라지는 메시지: 아래쪽 줄이 줄어들며 남은 시간을 보여준다 */
+.vanishing {
+  position: relative;
+  padding-bottom: 4px;
+}
+.vanishing::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background: var(--danger);
+  animation: vanish var(--vanish-sec, 5s) linear forwards;
+}
+@keyframes vanish {
+  to {
+    width: 0;
+  }
+}

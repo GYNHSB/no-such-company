@@ -1,0 +1,26 @@
+.bubble {
+  max-width: 75%;
+  margin: calc(var(--pt) * 2) 0;
+  padding: calc(var(--pt) * 7) calc(var(--pt) * 12);
+  border-radius: calc(var(--pt) * 18);
+  font-size: calc(var(--pt) * 17);
+  line-height: 1.3;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.in {
+  background: var(--phone-bubble-in);
+  color: var(--phone-ink);
+  margin-right: auto;
+}
+.out {
+  background: var(--phone-bubble-out);
+  color: #fff;
+  margin-left: auto;
+}
+.in.tail {
+  border-bottom-left-radius: calc(var(--pt) * 4);
+}
+.out.tail {
+  border-bottom-right-radius: calc(var(--pt) * 4);
+}

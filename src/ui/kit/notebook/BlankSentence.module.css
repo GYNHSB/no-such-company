@@ -1,0 +1,52 @@
+.sentence {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--paper-line, #d8cfbd);
+  border-radius: 6px;
+  background: var(--paper, #f3efe6);
+  color: var(--paper-ink, #2a2620);
+  font-size: 16px;
+  line-height: 2.2;
+  word-break: keep-all;
+}
+.slot {
+  display: inline-block;
+  min-width: 96px;
+  margin: 0 4px;
+  padding: 0 10px;
+  border: 1.5px dashed var(--paper-muted, #6b6153);
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 1.8;
+  cursor: pointer;
+}
+.filled {
+  border-style: solid;
+  background: var(--paper-highlight, #fff1b8);
+  font-weight: 600;
+}
+.solved {
+  border-color: var(--ok, #1f7a4d);
+}
+.solved .slot {
+  border-color: var(--ok, #1f7a4d);
+  cursor: default;
+}
+.wrong {
+  animation: shake 0.35s;
+}
+@keyframes shake {
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wrong {
+    animation: none;
+  }
+}
