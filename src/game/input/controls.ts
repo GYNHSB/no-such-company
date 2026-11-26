@@ -12,3 +12,6 @@ export const keyboardMap: KeyboardControlsEntry<GameAction>[] = [
   { name: 'leftward', keys: ['ArrowLeft', 'KeyA'] },
   { name: 'rightward', keys: ['ArrowRight', 'KeyD'] },
 ]
+
+/** 집어 둔 휴대폰을 꺼내는 키. code는 KeyboardEvent.code, label은 화면에 보이는 이름이다. */
+export const PHONE_KEY = { code: 'KeyQ', label: 'Q' }

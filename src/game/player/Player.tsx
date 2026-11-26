@@ -46,6 +46,11 @@ export function Player({ active, lockSelector }: PlayerProps) {
     camera.lookAt(...START.target)
   }, [camera])
 
+  // 다른 것을 보러 가면 화면 위 버튼을 누를 수 있게 잠근 커서를 돌려준다
+  useEffect(() => {
+    if (!active) document.exitPointerLock()
+  }, [active])
+
   // 카메라가 눈 자리를 따라가게 한다. 물리 계산 사이를 부드럽게 이은 위치를 읽으려고 몸에 붙인 빈 물체의 자리를 쓴다.
   useFrame(({ camera }) => {
     if (active && head.current) head.current.getWorldPosition(camera.position)
