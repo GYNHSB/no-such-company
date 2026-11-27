@@ -8,6 +8,7 @@ import { JobSiteStatus } from '@/ui/screens/laptop/JobSiteStatus'
 import { SAMPLE_APPLICATIONS, SAMPLE_REJECTED_TOTAL } from '@/ui/screens/laptop/jobSiteSample'
 import { RemoteWipe } from '@/ui/screens/laptop/RemoteWipe'
 import { SearchScreen } from '@/ui/screens/laptop/SearchScreen'
+import { VideoInterview } from '@/ui/screens/laptop/VideoInterview'
 import { Bubble } from '../../ui/kit/phone/Bubble'
 import { Notification } from '../../ui/kit/phone/Notification'
 import { PhoneScreen } from '../../ui/kit/phone/PhoneScreen'
@@ -54,7 +55,9 @@ const CAMERA_POSITION = SCREEN_CENTER.map((v, i) => v + SCREEN_FACING[i] * VIEW_
 
 /** 원룸을 불러와 노트북 화면 자리에 LaptopScreen을 얹는다. 마우스로 돌려 볼 수 있다. */
 function RoomLaptopTest() {
-  const [screen, setScreen] = useState<'jobsite' | 'install' | 'search' | 'wipe'>('jobsite')
+  const [screen, setScreen] = useState<'jobsite' | 'install' | 'interview' | 'search' | 'wipe'>(
+    'jobsite',
+  )
   const [unplugged, setUnplugged] = useState(false)
   return (
     <div style={{ position: 'fixed', inset: 0 }}>
@@ -71,7 +74,7 @@ function RoomLaptopTest() {
             distanceFactor={SCREEN_DISTANCE_FACTOR}
           >
             <div style={{ width: SCREEN_W, height: SCREEN_H }}>
-              {/* 취업 사이트 탭 닫기 → 면접 앱 설치 → 면접 입장 → 검색 → 검색 탭 닫기 → 원격 초기화 */}
+              {/* 취업 사이트 탭 닫기 → 면접 앱 설치 → 면접 입장 → 화상 면접 → 검색 → 검색 탭 닫기 → 원격 초기화 */}
               {screen === 'jobsite' ? (
                 <JobSiteStatus
                   applications={SAMPLE_APPLICATIONS}
@@ -83,7 +86,13 @@ function RoomLaptopTest() {
                 <InterviewAppInstall
                   company="오버레이"
                   host="박재훈"
-                  onJoin={() => setScreen('search')}
+                  onJoin={() => setScreen('interview')}
+                />
+              ) : screen === 'interview' ? (
+                <VideoInterview
+                  playerName="테스트"
+                  durationSec={12}
+                  onEnd={() => setScreen('search')}
                 />
               ) : screen === 'search' ? (
                 <SearchScreen
