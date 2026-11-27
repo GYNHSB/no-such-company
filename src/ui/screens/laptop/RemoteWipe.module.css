@@ -1,16 +1,39 @@
 .screen {
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
   font-family: var(--web-font);
   color: var(--game-ink);
   background: var(--game-bg);
 }
+.bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--web-ink);
+  font-size: var(--web-text-meta);
+}
+.app {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+.online {
+  color: var(--danger);
+}
+.offline {
+  color: var(--web-muted);
+}
 .panel {
   display: grid;
-  gap: 14px;
-  width: 560px;
+  align-content: center;
+  gap: 16px;
+  flex: 1;
+  width: 620px;
+  margin: 0 auto;
 }
 .label {
   margin: 0;
@@ -21,7 +44,23 @@
 }
 .title {
   margin: 0;
-  font-size: var(--web-text-title);
+  font-size: 26px;
+}
+.device {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 6px;
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: var(--web-radius);
+  background: var(--web-ink);
+  font-size: var(--web-text-meta);
+}
+.device dt {
+  color: var(--web-muted);
+}
+.device dd {
+  margin: 0;
 }
 .track {
   height: 10px;
@@ -35,13 +74,15 @@
   transform-origin: left;
 }
 .percent {
+  display: flex;
+  justify-content: space-between;
   margin: 0;
   font-size: var(--web-text-body);
   font-variant-numeric: tabular-nums;
 }
 .targets {
   display: grid;
-  gap: 6px;
+  gap: 2px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -50,18 +91,31 @@
 .targets li {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--web-ink);
+}
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 .state {
   font-size: var(--web-text-meta);
   color: var(--web-muted);
 }
+.now {
+  color: var(--warn);
+  font-weight: 700;
+}
 .gone {
   color: var(--web-muted);
+}
+.gone .item {
   text-decoration: line-through;
 }
 .gone .state {
   color: var(--danger);
-  text-decoration: none;
 }
 .warn {
   margin: 0;
@@ -69,6 +123,8 @@
   color: var(--web-muted);
 }
 .blank {
+  justify-content: center;
+  align-items: center;
   background: var(--game-bg);
 }
 .blankText {
