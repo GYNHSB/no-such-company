@@ -11,7 +11,7 @@ import {
 import { PhoneCloseup } from '@/ui/kit/phone/PhoneCloseup'
 import { INTERVIEW_LINES } from '@/ui/screens/laptop/videoScript'
 import { type BankAccount, BankApp, type BankCard } from '@/ui/screens/phone/BankApp'
-import { CallApp, type CallRecord, type Contact } from '@/ui/screens/phone/CallApp'
+import { CallApp, type Contact } from '@/ui/screens/phone/CallApp'
 import { useFlowingClock } from '@/ui/screens/phone/clock'
 import { type HomeApp, HomeScreen } from '@/ui/screens/phone/HomeScreen'
 import { LockScreen } from '@/ui/screens/phone/LockScreen'
@@ -198,15 +198,25 @@ const CONTACTS: Contact[] = [
 ]
 
 /**
- * 최근 통화 견본. 대본에 없어 임의로 넣었다. 4일차의 부재중 전화는
- * 항의 문자의 "전화 좀 받으세요"에 맞춘 것이다. day는 그 통화가 있었던 날(몇 일차)이다.
+ * 통화 기록 견본. 대본에 없어 임의로 넣었다. 장면을 시작할 때 그날을 기준으로 스토어에 넣어 둔다.
+ * daysAgo는 그 장면의 날에서 며칠 전인지다. 오늘 통화는 장면이 시작하는 시각보다 이르게 잡았다.
+ * only가 있는 통화는 그 장면에서만 넣는다. 4일차의 부재중 전화는 항의 문자의 "전화 좀 받으세요"에 맞췄다.
  */
-const CALLS: (Omit<CallRecord, 'date'> & { day: DayInfo })[] = [
-  { id: 'c1', number: '01000000412', kind: 'in', time: '19:42', day: SCENES[0].info },
-  { id: 'c2', number: '01000005128', kind: 'out', time: '21:05', day: SCENES[1].info },
-  { id: 'c3', number: '01000000412', kind: 'missed', time: '20:17', day: SCENES[2].info },
-  { id: 'c4', number: '01000009031', kind: 'missed', time: '15:09', day: SCENES[3].info },
-  { id: 'c5', number: '01000006618', kind: 'missed', time: '15:12', day: SCENES[3].info },
+const CALL_HISTORY: {
+  number: string
+  kind: 'in' | 'out' | 'missed'
+  daysAgo: number
+  time: string
+  only?: string
+}[] = [
+  { number: '01000007744', kind: 'out', daysAgo: 9, time: '18:44' },
+  { number: '01000003301', kind: 'in', daysAgo: 4, time: '11:30' },
+  { number: '01000000412', kind: 'missed', daysAgo: 2, time: '20:17' },
+  { number: '01000000412', kind: 'out', daysAgo: 2, time: '20:41' },
+  { number: '01000005128', kind: 'out', daysAgo: 1, time: '21:05' },
+  { number: '01000000412', kind: 'in', daysAgo: 0, time: '08:52' },
+  { number: '01000009031', kind: 'missed', daysAgo: 0, time: '15:09', only: 'd4s5' },
+  { number: '01000006618', kind: 'missed', daysAgo: 0, time: '15:10', only: 'd4s5' },
 ]
 
 /** 신고처 번호. 엔딩 화면의 안내와 같은 번호(경찰 112, 금융감독원 1332)만 연결된다 */
@@ -260,17 +270,24 @@ const SCREEN = { left: 418, top: 149, right: 818, bottom: 1000, radius: 41 }
 
 /**
  * 장면을 처음부터 시작한다. 새 게임처럼 휴대폰을 비운 뒤,
- * 앞 장면에서 온 메시지는 이미 받아서 읽은 것으로 넣어 둔다.
+ * 앞 장면에서 온 메시지는 이미 받아서 읽은 것으로 넣어 두고, 통화 기록 견본을 그날 기준으로 넣는다.
  */
 const startScene = (id: string) => {
   const phone = usePhoneStore.getState()
-  const earlier = SCENES.slice(
+  const index = Math.max(
     0,
     SCENES.findIndex((s) => s.id === id),
   )
+  const earlier = SCENES.slice(0, index)
   phone.reset()
   earlier.forEach((s) => s.messages.forEach((m) => phone.receive(m, s.info)))
   phone.markRead(earlier.flatMap((s) => s.messages.map((m) => m.id)))
+
+  const today = dateOfDay(usePhoneStore.getState().weekOne, SCENES[index].info)
+  CALL_HISTORY.filter((c) => !c.only || c.only === id).forEach((c) => {
+    const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - c.daysAgo)
+    phone.logCall({ number: c.number, kind: c.kind, time: c.time, date })
+  })
 }
 
 export default function SandboxPage() {
@@ -290,6 +307,8 @@ export default function SandboxPage() {
   const weekOne = usePhoneStore((s) => s.weekOne)
   const receive = usePhoneStore((s) => s.receive)
   const markRead = usePhoneStore((s) => s.markRead)
+  const calls = usePhoneStore((s) => s.calls)
+  const logCall = usePhoneStore((s) => s.logCall)
   const openApp = usePhoneStore((s) => s.openApp)
 
   // 이름은 시작 화면에서 입력해 gameStore에 들어 있는 값을 쓴다. 이 페이지는 시작 화면을 거치지 않아 견본 이름을 넣는다
@@ -325,10 +344,6 @@ export default function SandboxPage() {
       captions: INTERVIEW_LINES.map((line) => ({ ...line, text: fill(line.text) })),
     },
   ]
-  // 이 장면의 날까지 있었던 통화만 보인다
-  const calls: CallRecord[] = CALLS.filter((c) => c.day.day <= scene.info.day).map(
-    ({ day, ...record }) => ({ ...record, date: dateOfDay(weekOne, day) }),
-  )
   const homeApps: HomeApp<PhoneApp>[] = [
     { id: 'photos', label: '사진', icon: 'photos' },
     { id: 'sns', label: SNS, icon: 'sns' },
@@ -437,6 +452,8 @@ export default function SandboxPage() {
             calls={calls}
             connected={connected}
             onCall={(number) => {
+              // 건 전화를 통화 기록에 남긴다
+              logCall({ number, kind: 'out', date: today, time })
               setConnected(false)
               setOpened(`전화 걸기 (${number})`)
               // 엔진 대신: 신고처 번호만 2초 뒤에 연결된다
