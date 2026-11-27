@@ -1,0 +1,72 @@
+.root {
+  display: grid;
+  gap: 10px;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--work-text-body);
+  font-weight: 700;
+}
+
+/* 검수할 문장. 메신저의 업무 자료 카드와 같은 모양 */
+.sentence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--work-line);
+  border-left: 4px solid var(--work-link);
+  border-radius: var(--work-radius);
+  background: var(--work-hover);
+}
+
+.word {
+  padding: 2px 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  color: var(--work-ink);
+  font: inherit;
+  font-size: var(--work-text-body);
+  cursor: pointer;
+}
+.word:hover:not(:disabled),
+.word[aria-pressed='true'] {
+  border-color: var(--work-link);
+  background: var(--work-bg);
+}
+.word:focus-visible {
+  outline: 2px solid var(--work-link);
+  outline-offset: 2px;
+}
+.word:disabled {
+  cursor: default;
+}
+/* 고친 낱말. 색만으로 알리지 않게 굵기와 밑줄을 함께 준다 */
+.fixed {
+  color: var(--work-action);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.guide {
+  flex: 1;
+  margin: 0;
+  font-size: var(--work-text-meta);
+  color: var(--work-muted);
+}
