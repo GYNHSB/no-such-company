@@ -1,5 +1,6 @@
 import { useGLTF } from '@react-three/drei'
-import { useMemo } from 'react'
+import { useFrame } from '@react-three/fiber'
+import { useMemo, useRef } from 'react'
 import {
   CanvasTexture,
   ExtrudeGeometry,
@@ -8,9 +9,13 @@ import {
   MeshBasicMaterial,
   Shape,
   ShapeGeometry,
+  Sprite,
   SRGBColorSpace,
 } from 'three'
+import { BUZZ_PULSES } from '@/game/audio/sound'
+import { useGameStore } from '@/stores/gameStore'
 import { ROOM_URL } from './assets'
+import { glowMaterial } from './glow'
 
 /**
  * 책상 위 휴대폰의 크기(m). room.glb의 interact_phone은 이 크기의 납작한 상자 하나라서, 화면에는 이 모델을 대신 그린다.
@@ -62,6 +67,35 @@ function phoneGlass() {
   return texture
 }
 
+/** 알림이 와서 켜진 화면 그림: 시각과 알림 한 줄 */
+function phoneLit() {
+  const canvas = document.createElement('canvas')
+  canvas.width = 256
+  canvas.height = 512
+  const g = canvas.getContext('2d')!
+  const sky = g.createLinearGradient(0, 0, 0, 512)
+  sky.addColorStop(0, '#1b2238')
+  sky.addColorStop(1, '#0b0d14')
+  g.fillStyle = sky
+  g.fillRect(0, 0, 256, 512)
+  g.fillStyle = 'rgb(255 255 255 / 0.9)'
+  g.font = '600 64px system-ui, sans-serif'
+  g.textAlign = 'center'
+  g.fillText('10:12', 128, 140)
+  // 알림 한 줄: 흐린 상자 안에 글자 대신 막대 두 개
+  g.fillStyle = 'rgb(255 255 255 / 0.2)'
+  g.beginPath()
+  g.roundRect(20, 220, 216, 70, 16)
+  g.fill()
+  g.fillStyle = 'rgb(255 255 255 / 0.75)'
+  g.fillRect(38, 240, 110, 10)
+  g.fillStyle = 'rgb(255 255 255 / 0.45)'
+  g.fillRect(38, 262, 160, 8)
+  const texture = new CanvasTexture(canvas)
+  texture.colorSpace = SRGBColorSpace
+  return texture
+}
+
 /** 책상 위에 화면을 위로 두고 놓인 휴대폰. 바닥 가운데가 원점이다. */
 function deskPhone() {
   const { width, length, height, corner, angle } = DESK_PHONE
@@ -103,26 +137,71 @@ function deskPhone() {
     )
   }
   screen.rotateX(-Math.PI / 2)
-  const glass = new Mesh(screen, new MeshBasicMaterial({ map: phoneGlass() }))
+  const off = phoneGlass()
+  const glass = new Mesh(screen, new MeshBasicMaterial({ map: off }))
+  glass.name = 'screen'
   glass.position.y = height + 0.0002
   phone.add(glass)
 
+  // 밤에 화면이 켜지면 책상 위로 번지는 빛
+  const glow = new Sprite(glowMaterial('#a9bdff', 0.5))
+  glow.name = 'glow'
+  glow.position.y = 0.02
+  glow.scale.set(0.35, 0.35, 1)
+  glow.visible = false
+  phone.add(glow)
+
   phone.rotation.y = angle
-  return phone
+  return { phone, off }
 }
+
+/** 알림이 오면 화면이 켜져 있는 시간(초) */
+const LIT_SECONDS = 4
+/** 진동할 때 떨리는 폭(m, 라디안) */
+const SHAKE = 0.0012
+const SHAKE_TURN = 0.012
 
 /**
  * 책상 위에 놓인 휴대폰. room.glb의 interact_phone 상자 자리에 휴대폰 모델을 놓는다.
  * 가리키기 판정은 원본 장면의 상자로 한다. Room에는 hide로 상자를 감추라고 알린다.
+ * 알림이 오면 진동 박자에 맞춰 떨리고, 화면이 잠깐 켜진다.
  */
 export function DeskPhone() {
   const { scene } = useGLTF(ROOM_URL)
-  const phone = useMemo(() => {
+  const parts = useMemo(() => {
     const model = deskPhone()
     const slab = scene.getObjectByName('interact_phone')
-    if (slab) model.position.copy(slab.position)
-    return model
+    if (slab) model.phone.position.copy(slab.position)
+    return {
+      phone: model.phone,
+      rest: model.phone.position.clone(),
+      off: model.off,
+      on: phoneLit(),
+    }
   }, [scene])
 
-  return <primitive object={phone} />
+  // 화면에 올린 물체는 ref로 받아 바꾼다(훅이 돌려준 값은 직접 바꾸지 않는다)
+  const phone = useRef<Group>(null)
+
+  useFrame(() => {
+    const model = phone.current
+    if (!model) return
+    const { buzzAt, night } = useGameStore.getState()
+    const since = (performance.now() - buzzAt) / 1000
+    const shaking =
+      buzzAt > 0 && BUZZ_PULSES.some(([start, length]) => since >= start && since < start + length)
+    const lit = buzzAt > 0 && since < LIT_SECONDS
+    const jitter = () => (shaking ? Math.random() * 2 - 1 : 0)
+    model.position.set(
+      parts.rest.x + jitter() * SHAKE,
+      parts.rest.y,
+      parts.rest.z + jitter() * SHAKE,
+    )
+    model.rotation.y = DESK_PHONE.angle + jitter() * SHAKE_TURN
+    const screen = model.getObjectByName('screen') as Mesh<ShapeGeometry, MeshBasicMaterial>
+    screen.material.map = lit ? parts.on : parts.off
+    model.getObjectByName('glow')!.visible = lit && night
+  })
+
+  return <primitive ref={phone} object={parts.phone} />
 }

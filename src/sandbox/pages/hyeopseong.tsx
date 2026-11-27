@@ -1,4 +1,6 @@
+import { button, useControls } from 'leva'
 import { useCallback, useRef, type CSSProperties } from 'react'
+import { SUSPICION } from '@/data/rules'
 import GameCanvas from '@/game/GameCanvas'
 import { PHONE_KEY } from '@/game/input/controls'
 import { useGameStore } from '@/stores/gameStore'
@@ -8,10 +10,41 @@ import { Monologue } from './hyeopseong/Monologue'
 // 두 손으로 쥔 휴대폰 그림(1239 x 1269, 배경 투명). 소매가 그림 아래 좌우 끝에서 잘려 있다.
 const HAND_URL = `${import.meta.env.BASE_URL}images/hand_phone_day.webp`
 
-/** 화면 가운데 점이 가리키는 누를 수 있는 물건 */
-type Aim = 'laptop' | 'phone' | null
-/** gameStore의 aim(room.glb의 interact_* 이름) 가운데 이 페이지가 안내를 보여 주는 것 */
-const AIMS: Record<string, Aim> = { interact_laptop: 'laptop', interact_phone: 'phone' }
+/** 화면 가운데 점이 가리키는 물건(gameStore의 aim)에 맞춰 보여 줄 안내. 켜고 끄는 물건은 지금 상태를 보고 고른다. */
+function aimLabel(s: ReturnType<typeof useGameStore.getState>): string | null {
+  switch (s.aim) {
+    case 'interact_laptop':
+      return '클릭해서 노트북 쓰기'
+    case 'interact_phone':
+      return '클릭해서 휴대폰 집기'
+    case 'bed':
+      return '클릭해서 눕기'
+    case 'desk_lamp':
+      return s.deskLamp ? '클릭해서 스탠드 끄기' : '클릭해서 스탠드 켜기'
+    case 'light_switch':
+      return s.ceilingLight ? '클릭해서 불 끄기' : '클릭해서 불 켜기'
+    default:
+      return null
+  }
+}
+
+/** 아직 이야기 진행(엔진)이 없어서, 디테일을 켜 보는 오른쪽 위 테스트 패널. 개발 서버에서만 보인다. */
+function useDetailControls() {
+  const game = useGameStore.getState
+  useControls('디테일 테스트', {
+    경계심: {
+      value: SUSPICION.start,
+      min: 0,
+      max: SUSPICION.max,
+      step: 1,
+      onChange: (v: number) => game().setSuspicion(v),
+    },
+    웹캠: { value: false, onChange: (v: boolean) => game().setWebcam(v) },
+    밤: { value: false, onChange: (v: boolean) => game().setNight(v) },
+    '휴대폰 알림': button(() => game().buzzPhone()),
+    '우편물 도착': button(() => game().dropMail()),
+  })
+}
 
 /** 손 그림 안에서 휴대폰 화면이 차지하는 자리. 그림 크기에 대한 비율이라 그림을 바꾸면 이 값도 바꾼다. */
 const PHONE_SCREEN = { left: 0.339, top: 0.1182, width: 0.3204, height: 0.6698 }
@@ -29,7 +62,7 @@ const panel: CSSProperties = {
 }
 
 /** 화면 가운데 점. 누를 수 있는 물건을 가리키면 커지고 무엇을 하는지 알려 준다. */
-function Crosshair({ aim }: { aim: Aim }) {
+function Crosshair({ label }: { label: string | null }) {
   return (
     <div
       style={{
@@ -45,19 +78,17 @@ function Crosshair({ aim }: { aim: Aim }) {
     >
       <div
         style={{
-          width: aim ? 14 : 6,
-          height: aim ? 14 : 6,
-          margin: aim ? 0 : 4,
+          width: label ? 14 : 6,
+          height: label ? 14 : 6,
+          margin: label ? 0 : 4,
           borderRadius: '50%',
           border: '2px solid rgb(0 0 0 / 0.6)',
           background: '#fff',
+          // 커지고 작아지는 것을 툭 바꾸지 않고 부드럽게 보여 준다
+          transition: 'width 120ms ease-out, height 120ms ease-out, margin 120ms ease-out',
         }}
       />
-      {aim && (
-        <span style={panel}>
-          {aim === 'laptop' ? '클릭해서 노트북 쓰기' : '클릭해서 휴대폰 집기'}
-        </span>
-      )}
+      {label && <span style={panel}>{label}</span>}
     </div>
   )
 }
@@ -123,11 +154,13 @@ function PhoneInHand() {
  * 방을 1인칭으로 걸어 다닌다. 노트북을 누르면 의자에 앉아 화면을 가득 채워 보는 시점으로 바뀐다.
  * 책상 위 휴대폰을 누르면 휴대폰을 집어 손에 쥔 장면으로 바뀌고, 책상에서는 사라진다.
  * 그 뒤로는 오른쪽 아래 휴대폰 버튼이나 Q로 꺼내고, 버튼이나 Esc로 방으로 돌아온다.
+ * 침대를 누르면 누워서 천장을 본다. Esc나 버튼으로 일어난다.
  */
 export default function SandboxPage() {
+  useDetailControls()
   const view = useGameStore((s) => s.view)
   const hasPhone = useGameStore((s) => s.hasPhone)
-  const aim = useGameStore((s) => AIMS[s.aim ?? ''] ?? null)
+  const label = useGameStore(aimLabel)
   const openView = useGameStore((s) => s.openView)
   const line = useMonologueStore((s) => s.queue[0] ?? null)
   const next = useMonologueStore((s) => s.next)
@@ -150,13 +183,13 @@ export default function SandboxPage() {
 
       {view === 'room' ? (
         <>
-          <Crosshair aim={aim} />
+          <Crosshair label={label} />
           <p style={{ ...panel, position: 'absolute', left: 16, bottom: 16 }}>
             화면을 클릭하면 마우스로 둘러보고 W A S D로 걸어요. Esc를 누르면 커서가 나와요.
             <br />
             {hasPhone
-              ? `가운데 점을 노트북에 맞추고 클릭해 보세요. ${PHONE_KEY.label}를 누르면 휴대폰을 꺼내요.`
-              : '가운데 점을 노트북이나 휴대폰에 맞추고 클릭해 보세요.'}
+              ? `가운데 점을 노트북, 침대, 스탠드, 현관 옆 스위치에 맞추고 클릭해 보세요. ${PHONE_KEY.label}를 누르면 휴대폰을 꺼내요.`
+              : '가운데 점을 노트북, 휴대폰, 침대, 스탠드, 현관 옆 스위치에 맞추고 클릭해 보세요.'}
           </p>
           {hasPhone && (
             <button
@@ -174,7 +207,7 @@ export default function SandboxPage() {
           style={{ ...panel, position: 'absolute', left: 16, top: 16, cursor: 'pointer' }}
           onClick={() => openView('room')}
         >
-          {view === 'laptop' ? '일어나기' : '휴대폰 내려놓기'}
+          {view === 'phone' ? '휴대폰 내려놓기' : '일어나기'}
         </button>
       )}
     </main>
