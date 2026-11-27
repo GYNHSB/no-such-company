@@ -1,4 +1,4 @@
-import { SAMPLE_APPLICATIONS, SAMPLE_REJECTED_TOTAL } from '@/ui/screens/laptop/jobSiteSample'
+import { SAMPLE_APPLICATIONS } from '@/ui/screens/laptop/jobSiteSample'
 import type { Mail } from './WorkMailbox'
 
 // shortcut: 대본 데이터(src/data/days)가 v1-2로 채워지기 전까지 쓰는 임시 값. 채워지면 그쪽에서 넘긴다.
@@ -7,17 +7,14 @@ import type { Mail } from './WorkMailbox'
 /** 대본: 쉰세 통이 전부 이 문장으로 시작한다 */
 export const REJECTION_OPENING = '귀하의 뛰어난 역량에도 불구하고'
 
-/** 1일차 장면 2: 불합격 메일 53통. 회사는 취업 사이트 지원 현황과 같은 가상 회사를 돌려 쓴다 */
-export const REJECTION_MAILS: readonly Mail[] = Array.from(
-  { length: SAMPLE_REJECTED_TOTAL },
-  (_, index) => ({
-    id: `reject_${index + 1}`,
-    from: SAMPLE_APPLICATIONS[index % SAMPLE_APPLICATIONS.length].company,
-    subject: '서류 전형 결과 안내',
-    time: index === 0 ? '어제' : `${index + 1}일 전`,
-    body: `${REJECTION_OPENING} 이번 채용에서는 모시지 못하게 되었습니다.`,
-  }),
-)
+/** 1일차 장면 2: 불합격 메일 53통. 취업 사이트 지원 현황의 서류 탈락 53건과 회사, 순서가 같다 */
+export const REJECTION_MAILS: readonly Mail[] = SAMPLE_APPLICATIONS.map((application, index) => ({
+  id: `reject_${index + 1}`,
+  from: application.company,
+  subject: '서류 전형 결과 안내',
+  time: application.appliedAt,
+  body: `${REJECTION_OPENING} 이번 채용에서는 모시지 못하게 되었습니다.`,
+}))
 
 const HR = { from: '오버레이 인사팀', address: 'recruit@overlay.example' }
 
