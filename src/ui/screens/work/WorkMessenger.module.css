@@ -57,6 +57,16 @@
   color: var(--work-link);
 }
 
+/* 끝낸 업무 자료의 "완료" 라벨. 색만으로 알리지 않게 글자와 체크 표시를 함께 둔다 */
+.taskDone {
+  display: inline-flex;
+  /* center로 두면 체크 표시가 기준선이 되어 글자가 옆 이름보다 위로 뜬다 */
+  align-items: baseline;
+  gap: 2px;
+  margin-left: 8px;
+  color: var(--work-action);
+}
+
 .taskContent {
   display: block;
   margin-top: 2px;

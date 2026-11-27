@@ -207,6 +207,9 @@ export default function SandboxPage() {
                     ],
                   }))}
                   playerName={playerName}
+                  isTaskDone={(task, message) =>
+                    task.label === PROOFREAD_LABEL && proofreadDone.includes(message.id)
+                  }
                   onOpenTask={(task, message) => {
                     setClicked(`${message.id} · ${task.label}`)
                     const canProofread =
