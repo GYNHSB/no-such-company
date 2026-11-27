@@ -63,9 +63,14 @@
   background: var(--web-surface);
 }
 .logo {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
   font-size: var(--web-text-title);
   font-weight: 800;
   color: var(--web-accent);
+  cursor: pointer;
 }
 .results {
   display: grid;

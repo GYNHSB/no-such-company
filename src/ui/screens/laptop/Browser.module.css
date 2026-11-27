@@ -52,9 +52,27 @@
   background: var(--web-chrome-tab);
 }
 .nav {
-  color: var(--web-muted);
+  display: flex;
+  gap: 2px;
+}
+.navButton {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--web-ink);
+  font: inherit;
   font-size: var(--web-text-body);
-  letter-spacing: 6px;
+  cursor: pointer;
+}
+.navButton:hover:not(:disabled),
+.navButton:focus-visible {
+  background: var(--web-chrome-field);
+}
+.navButton:disabled {
+  color: var(--web-line);
+  cursor: default;
 }
 .address {
   flex: 1;
