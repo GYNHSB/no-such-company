@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber'
 import { Suspense, useEffect, useState } from 'react'
 import { LAPTOP_SCREEN } from '@/game/world/anchors'
 import { Room } from '@/game/world/Room'
+import { InaugurationCall } from '@/ui/screens/laptop/InaugurationCall'
 import { InterviewAppInstall } from '@/ui/screens/laptop/InterviewAppInstall'
 import { JobSiteStatus } from '@/ui/screens/laptop/JobSiteStatus'
 import { SAMPLE_APPLICATIONS, SAMPLE_REJECTED_TOTAL } from '@/ui/screens/laptop/jobSiteSample'
@@ -40,6 +41,14 @@ const SCREEN_H = 800
 // 노트북 화면 자리(가운데, 바라보는 방향, 너비)
 const SCREEN_CENTER = LAPTOP_SCREEN.center
 const SCREEN_FACING = LAPTOP_SCREEN.facing
+// UI를 화면 면보다 2mm 앞에 띄운다. anchors는 옛 노트북 기준이라 laptop.glb 화면과 1mm쯤 어긋나서,
+// 같은 자리에 두면 가장자리로 빛나는 면이 새어 나온다. 앞에 두면 살짝 크게 보여 가장자리를 덮는다.
+const SCREEN_LIFT = 0.002
+const UI_POSITION = SCREEN_CENTER.map((v, i) => v + SCREEN_FACING[i] * SCREEN_LIFT) as [
+  number,
+  number,
+  number,
+]
 const SCREEN_WIDTH_M = LAPTOP_SCREEN.width
 // 화면을 뒤로 젖힌 각도. +Z를 보던 판을 X축으로 돌려 FACING 방향을 보게 한다
 const SCREEN_TILT = -Math.asin(SCREEN_FACING[1])
@@ -55,10 +64,12 @@ const CAMERA_POSITION = SCREEN_CENTER.map((v, i) => v + SCREEN_FACING[i] * VIEW_
 
 /** 원룸을 불러와 노트북 화면 자리에 LaptopScreen을 얹는다. 마우스로 돌려 볼 수 있다. */
 function RoomLaptopTest() {
-  const [screen, setScreen] = useState<'jobsite' | 'install' | 'interview' | 'search' | 'wipe'>(
-    'jobsite',
-  )
+  const [screen, setScreen] = useState<
+    'jobsite' | 'install' | 'interview' | 'search' | 'inauguration' | 'wipe'
+  >('jobsite')
   const [unplugged, setUnplugged] = useState(false)
+  const [signStep, setSignStep] = useState<'sign' | 'read'>('sign')
+  const [signed, setSigned] = useState(false)
   return (
     <div style={{ position: 'fixed', inset: 0 }}>
       {/* flat: 구운 조명 색이 톤 매핑으로 바뀌지 않게 한다 (hyeopseong.tsx와 같게) */}
@@ -69,12 +80,12 @@ function RoomLaptopTest() {
           <Laptop />
           <Html
             transform
-            position={SCREEN_CENTER}
+            position={UI_POSITION}
             rotation={[SCREEN_TILT, 0, 0]}
             distanceFactor={SCREEN_DISTANCE_FACTOR}
           >
             <div style={{ width: SCREEN_W, height: SCREEN_H }}>
-              {/* 취업 사이트 탭 닫기 → 면접 앱 설치 → 면접 입장 → 화상 면접 → 검색 → 검색 탭 닫기 → 원격 초기화 */}
+              {/* 취업 사이트 탭 닫기 → 면접 앱 설치 → 면접 입장 → 화상 면접 → 검색 → 검색 탭 닫기 → 취임식 → 원격 초기화 */}
               {screen === 'jobsite' ? (
                 <JobSiteStatus
                   applications={SAMPLE_APPLICATIONS}
@@ -97,8 +108,16 @@ function RoomLaptopTest() {
               ) : screen === 'search' ? (
                 <SearchScreen
                   onSearch={(q) => console.info('[inae] search', q)}
-                  onClose={() => setScreen('wipe')}
+                  onClose={() => setScreen('inauguration')}
                 />
+              ) : screen === 'inauguration' ? (
+                <InaugurationCall playerName="테스트" step={signStep} signed={signed}>
+                  <WorkMessage
+                    name="박재훈 팀장"
+                    time="10:01"
+                    text="테스트 대표님, 축하드려요! 화면에 띄운 취임 승낙서랑 인감 위임장에 전자 서명 부탁드릴게요 :)"
+                  />
+                </InaugurationCall>
               ) : (
                 <RemoteWipe
                   stopped={unplugged}
@@ -111,6 +130,20 @@ function RoomLaptopTest() {
         </Suspense>
         <OrbitControls target={SCREEN_CENTER} />
       </Canvas>
+      {screen === 'inauguration' && (
+        <div style={{ position: 'fixed', bottom: 16, left: 16, display: 'flex', gap: 8 }}>
+          {/* 선택지 부품(#60)과 엔진 대신 쓰는 테스트 버튼 */}
+          <button type="button" onClick={() => setSigned(true)}>
+            서명한다
+          </button>
+          <button type="button" onClick={() => setSignStep('read')}>
+            낭독 요청(10:03)
+          </button>
+          <button type="button" onClick={() => setScreen('wipe')}>
+            원격 초기화로
+          </button>
+        </div>
+      )}
       {screen === 'wipe' && (
         <div style={{ position: 'fixed', bottom: 16, left: 16, display: 'flex', gap: 8 }}>
           {/* 3D 공유기 플러그 대신 쓰는 테스트 버튼 */}
@@ -121,6 +154,8 @@ function RoomLaptopTest() {
             type="button"
             onClick={() => {
               setUnplugged(false)
+              setSigned(false)
+              setSignStep('sign')
               setScreen('jobsite')
             }}
           >
