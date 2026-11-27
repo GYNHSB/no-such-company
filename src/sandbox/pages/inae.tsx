@@ -6,6 +6,7 @@ import { Room } from '@/game/world/Room'
 import { InterviewAppInstall } from '@/ui/screens/laptop/InterviewAppInstall'
 import { JobSiteStatus } from '@/ui/screens/laptop/JobSiteStatus'
 import { SAMPLE_APPLICATIONS, SAMPLE_REJECTED_TOTAL } from '@/ui/screens/laptop/jobSiteSample'
+import { RemoteWipe } from '@/ui/screens/laptop/RemoteWipe'
 import { SearchScreen } from '@/ui/screens/laptop/SearchScreen'
 import { Bubble } from '../../ui/kit/phone/Bubble'
 import { Notification } from '../../ui/kit/phone/Notification'
@@ -53,7 +54,8 @@ const CAMERA_POSITION = SCREEN_CENTER.map((v, i) => v + SCREEN_FACING[i] * VIEW_
 
 /** 원룸을 불러와 노트북 화면 자리에 LaptopScreen을 얹는다. 마우스로 돌려 볼 수 있다. */
 function RoomLaptopTest() {
-  const [screen, setScreen] = useState<'jobsite' | 'install' | 'search'>('jobsite')
+  const [screen, setScreen] = useState<'jobsite' | 'install' | 'search' | 'wipe'>('jobsite')
+  const [unplugged, setUnplugged] = useState(false)
   return (
     <div style={{ position: 'fixed', inset: 0 }}>
       {/* flat: 구운 조명 색이 톤 매핑으로 바뀌지 않게 한다 (hyeopseong.tsx와 같게) */}
@@ -69,7 +71,7 @@ function RoomLaptopTest() {
             distanceFactor={SCREEN_DISTANCE_FACTOR}
           >
             <div style={{ width: SCREEN_W, height: SCREEN_H }}>
-              {/* 취업 사이트 탭 닫기 → 면접 앱 설치 → 면접 입장 → 검색 → 검색 탭 닫기 → 처음 */}
+              {/* 취업 사이트 탭 닫기 → 면접 앱 설치 → 면접 입장 → 검색 → 검색 탭 닫기 → 원격 초기화 */}
               {screen === 'jobsite' ? (
                 <JobSiteStatus
                   applications={SAMPLE_APPLICATIONS}
@@ -83,10 +85,16 @@ function RoomLaptopTest() {
                   host="박재훈"
                   onJoin={() => setScreen('search')}
                 />
-              ) : (
+              ) : screen === 'search' ? (
                 <SearchScreen
                   onSearch={(q) => console.info('[inae] search', q)}
-                  onClose={() => setScreen('jobsite')}
+                  onClose={() => setScreen('wipe')}
+                />
+              ) : (
+                <RemoteWipe
+                  stopped={unplugged}
+                  durationMs={8000}
+                  onWiped={() => console.info('[inae] wiped')}
                 />
               )}
             </div>
@@ -94,6 +102,23 @@ function RoomLaptopTest() {
         </Suspense>
         <OrbitControls target={SCREEN_CENTER} />
       </Canvas>
+      {screen === 'wipe' && (
+        <div style={{ position: 'fixed', bottom: 16, left: 16, display: 'flex', gap: 8 }}>
+          {/* 3D 공유기 플러그 대신 쓰는 테스트 버튼 */}
+          <button type="button" onClick={() => setUnplugged(true)}>
+            공유기 전원 뽑기
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setUnplugged(false)
+              setScreen('jobsite')
+            }}
+          >
+            처음으로
+          </button>
+        </div>
+      )}
     </div>
   )
 }
