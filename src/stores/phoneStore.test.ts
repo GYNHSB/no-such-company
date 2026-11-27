@@ -59,6 +59,14 @@ describe('phoneStore', () => {
     expect(phone().readIds).toBe(before)
   })
 
+  it('통화 기록을 통화한 순서대로 쌓고 서로 다른 id를 붙인다', () => {
+    const date = new Date(2026, 10, 27)
+    phone().logCall({ number: '112', kind: 'out', date, time: '15:11' })
+    phone().logCall({ number: '112', kind: 'out', date, time: '15:14' })
+    expect(phone().calls.map((c) => c.time)).toEqual(['15:11', '15:14'])
+    expect(phone().calls[0].id).not.toBe(phone().calls[1].id)
+  })
+
   it('문자 앱을 열 때 바로 보여 줄 대화를 함께 적는다', () => {
     phone().openApp('messages', '황보미진')
     expect(phone()).toMatchObject({ app: 'messages', thread: '황보미진' })
@@ -70,8 +78,15 @@ describe('phoneStore', () => {
     phone().receive(sms('a'), DAY1)
     phone().markRead(['a'])
     phone().openApp('messages', '모레온 인사팀')
+    phone().logCall({ number: '112', kind: 'out', date: new Date(2026, 10, 27), time: '15:11' })
     phone().reset(new Date(2026, 11, 6, 23, 59)) // 일요일 밤
-    expect(phone()).toMatchObject({ received: [], readIds: [], app: 'lock', thread: null })
+    expect(phone()).toMatchObject({
+      received: [],
+      readIds: [],
+      calls: [],
+      app: 'lock',
+      thread: null,
+    })
     expect(phone().weekOne).toEqual(new Date(2026, 10, 30))
   })
 })

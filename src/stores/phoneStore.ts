@@ -5,12 +5,24 @@ import type { Channel, DayInfo, DayNumber, Message, Weekday } from '@/data/types
 export const PHONE_CHANNELS: readonly Channel[] = ['sms', 'bank', 'sns', 'blabla']
 
 /** 휴대폰에 떠 있는 화면(src/ui/screens/phone). 화면이 늘 때마다 추가한다 */
-export type PhoneApp = 'lock' | 'home' | 'messages' | 'bank' | 'notes' | 'photos' | 'sns'
+export type PhoneApp = 'lock' | 'home' | 'messages' | 'bank' | 'notes' | 'photos' | 'sns' | 'phone'
 
 /** 받은 메시지 하나. 받은 날을 함께 적어 둔다 */
 export interface Received {
   message: Message
   day: DayInfo
+}
+
+/** 통화 기록 하나 */
+export interface CallLog {
+  id: string
+  /** 숫자만. "01000001234" */
+  number: string
+  /** 받은 전화(in), 건 전화(out), 못 받은 전화(missed) */
+  kind: 'in' | 'out' | 'missed'
+  date: Date
+  /** "15:12" */
+  time: string
 }
 
 /** 화면에 넘기는 모양. 받은 날을 실제 날짜로 바꿔 붙인 메시지 */
@@ -21,6 +33,8 @@ interface PhoneState {
   received: Received[]
   /** 읽은 메시지의 id */
   readIds: string[]
+  /** 통화 기록. 통화한 순서대로 쌓이고, 날이 바뀌어도 지우지 않는다 */
+  calls: CallLog[]
   /** 지금 떠 있는 화면 */
   app: PhoneApp
   /** 문자 앱을 열 때 바로 보여 줄 대화의 보낸 사람. 없으면 대화 목록이 보인다 */
@@ -31,9 +45,11 @@ interface PhoneState {
   receive: (message: Message, day: DayInfo) => void
   /** 읽은 것으로 적는다 */
   markRead: (ids: string[]) => void
+  /** 통화 기록에 한 건을 더한다. 전화를 걸었거나, 받았거나, 못 받았을 때 부른다 */
+  logCall: (call: Omit<CallLog, 'id'>) => void
   /** 화면을 바꾼다. 문자 앱은 바로 보여 줄 대화를 함께 넘길 수 있다 */
   openApp: (app: PhoneApp, thread?: string) => void
-  /** 새 게임을 시작할 때 부른다. 받은 메시지를 비우고 날짜 기준을 지금 날짜로 다시 잡는다 */
+  /** 새 게임을 시작할 때 부른다. 받은 메시지와 통화 기록을 비우고 날짜 기준을 지금 날짜로 다시 잡는다 */
   reset: (now?: Date) => void
 }
 
@@ -78,9 +94,12 @@ export const messagesOf = (
  * 위의 뽑는 함수들은 매번 새 배열을 만드니 훅의 선택 함수로 쓰지 말고,
  * received, readIds, weekOne을 꺼낸 뒤 계산한다.
  */
+let callCount = 0
+
 export const usePhoneStore = create<PhoneState>()((set) => ({
   received: [],
   readIds: [],
+  calls: [],
   app: 'lock',
   thread: null,
   weekOne: mondayOf(new Date()),
@@ -96,7 +115,16 @@ export const usePhoneStore = create<PhoneState>()((set) => ({
       const fresh = ids.filter((id) => !state.readIds.includes(id))
       return fresh.length === 0 ? state : { readIds: [...state.readIds, ...new Set(fresh)] }
     }),
+  logCall: (call) =>
+    set((state) => ({ calls: [...state.calls, { ...call, id: `call-${callCount++}` }] })),
   openApp: (app, thread) => set({ app, thread: thread ?? null }),
   reset: (now = new Date()) =>
-    set({ received: [], readIds: [], app: 'lock', thread: null, weekOne: mondayOf(now) }),
+    set({
+      received: [],
+      readIds: [],
+      calls: [],
+      app: 'lock',
+      thread: null,
+      weekOne: mondayOf(now),
+    }),
 }))
