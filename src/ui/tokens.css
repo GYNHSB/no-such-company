@@ -81,6 +81,16 @@
   --bank-alert: #e5484d; /* 새 계좌, 새 알림 */
   --bank-alert-tint: #fde8e8;
 
+  /* ── 휴대폰 직장인 익명 게시판 앱 (가상 서비스. 기본 앱이 아니라서 자기 색을 쓰는 밝은 화면이다) ── */
+  --blabla-bg: #ffffff; /* 앱 바탕 */
+  --blabla-surface: #f3f4f6; /* 검색창, 카드 */
+  --blabla-ink: #1b1d22;
+  --blabla-muted: #737985;
+  --blabla-faint: #aeb3bd;
+  --blabla-line: #e9ebef;
+  --blabla-brand: #0a9f8d; /* 대표 색. 실제 서비스의 색과 겹치지 않게 골랐다 */
+  --blabla-brand-tint: #e0f5f2; /* 대표 색을 옅게 깐 바탕 */
+
   /* ── 개인 노트북의 웹 화면 (브라우저, 취업 사이트, 검색) ── */
   --web-font: 'Pretendard', var(--font-ui);
   --web-chrome: #dfe3e8; /* 브라우저 탭 줄 */
