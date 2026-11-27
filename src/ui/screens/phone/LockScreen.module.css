@@ -1,0 +1,66 @@
+/* 배경 화면. PhoneScreen의 검은 배경을 비우고 그 뒤에 깐다 */
+.wallpaper {
+  --phone-bg: transparent;
+  position: absolute;
+  inset: 0;
+  background: var(--phone-wallpaper);
+}
+
+/* 크기는 PhoneScreen이 정한 --pt(화면 너비 390pt 기준)로 맞춘다 */
+.lock {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.clock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: calc(var(--pt) * 36);
+}
+
+.date {
+  margin: 0;
+  font-size: calc(var(--pt) * 20);
+  font-weight: 500;
+  color: var(--phone-muted);
+}
+
+.time {
+  font-size: calc(var(--pt) * 88);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 알림은 화면 아래쪽부터 쌓인다 */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pt) * 8);
+  margin: auto 0 0;
+  padding: calc(var(--pt) * 24) 0 calc(var(--pt) * 12);
+  list-style: none;
+  /* 알림 글이 낱말 중간에서 끊기지 않게 */
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.item {
+  animation: arrive 0.35s ease-out;
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--pt) * -12)) scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item {
+    animation: none;
+  }
+}
