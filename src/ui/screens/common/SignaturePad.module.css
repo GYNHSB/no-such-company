@@ -1,0 +1,79 @@
+/* 화상 취임식 서류(노트북 웹 화면)와 같은 --web-* 토큰을 쓴다. 서명란은 밑줄 하나 위의 빈 칸이다. */
+.pad {
+  display: grid;
+  gap: 8px;
+}
+
+.area {
+  position: relative;
+  border: 1px solid var(--web-line);
+  border-radius: var(--web-radius);
+  background: var(--web-surface);
+}
+
+/* 서명하는 선. 글자색(color)이 캔버스 펜 색이 된다 */
+.canvas {
+  display: block;
+  width: 100%;
+  height: 112px;
+  color: var(--web-ink);
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.canvas:focus-visible {
+  outline: 2px solid var(--web-ink);
+  outline-offset: 2px;
+  border-radius: var(--web-radius);
+}
+
+/* 서명란 한가운데의 옅은 안내. 그리기 시작하면 사라진다 */
+.hint {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--web-muted);
+  font-size: var(--web-text-meta);
+  pointer-events: none;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.clear,
+.submit {
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--web-line);
+  border-radius: var(--web-radius);
+  font: inherit;
+  font-size: var(--web-text-meta);
+  cursor: pointer;
+}
+
+.clear {
+  background: transparent;
+  color: var(--web-ink);
+}
+
+.submit {
+  border-color: var(--web-accent);
+  background: var(--web-accent);
+  color: var(--web-surface);
+}
+
+.clear:disabled,
+.submit:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.clear:focus-visible,
+.submit:focus-visible {
+  outline: 2px solid var(--web-ink);
+  outline-offset: 2px;
+}
