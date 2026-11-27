@@ -1,0 +1,102 @@
+.root {
+  display: grid;
+  gap: 10px;
+}
+
+.title {
+  composes: title from './WorkProofread.module.css';
+}
+
+.list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 명단 한 줄. 메신저의 업무 자료 카드와 같은 모양 */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border: 1px solid var(--work-line);
+  border-left: 4px solid var(--work-link);
+  border-radius: var(--work-radius);
+  background: var(--work-hover);
+}
+
+.order {
+  width: 1.5em;
+  font-size: var(--work-text-meta);
+  color: var(--work-muted);
+  text-align: right;
+}
+
+.name {
+  flex: 1;
+  padding: 2px 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: var(--work-text-body);
+  cursor: grab;
+  user-select: none;
+}
+.name:hover,
+.name[aria-pressed='true'] {
+  border-color: var(--work-link);
+  background: var(--work-bg);
+}
+/* 집은 줄. 색만으로 알리지 않게 굵기를 함께 준다 */
+.name[aria-pressed='true'] {
+  font-weight: 700;
+}
+
+.kinds {
+  display: flex;
+  gap: 4px;
+}
+
+.kind,
+.remove {
+  padding: 2px 10px;
+  border: 1px solid var(--work-line);
+  border-radius: 6px;
+  background: var(--work-bg);
+  color: var(--work-ink);
+  font: inherit;
+  font-size: var(--work-text-meta);
+  cursor: pointer;
+}
+.kind:hover,
+.remove:hover {
+  border-color: var(--work-link);
+}
+.remove {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--work-muted);
+}
+/* 고른 분류. 색만으로 알리지 않게 굵기와 밑줄을 함께 준다 */
+.kind[aria-pressed='true'] {
+  border-color: var(--work-action);
+  color: var(--work-action);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.name:focus-visible,
+.kind:focus-visible,
+.remove:focus-visible {
+  outline: 2px solid var(--work-link);
+  outline-offset: 2px;
+}
+
+.footer {
+  composes: footer from './WorkProofread.module.css';
+}
+.guide {
+  composes: guide from './WorkProofread.module.css';
+}

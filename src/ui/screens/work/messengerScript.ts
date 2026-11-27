@@ -69,7 +69,8 @@ export const MESSENGER_DAYS: readonly MessengerDay[] = [
       fromLead(
         'm_d4_morning',
         '09:02',
-        '{name} 씨, 오늘은 명단 정리만 해 주세요. 요즘 믿고 맡길 수 있어서 좋아요 :)',
+        // shortcut: 4일차 명단은 대본에 없어 임시로 정한 값(docs/intent/customer-list-cleanup.md). 대본에 들어가면 그 값을 받는다.
+        '{name} 씨, 오늘은 명단 정리만 해 주세요. 요즘 믿고 맡길 수 있어서 좋아요 :)\n[고객명단_화요일] 황보미진, 변하늘, 황보미진, 마동현, 황보미진',
       ),
       fromLead(
         'm_d4_face_again',
