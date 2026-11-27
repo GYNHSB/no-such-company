@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
+import type { Message } from '@/data/types'
 import { CHANNELS } from '@/ui/screens/work/channelScript'
 import { DAY1_MAILS, DAY5_MAILS, REJECTION_MAILS } from '@/ui/screens/work/mailScript'
 import { MESSENGER_DAYS } from '@/ui/screens/work/messengerScript'
 import { WebMail } from '@/ui/screens/work/WebMail'
 import { WorkChannelView } from '@/ui/screens/work/WorkChannelView'
 import { WorkMessenger, type MessengerDay } from '@/ui/screens/work/WorkMessenger'
+import { ONBOARDING_FILES, ONBOARDING_FOLDER } from '@/ui/screens/work/onboardingFiles'
+import { WorkFileComposer } from '@/ui/screens/work/WorkFileComposer'
 import { WorkMailbox, type Mail } from '@/ui/screens/work/WorkMailbox'
 import { DM_LEAD_ID, MAIL_ID, WORK_NAV } from '@/ui/screens/work/workNav'
 import { WorkShell } from '@/ui/screens/work/WorkShell'
@@ -39,6 +42,18 @@ export default function SandboxPage() {
   const [view, setView] = useState<'work' | 'mail1'>('work')
   const [mailCount, setMailCount] = useState(0)
   const [read, setRead] = useState<string[]>([])
+  // 입사 서류(#39): 입력창에서 첨부해 보낸 파일 묶음. 보낼 때마다 내 메시지가 하나 생긴다
+  const [sent, setSent] = useState<string[][]>([])
+  const sentMessages: Message[] = sent.map((ids, index) => ({
+    id: `m_sent_${index + 1}`,
+    channel: 'messenger',
+    from: '{name}',
+    time: '14:05',
+    // 메신저가 [이름] 줄을 카드로 그리므로 보낸 파일도 같은 모양으로 보인다
+    body: ONBOARDING_FILES.filter((file) => ids.includes(file.id))
+      .map((file) => `[${file.name}] ${file.kind} · ${file.size}`)
+      .join('\n'),
+  }))
 
   const withUnread = (mails: readonly Mail[]) =>
     mails.map((mail) => ({ ...mail, unread: !read.includes(mail.id) }))
@@ -83,7 +98,13 @@ export default function SandboxPage() {
         </label>
         {view === 'work' ? (
           <>
-            <button type="button" onClick={() => setCount(1)}>
+            <button
+              type="button"
+              onClick={() => {
+                setCount(1)
+                setSent([])
+              }}
+            >
               처음부터
             </button>
             <button
@@ -135,9 +156,23 @@ export default function SandboxPage() {
               ) : selectedId === DM_LEAD_ID ? (
                 <WorkMessenger
                   name="김아영 팀장"
-                  days={daysUpTo(count)}
+                  days={daysUpTo(count).map((day, index) =>
+                    index === 0 ? { ...day, messages: [...day.messages, ...sentMessages] } : day,
+                  )}
                   playerName={playerName}
                   onOpenTask={(task, message) => setClicked(`${message.id} · ${task.label}`)}
+                  composer={
+                    <WorkFileComposer
+                      files={ONBOARDING_FILES}
+                      folder={ONBOARDING_FOLDER}
+                      required={ONBOARDING_FILES.map((file) => file.id)}
+                      placeholder="김아영 팀장에게 메시지 보내기"
+                      onSend={(ids) => {
+                        setSent((all) => [...all, ids])
+                        setClicked(`서류 보내기 · ${ids.join(', ')}`)
+                      }}
+                    />
+                  }
                 />
               ) : (
                 <WorkChannelView
