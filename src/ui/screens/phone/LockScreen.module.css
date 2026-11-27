@@ -48,7 +48,8 @@
 
 /* 밀어서 잠금 해제 줄. 알림이 있든 없든 화면 맨 아래에 있고, 알림은 그 위로 쌓인다 */
 .unlock {
-  padding-bottom: calc(var(--pt) * 6);
+  /* 홈 막대의 누르는 자리와 겹쳐 보이지 않게 넉넉히 띄운다 */
+  padding-bottom: calc(var(--pt) * 20);
 }
 
 .item {
