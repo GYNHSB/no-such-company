@@ -1,0 +1,117 @@
+/* 소지품 칸, 날짜 카드와 같은 어두운 게임 화면 말투. 뒤 장면을 살짝 가라앉히고 아래쪽에 질문과 선택지를 둔다.
+   받침 둥글기 16 - 안쪽 여백 8 = 줄 둥글기 8.
+   shortcut: 게임 화면용 글자 크기·간격 토큰이 아직 없어 크기와 여백만 숫자로 둔다. 토큰이 생기면 바꾼다. */
+.scrim {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-items: end;
+  justify-items: center;
+  padding: 0 24px 96px;
+  background: color-mix(in srgb, var(--game-bg) 40%, transparent);
+  animation: fade 240ms ease-out both;
+}
+
+.menu {
+  box-sizing: border-box;
+  width: min(640px, 100%);
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--game-ink) 10%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--game-bg) 88%, transparent);
+  color: var(--game-ink);
+  font-family: var(--font-ui);
+  word-break: keep-all;
+  animation: rise 280ms ease-out both;
+}
+
+.prompt {
+  margin: 0;
+  padding: 12px 12px 12px;
+  color: color-mix(in srgb, var(--game-ink) 56%, transparent);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+.list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--game-ink);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.45;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 150ms ease-out;
+}
+
+.choice:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--game-ink) 8%, transparent);
+}
+
+.choice:focus-visible {
+  outline: 2px solid var(--game-ink);
+  outline-offset: -2px;
+}
+
+.choice:disabled {
+  cursor: default;
+}
+
+/* 고른 줄은 밝아지고, 나머지는 물러난다 */
+.chosen {
+  background: color-mix(in srgb, var(--game-ink) 16%, transparent);
+}
+
+.choice:disabled:not(.chosen) {
+  opacity: 0.4;
+}
+
+.key {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid color-mix(in srgb, var(--game-ink) 28%, transparent);
+  border-radius: 6px;
+  color: color-mix(in srgb, var(--game-ink) 72%, transparent);
+  font: inherit;
+  font-size: 12px;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrim,
+  .menu {
+    animation: none;
+  }
+}
