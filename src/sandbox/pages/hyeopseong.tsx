@@ -5,7 +5,7 @@ import GameCanvas from '@/game/GameCanvas'
 import { PHONE_KEY } from '@/game/input/controls'
 import { useGameStore } from '@/stores/gameStore'
 import { useMonologueStore } from '@/stores/monologueStore'
-import { Monologue } from './hyeopseong/Monologue'
+import { Monologue } from '@/ui/screens/common/Monologue'
 
 // 두 손으로 쥔 휴대폰 그림(1239 x 1269, 배경 투명). 소매가 그림 아래 좌우 끝에서 잘려 있다.
 const HAND_URL = `${import.meta.env.BASE_URL}images/hand_phone_day.webp`

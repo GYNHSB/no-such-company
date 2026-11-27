@@ -66,12 +66,16 @@ export type Effect =
   | { type: 'scene'; sceneId: string } // 화상 면접, 취임식 같은 특수 장면
   | { type: 'webcam'; on: boolean }
   | { type: 'goal'; text: string } // 화면 위 목표 문구
+  | { type: 'monologue'; lines: string[] } // 화면 아래 혼잣말 창에 한 줄씩. '{name}'은 이름으로 바뀐다
+  | { type: 'dateCard'; text: string } // "그날 오후"처럼 시간이 건너뛸 때 뜨는 카드
+  | { type: 'laptop'; screen: string } // 노트북에 띄울 화면(gameStore의 LaptopScreen). 'off'면 끈다
 
 /** 사건이 언제 일어나는지 */
 export type Trigger =
   | { type: 'dayStart' }
   | { type: 'afterEvent'; eventId: string; delaySec?: number }
-  | { type: 'interact'; objectId: string } // 3D 오브젝트 interact_* 또는 화면 버튼 id
+  // 3D 오브젝트 interact_* 또는 화면 버튼 id. after가 있으면 그 사건이 실행된 뒤에만 일어난다
+  | { type: 'interact'; objectId: string; after?: string }
   | { type: 'evidenceCollected'; cardId: string }
   | { type: 'sentenceSolved'; sentenceId: string }
 
