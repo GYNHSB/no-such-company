@@ -1,0 +1,64 @@
+/* 날짜 구분선: 양옆으로 선이 뻗는다 */
+.day {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  font-size: var(--work-text-meta);
+  font-weight: 700;
+  color: var(--work-muted);
+}
+
+.day::before,
+.day::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--work-line);
+}
+
+/* 업무 자료 카드 묶음. WorkMessage의 글 자리(좌우 20px, 사진, 간격 8px)에 맞춘다 */
+.tasks {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 0 20px 8px calc(20px + var(--work-avatar) + 8px);
+}
+
+.task {
+  min-width: 20rem;
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--work-line);
+  border-left: 4px solid var(--work-link);
+  border-radius: var(--work-radius);
+  background: var(--work-hover);
+  color: var(--work-ink);
+  font: inherit;
+  font-size: var(--work-text-body);
+  text-align: left;
+  cursor: pointer;
+}
+
+.task:hover {
+  border-color: var(--work-link);
+}
+
+.task:focus-visible {
+  outline: 2px solid var(--work-link);
+  outline-offset: 2px;
+}
+
+.taskLabel {
+  display: block;
+  font-size: var(--work-text-meta);
+  font-weight: 700;
+  color: var(--work-link);
+}
+
+.taskContent {
+  display: block;
+  margin-top: 2px;
+  line-height: 1.47;
+}
