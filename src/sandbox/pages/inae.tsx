@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber'
 import { Suspense, useEffect, useState } from 'react'
 import { LAPTOP_SCREEN } from '@/game/world/anchors'
 import { Room } from '@/game/world/Room'
+import { InterviewAppInstall } from '@/ui/screens/laptop/InterviewAppInstall'
 import { JobSiteStatus } from '@/ui/screens/laptop/JobSiteStatus'
 import { SAMPLE_APPLICATIONS, SAMPLE_REJECTED_TOTAL } from '@/ui/screens/laptop/jobSiteSample'
 import { Bubble } from '../../ui/kit/phone/Bubble'
@@ -51,6 +52,7 @@ const CAMERA_POSITION = SCREEN_CENTER.map((v, i) => v + SCREEN_FACING[i] * VIEW_
 
 /** 원룸을 불러와 노트북 화면 자리에 LaptopScreen을 얹는다. 마우스로 돌려 볼 수 있다. */
 function RoomLaptopTest() {
+  const [screen, setScreen] = useState<'jobsite' | 'install'>('jobsite')
   return (
     <div style={{ position: 'fixed', inset: 0 }}>
       {/* flat: 구운 조명 색이 톤 매핑으로 바뀌지 않게 한다 (hyeopseong.tsx와 같게) */}
@@ -65,12 +67,21 @@ function RoomLaptopTest() {
             distanceFactor={SCREEN_DISTANCE_FACTOR}
           >
             <div style={{ width: SCREEN_W, height: SCREEN_H }}>
-              <JobSiteStatus
-                applications={SAMPLE_APPLICATIONS}
-                rejectedTotal={SAMPLE_REJECTED_TOTAL}
-                portfolioViews={0}
-                onClose={() => console.info('[inae] btn_jobsite_close')}
-              />
+              {/* 탭을 닫으면 면접 앱 설치로, 면접에 입장하면 다시 처음으로 돌아간다 */}
+              {screen === 'jobsite' ? (
+                <JobSiteStatus
+                  applications={SAMPLE_APPLICATIONS}
+                  rejectedTotal={SAMPLE_REJECTED_TOTAL}
+                  portfolioViews={0}
+                  onClose={() => setScreen('install')}
+                />
+              ) : (
+                <InterviewAppInstall
+                  company="오버레이"
+                  host="박재훈"
+                  onJoin={() => setScreen('jobsite')}
+                />
+              )}
             </div>
           </Html>
         </Suspense>
