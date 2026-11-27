@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import { CHANNELS } from '@/ui/screens/work/channelScript'
+import { DAY1_MAILS, DAY5_MAILS, REJECTION_MAILS } from '@/ui/screens/work/mailScript'
 import { MESSENGER_DAYS } from '@/ui/screens/work/messengerScript'
+import { WebMail } from '@/ui/screens/work/WebMail'
 import { WorkChannelView } from '@/ui/screens/work/WorkChannelView'
 import { WorkMessenger, type MessengerDay } from '@/ui/screens/work/WorkMessenger'
-import { DM_LEAD_ID, WORK_NAV } from '@/ui/screens/work/workNav'
+import { WorkMailbox, type Mail } from '@/ui/screens/work/WorkMailbox'
+import { DM_LEAD_ID, MAIL_ID, WORK_NAV } from '@/ui/screens/work/workNav'
 import { WorkShell } from '@/ui/screens/work/WorkShell'
 
 // 노트북 화면은 고정 해상도로 그리고 통째로 축소한다 (inae.tsx와 같은 크기)
@@ -32,6 +35,21 @@ export default function SandboxPage() {
   const [clicked, setClicked] = useState('')
   const [selectedId, setSelectedId] = useState(DM_LEAD_ID)
   const [scale, setScale] = useState(1)
+  // 'mail1': 1일차 개인 노트북의 메일함(브라우저 틀), 'work': 오버레이 워크(5일차 메일함 포함)
+  const [view, setView] = useState<'work' | 'mail1'>('work')
+  const [mailCount, setMailCount] = useState(0)
+  const [read, setRead] = useState<string[]>([])
+
+  const withUnread = (mails: readonly Mail[]) =>
+    mails.map((mail) => ({ ...mail, unread: !read.includes(mail.id) }))
+  const mailProps = {
+    playerName,
+    onOpen: (id: string) => {
+      setRead((ids) => [...ids, id])
+      setClicked(`메일 열기 · ${id}`)
+    },
+    onAction: setClicked,
+  }
 
   useEffect(() => {
     const fit = () =>
@@ -54,23 +72,45 @@ export default function SandboxPage() {
       }}
     >
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-        <strong>메신저 (#37)</strong>
+        <button type="button" disabled={view === 'work'} onClick={() => setView('work')}>
+          오버레이 워크 (#37 · #38 5일차)
+        </button>
+        <button type="button" disabled={view === 'mail1'} onClick={() => setView('mail1')}>
+          1일차 메일함 (#38)
+        </button>
         <label>
           이름 <input value={playerName} onChange={(event) => setPlayerName(event.target.value)} />
         </label>
-        <button type="button" onClick={() => setCount(1)}>
-          처음부터
-        </button>
-        <button
-          type="button"
-          disabled={count >= TOTAL}
-          onClick={() => setCount((value) => value + 1)}
-        >
-          다음 메시지 ({count}/{TOTAL})
-        </button>
-        <button type="button" onClick={() => setCount(TOTAL)}>
-          전부 보기
-        </button>
+        {view === 'work' ? (
+          <>
+            <button type="button" onClick={() => setCount(1)}>
+              처음부터
+            </button>
+            <button
+              type="button"
+              disabled={count >= TOTAL}
+              onClick={() => setCount((value) => value + 1)}
+            >
+              다음 메시지 ({count}/{TOTAL})
+            </button>
+            <button type="button" onClick={() => setCount(TOTAL)}>
+              전부 보기
+            </button>
+          </>
+        ) : (
+          <>
+            <button type="button" onClick={() => setMailCount(0)}>
+              처음부터
+            </button>
+            <button
+              type="button"
+              disabled={mailCount >= DAY1_MAILS.length}
+              onClick={() => setMailCount((value) => value + 1)}
+            >
+              다음 메일 ({mailCount}/{DAY1_MAILS.length})
+            </button>
+          </>
+        )}
         <span>누른 것: {clicked || '없음'}</span>
       </div>
 
@@ -83,23 +123,32 @@ export default function SandboxPage() {
             transformOrigin: 'top left',
           }}
         >
-          <WorkShell selectedId={selectedId} onSelect={setSelectedId}>
-            {selectedId === DM_LEAD_ID ? (
-              <WorkMessenger
-                name="박재훈 팀장"
-                days={daysUpTo(count)}
-                playerName={playerName}
-                onOpenTask={(task, message) => setClicked(`${message.id} · ${task.label}`)}
-              />
-            ) : (
-              <WorkChannelView
-                name={`# ${WORK_NAV.find((item) => item.id === selectedId)?.label}`}
-                topic={CHANNELS[selectedId]?.topic}
-                messages={CHANNELS[selectedId]?.messages ?? []}
-                playerName={playerName}
-              />
-            )}
-          </WorkShell>
+          {view === 'mail1' ? (
+            <WebMail
+              mails={[...withUnread(DAY1_MAILS.slice(0, mailCount)).reverse(), ...REJECTION_MAILS]}
+              {...mailProps}
+            />
+          ) : (
+            <WorkShell selectedId={selectedId} onSelect={setSelectedId}>
+              {selectedId === MAIL_ID ? (
+                <WorkMailbox mails={withUnread(DAY5_MAILS)} {...mailProps} />
+              ) : selectedId === DM_LEAD_ID ? (
+                <WorkMessenger
+                  name="박재훈 팀장"
+                  days={daysUpTo(count)}
+                  playerName={playerName}
+                  onOpenTask={(task, message) => setClicked(`${message.id} · ${task.label}`)}
+                />
+              ) : (
+                <WorkChannelView
+                  name={`# ${WORK_NAV.find((item) => item.id === selectedId)?.label}`}
+                  topic={CHANNELS[selectedId]?.topic}
+                  messages={CHANNELS[selectedId]?.messages ?? []}
+                  playerName={playerName}
+                />
+              )}
+            </WorkShell>
+          )}
         </div>
       </div>
     </main>

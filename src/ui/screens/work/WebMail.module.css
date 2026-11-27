@@ -1,0 +1,235 @@
+.root {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+  background: var(--web-bg);
+  font-family: var(--web-font);
+  font-size: var(--web-text-body);
+  color: var(--web-ink);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 20px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  /* 왼쪽 메뉴 너비와 맞춰 검색창이 목록 위에서 시작한다 */
+  width: 204px;
+  font-size: var(--web-text-title);
+  font-weight: 700;
+  color: var(--web-accent);
+}
+.search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  max-width: 680px;
+  padding: 12px 22px;
+  border-radius: var(--radius-pill);
+  background: var(--web-chrome-field);
+  color: var(--web-muted);
+}
+.me {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-left: auto;
+  border-radius: 50%;
+  background: var(--web-accent);
+  color: var(--web-surface);
+  font-weight: 700;
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 0;
+}
+
+.side {
+  padding-right: 16px;
+}
+.compose {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 16px 12px;
+  padding: 16px 24px;
+  border-radius: 16px;
+  background: var(--web-surface);
+  box-shadow: var(--web-shadow);
+  font-weight: var(--weight-strong);
+}
+.folders {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.folder {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 16px 8px 28px;
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+}
+.folderCount {
+  margin-left: auto;
+}
+.current {
+  background: var(--web-accent-soft);
+  font-weight: 700;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin: 0 16px 16px 0;
+  border-radius: 16px;
+  background: var(--web-surface);
+  overflow: hidden;
+}
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--web-line);
+  color: var(--web-muted);
+}
+.count {
+  margin-left: auto;
+  font-size: var(--web-text-meta);
+}
+.check {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--web-muted);
+  border-radius: 3px;
+}
+
+.list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.row {
+  display: grid;
+  /* 체크 | 별표 | 보낸 사람 | 제목과 미리보기 | 시간 */
+  grid-template-columns: auto auto 180px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 10px 20px;
+  border: 0;
+  border-bottom: 1px solid var(--web-line);
+  /* 읽은 메일은 바탕이 어둡고, 안 읽은 메일은 희고 굵다 */
+  background: var(--web-bg);
+  color: var(--web-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.row:hover {
+  background: var(--web-chrome-field);
+}
+.row:focus-visible {
+  outline: 2px solid var(--web-accent);
+  outline-offset: -2px;
+}
+.unread {
+  background: var(--web-surface);
+  font-weight: 700;
+}
+.star {
+  display: flex;
+  color: var(--web-muted);
+}
+.from,
+.summary {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.snippet {
+  color: var(--web-muted);
+  font-weight: 400;
+}
+.time {
+  font-size: var(--web-text-meta);
+}
+
+.back {
+  display: flex;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.back:focus-visible {
+  outline: 2px solid var(--web-accent);
+  outline-offset: 2px;
+}
+.reader {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px 28px;
+}
+.subject {
+  margin: 0 0 20px;
+  font-size: var(--web-text-title);
+  font-weight: 400;
+}
+.sender {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--web-chrome);
+  font-weight: 700;
+}
+.meta {
+  font-size: var(--web-text-meta);
+  color: var(--web-muted);
+}
+.when {
+  margin-left: auto;
+}
+.body {
+  margin: 24px 0 0;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+.action {
+  margin-top: 24px;
+  padding: 10px 20px;
+  border: 0;
+  border-radius: var(--web-radius);
+  background: var(--web-accent);
+  color: var(--web-surface);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.action:focus-visible {
+  outline: 2px solid var(--web-ink);
+  outline-offset: 2px;
+}
