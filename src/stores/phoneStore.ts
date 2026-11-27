@@ -5,7 +5,7 @@ import type { Channel, DayInfo, DayNumber, Message, Weekday } from '@/data/types
 export const PHONE_CHANNELS: readonly Channel[] = ['sms', 'bank', 'sns', 'blabla']
 
 /** 휴대폰에 떠 있는 화면(src/ui/screens/phone). 화면이 늘 때마다 추가한다 */
-export type PhoneApp = 'lock' | 'home' | 'messages' | 'bank' | 'notes'
+export type PhoneApp = 'lock' | 'home' | 'messages' | 'bank' | 'notes' | 'photos'
 
 /** 받은 메시지 하나. 받은 날을 함께 적어 둔다 */
 export interface Received {

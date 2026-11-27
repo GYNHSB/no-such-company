@@ -23,6 +23,12 @@
   color: var(--phone-orange);
 }
 
+/* 흰 바탕에 파란 풍경 */
+.photos {
+  background: var(--phone-ink);
+  color: var(--phone-blue);
+}
+
 .glyph {
   width: 64%;
   height: 64%;
