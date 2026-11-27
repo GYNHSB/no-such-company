@@ -5,8 +5,10 @@ import { PhoneScreen } from '@/ui/kit/phone/PhoneScreen'
 import styles from './LockScreen.module.css'
 
 interface Props {
-  /** 지금 시각 "10:11". 큰 시계와 상태 표시줄에 쓴다 */
+  /** 지금 시각 "10:11". 큰 시계에 쓴다 */
   time: string
+  /** 왼쪽 위에 보이는 통신망 이름(가상 이름). 없으면 그 자리에 시각이 나온다 */
+  carrier?: string
   /** 시계 위에 "11월 27일 (금)"처럼 보여 줄 날짜. 없으면 시계만 보인다 */
   date?: Date
   /** 도착한 순서대로 넘긴다. 화면에는 새 알림이 맨 위에 온다 */
@@ -40,12 +42,12 @@ const ago = (now: string, at: string) => {
  * 문자는 보낸 사람을, 그 밖의 알림은 보낸 곳을 제목 자리에 보여 준다.
  * 알림이 언제 도착하는지는 엔진이 정하고, 이 화면은 받은 목록을 그리고 누른 알림을 넘기기만 한다.
  */
-export function LockScreen({ time, date, messages, onOpen }: Props) {
+export function LockScreen({ time, carrier, date, messages, onOpen }: Props) {
   const newestFirst = messages.toReversed()
 
   return (
     <div className={styles.wallpaper}>
-      <PhoneScreen time={time}>
+      <PhoneScreen time={time} statusLabel={carrier}>
         <div className={styles.lock}>
           <div className={styles.clock}>
             {date && <p className={styles.date}>{formatDate(date)}</p>}
