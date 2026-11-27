@@ -29,6 +29,10 @@
   color: var(--phone-blue);
 }
 
+.phone {
+  background: var(--phone-green);
+}
+
 /* 가상 SNS. 빨간 바탕에 흰 사진 두 장 */
 .sns {
   background: var(--phone-red);
