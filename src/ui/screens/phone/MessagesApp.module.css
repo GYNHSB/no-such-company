@@ -1,0 +1,193 @@
+/* 크기는 PhoneScreen이 정한 --pt(화면 너비 390pt 기준)로 맞춘다 */
+
+/* 연락처 사진 자리 */
+.avatar {
+  flex: none;
+  width: calc(var(--pt) * 44);
+  height: calc(var(--pt) * 44);
+  color: var(--phone-muted);
+}
+
+.avatarBack {
+  fill: var(--phone-surface-2);
+}
+
+/* ── 대화 목록 ── */
+
+.empty {
+  margin: calc(var(--pt) * 120) 0 0;
+  color: var(--phone-muted);
+  text-align: center;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 8);
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* 읽지 않은 대화 앞의 파란 점. 읽은 대화도 자리는 비워 둔다 */
+.dot {
+  flex: none;
+  width: calc(var(--pt) * 10);
+  height: calc(var(--pt) * 10);
+}
+
+.dot i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--phone-blue);
+}
+
+.rowText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: calc(var(--pt) * 1);
+  min-width: 0;
+  /* 두 줄 미리보기 높이를 늘 차지해서 줄 높이가 같게 한다 */
+  min-height: calc(var(--pt) * 76);
+  padding: calc(var(--pt) * 8) 0;
+  border-bottom: calc(var(--pt) * 0.5) solid var(--phone-line);
+}
+
+.rowHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: calc(var(--pt) * 8);
+}
+
+.rowName {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowTime {
+  flex: none;
+  font-size: calc(var(--pt) * 15);
+  color: var(--phone-muted);
+}
+
+/* 미리보기는 2줄까지만 보인다 */
+.preview {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: calc(var(--pt) * 15);
+  color: var(--phone-muted);
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+/* ── 대화방 ── */
+
+.thread {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* 글이 길어져 스크롤해도 위에 붙어 있다. PhoneScreen 본문의 좌우 여백까지 덮는다 */
+.threadHead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--pt) * 4);
+  margin: 0 calc(var(--pt) * -16);
+  padding: calc(var(--pt) * 2) calc(var(--pt) * 16) calc(var(--pt) * 8);
+  border-bottom: calc(var(--pt) * 0.5) solid var(--phone-line);
+  background: var(--phone-bg);
+}
+
+.back {
+  position: absolute;
+  top: 0;
+  left: calc(var(--pt) * 10);
+  padding: 0 calc(var(--pt) * 8);
+  border: 0;
+  background: none;
+  color: var(--phone-blue);
+  font-size: calc(var(--pt) * 36);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.threadName {
+  margin: 0;
+  font-size: calc(var(--pt) * 12);
+  font-weight: 400;
+}
+
+.bubbles {
+  flex: 1;
+  margin: 0;
+  padding: calc(var(--pt) * 8) 0;
+  list-style: none;
+}
+
+/* 말풍선이 글 길이만큼만 차지하게 세로 flex로 둔다 */
+.bubbleItem {
+  display: flex;
+  flex-direction: column;
+  animation: arrive 0.3s ease-out;
+}
+
+.stamp {
+  align-self: center;
+  margin: calc(var(--pt) * 10) 0 calc(var(--pt) * 4);
+  font-size: calc(var(--pt) * 12);
+  color: var(--phone-muted);
+}
+
+/* 답장 입력란. 모양만 있고 누를 수 없다 */
+.input {
+  position: sticky;
+  bottom: 0;
+  padding: calc(var(--pt) * 6) 0 calc(var(--pt) * 2);
+  background: var(--phone-bg);
+}
+
+.input span {
+  display: block;
+  padding: calc(var(--pt) * 7) calc(var(--pt) * 14);
+  border: calc(var(--pt) * 1) solid var(--phone-line);
+  border-radius: var(--radius-pill);
+  color: var(--phone-faint);
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--pt) * 10));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bubbleItem {
+    animation: none;
+  }
+}
