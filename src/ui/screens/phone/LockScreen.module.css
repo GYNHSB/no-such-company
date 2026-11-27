@@ -31,8 +31,6 @@
   font-size: calc(var(--pt) * 88);
   font-weight: 600;
   line-height: 1.1;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
 }
 
 /* 알림은 화면 아래쪽부터 쌓인다 */
