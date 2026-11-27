@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Message } from '@/data/types'
 import { PhoneCloseup } from '@/ui/kit/phone/PhoneCloseup'
+import { useFlowingClock } from '@/ui/screens/phone/clock'
 import { LockScreen } from '@/ui/screens/phone/LockScreen'
 import styles from './gangyi.module.css'
 
@@ -125,13 +126,15 @@ export default function SandboxPage() {
   const [arrived, setArrived] = useState(0)
   const [name, setName] = useState('홍길동')
   const [opened, setOpened] = useState('')
+  const [fast, setFast] = useState(false)
 
   const scene = SCENES.find((s) => s.id === sceneId) ?? SCENES[0]
   // 이름 바꾸기는 화면 밖에서 한다. 화면은 받은 글을 그대로 보여 준다
   const messages = scene.messages
     .slice(0, arrived)
     .map((m) => ({ ...m, body: m.body.replaceAll('{name}', name) }))
-  const time = (messages.at(-1) ?? scene.messages[0]).time
+  // 마지막으로 도착한 알림의 시각(대본)에서 시작해 실제 시간만큼 흐른다
+  const time = useFlowingClock((messages.at(-1) ?? scene.messages[0]).time, fast ? 60 : 1)
 
   const pickScene = (id: string) => {
     setSceneId(id)
@@ -178,6 +181,9 @@ export default function SandboxPage() {
             onClick={() => setArrived((n) => n + 1)}
           >
             다음 알림 도착 ({arrived}/{scene.messages.length})
+          </button>
+          <button type="button" aria-pressed={fast} onClick={() => setFast((on) => !on)}>
+            시간 빠르게 흐르기 (1초에 1분)
           </button>
           <button type="button" onClick={() => pickScene(scene.id)}>
             처음으로
