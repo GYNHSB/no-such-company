@@ -3,11 +3,12 @@ import type { Message } from '@/data/types'
 import { PhoneCloseup } from '@/ui/kit/phone/PhoneCloseup'
 import { useFlowingClock } from '@/ui/screens/phone/clock'
 import { LockScreen } from '@/ui/screens/phone/LockScreen'
+import { MessagesApp } from '@/ui/screens/phone/MessagesApp'
 import styles from './gangyi.module.css'
 
 /**
  * 강이의 테스트 페이지. 개발 서버에서 `?sandbox=gangyi` 주소로 연다.
- * 휴대폰 화면(#35)을 하나씩 띄워 본다. 지금은 잠금 화면 알림(#49).
+ * 휴대폰 화면(#35)을 하나씩 띄워 본다. 지금은 잠금 화면 알림(#49)과 문자 앱(#50).
  */
 
 const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'] as const
@@ -105,8 +106,14 @@ const SCENES: Scene[] = [
 /** 잠금 화면 왼쪽 위에 보이는 가상 통신망 이름(도담텔레콤의 줄임말). 실존 통신사 이름은 쓰지 않는다 */
 const CARRIER = 'DT'
 
-/** 누른 알림이 여는 앱. 앱 화면은 다른 이슈(#50 문자, #51 은행)에서 만든다 */
+/** 누른 알림이 여는 앱. 은행 앱 화면은 다른 이슈(#51)에서 만든다 */
 const APP_NAMES: Partial<Record<Message['channel'], string>> = { sms: '문자 앱', bank: '은행 앱' }
+
+const VIEWS = [
+  { id: 'lock', label: '잠금 화면 (#49)' },
+  { id: 'messages', label: '문자 앱 (#50)' },
+] as const
+type View = (typeof VIEWS)[number]['id']
 
 // 손 이미지(협성 님 테스트 페이지와 같은 파일)와 그 안의 화면 자리. 이미지의 검은 화면 영역을 픽셀로 잰 값이다
 const HAND_URL = `${import.meta.env.BASE_URL}images/hand_phone_day.webp`
@@ -130,6 +137,9 @@ export default function SandboxPage() {
   const [name, setName] = useState('홍길동')
   const [opened, setOpened] = useState('')
   const [fast, setFast] = useState(false)
+  const [view, setView] = useState<View>('lock')
+  // 문자 앱을 열 때 바로 보여 줄 대화. 잠금 화면 알림을 눌러 들어오면 그 대화가 열린다
+  const [thread, setThread] = useState<string>()
 
   const scene = SCENES.find((s) => s.id === sceneId) ?? SCENES[0]
   // 이름 바꾸기는 화면 밖에서 한다. 화면은 받은 글을 그대로 보여 준다
@@ -143,6 +153,12 @@ export default function SandboxPage() {
     setSceneId(id)
     setArrived(0)
     setOpened('')
+    setThread(undefined)
+  }
+
+  const pickView = (id: View) => {
+    setView(id)
+    setThread(undefined)
   }
 
   return (
@@ -153,19 +169,45 @@ export default function SandboxPage() {
         screen={SCREEN}
         shaking={scene.shaking && arrived > 0}
       >
-        <LockScreen
-          time={time}
-          carrier={CARRIER}
-          date={dateOf(scene.week, scene.weekday)}
-          messages={messages}
-          onOpen={(m) =>
-            setOpened(`${APP_NAMES[m.channel] ?? m.channel} 열기 (${m.from} ${m.time})`)
-          }
-        />
+        {view === 'lock' ? (
+          <LockScreen
+            time={time}
+            carrier={CARRIER}
+            date={dateOf(scene.week, scene.weekday)}
+            messages={messages}
+            onOpen={(m) => {
+              setOpened(`${APP_NAMES[m.channel] ?? m.channel} 열기 (${m.from} ${m.time})`)
+              if (m.channel === 'sms') {
+                setThread(m.from)
+                setView('messages')
+              }
+            }}
+          />
+        ) : (
+          <MessagesApp
+            key={`${scene.id}-${thread ?? ''}`}
+            time={time}
+            messages={messages.filter((m) => m.channel === 'sms')}
+            defaultThread={thread}
+            onOpenThread={(from) => setOpened(`대화 열기 (${from})`)}
+          />
+        )}
       </PhoneCloseup>
 
       <aside className={styles.panel}>
-        <strong>잠금 화면 알림 (#49)</strong>
+        <strong>휴대폰 화면 (#35)</strong>
+        <div className={styles.row}>
+          {VIEWS.map((v) => (
+            <button
+              key={v.id}
+              type="button"
+              aria-pressed={v.id === view}
+              onClick={() => pickView(v.id)}
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
         <div className={styles.row}>
           {SCENES.map((s) => (
             <button
@@ -184,7 +226,7 @@ export default function SandboxPage() {
             disabled={arrived >= scene.messages.length}
             onClick={() => setArrived((n) => n + 1)}
           >
-            다음 알림 도착 ({arrived}/{scene.messages.length})
+            다음 알림·문자 도착 ({arrived}/{scene.messages.length})
           </button>
           <button type="button" aria-pressed={fast} onClick={() => setFast((on) => !on)}>
             시간 빠르게 흐르기 (1초에 1분)
@@ -197,7 +239,7 @@ export default function SandboxPage() {
           이름
           <input value={name} onChange={(e) => setName(e.target.value)} />
         </label>
-        <p className={styles.log}>누른 알림: {opened || '없음'}</p>
+        <p className={styles.log}>마지막으로 누른 것: {opened || '없음'}</p>
       </aside>
     </main>
   )
