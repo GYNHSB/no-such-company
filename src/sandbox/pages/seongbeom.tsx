@@ -86,7 +86,7 @@ export default function SandboxPage() {
           <WorkShell selectedId={selectedId} onSelect={setSelectedId}>
             {selectedId === DM_LEAD_ID ? (
               <WorkMessenger
-                name="박재훈 팀장"
+                name="김아영 팀장"
                 days={daysUpTo(count)}
                 playerName={playerName}
                 onOpenTask={(task, message) => setClicked(`${message.id} · ${task.label}`)}

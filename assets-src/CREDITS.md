@@ -31,6 +31,6 @@
 - 화면(`laptop_screen`, 스스로 빛나는 면)의 방향·크기는 `room.glb`의 노트북과 같고, 가운데는 약 1mm 앞이다. 원점 기준 가운데 (0, 0.1240, -0.1097) m(glTF 좌표), 바라보는 방향 (0, 0.2571, 0.9664), 0.31 x 0.19 m.
 - 조명을 굽지 않았다(두 번째 UV 없음). 게임에서는 `room.glb`의 `interact_laptop`을 감추고 그 자리(-1.3, 0.74, 0.489)에 그린다(`src/game/world/Laptop.tsx`). 조명을 다시 구울지는 원룸 담당과 정한다.
 
-## 오버레이 로고 (`public/images/logo_overlay.svg`)
+## 모레온 로고 (`public/images/logo_moraeon.svg`)
 
 - 둥근 사각형 두 장이 겹친 모양을 SVG 코드로 직접 그림 (2026-11-27, Claude Code). 외부 자료를 쓰지 않았다.

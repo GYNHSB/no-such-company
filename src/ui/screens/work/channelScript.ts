@@ -16,7 +16,7 @@ export const CHANNELS: Record<string, ChannelScript> = {
     messages: [
       {
         id: 'n1',
-        name: '오버레이 인사팀',
+        name: '모레온 인사팀',
         time: '09:00',
         text: '📢 *급여 지급 안내*\n이번 달 급여는 *25일*에 지급됩니다. 급여 명세서는 당일 메일로 보내 드려요.',
         reactions: [
@@ -26,14 +26,14 @@ export const CHANNELS: Record<string, ChannelScript> = {
       },
       {
         id: 'n2',
-        name: '오버레이 인사팀',
+        name: '모레온 인사팀',
         time: '09:01',
         text: '연말 정산 서류 안내는 다음 주에 다시 공지하겠습니다 🗓️',
         continued: true,
       },
       {
         id: 'n3',
-        name: '오버레이 보안팀',
+        name: '모레온 보안팀',
         time: '10:30',
         text: '🔒 *보안 정책 안내*\n• 업무는 회사에서 보내 드린 노트북으로만 진행해 주세요.\n• 개인 기기로 고객 자료를 열면 안 됩니다.',
         reactions: [
@@ -43,7 +43,7 @@ export const CHANNELS: Record<string, ChannelScript> = {
       },
       {
         id: 'n4',
-        name: '오버레이 인사팀',
+        name: '모레온 인사팀',
         time: '14:00',
         text: '@channel 새로 오신 분들은 *입사 서류*와 *본인 확인 영상*을 담당 팀장님께 제출해 주세요. 제출이 끝나야 계정 권한이 열립니다 🙏',
         reactions: [{ emoji: '✅', count: 4 }],

@@ -26,17 +26,11 @@ const SECTIONS: { kind: WorkNavItem['kind']; title: string }[] = [
   { kind: 'mail', title: '메일' },
 ]
 
-/** 오버레이 워크 전체 틀: 왼쪽 사이드바 + 오른쪽 본문. 부모 크기에 맞춰 늘어난다 */
-export function WorkLayout({
-  workspace = '오버레이',
-  items,
-  selectedId,
-  onSelect,
-  children,
-}: Props) {
+/** 모레온 워크 전체 틀: 왼쪽 사이드바 + 오른쪽 본문. 부모 크기에 맞춰 늘어난다 */
+export function WorkLayout({ workspace = '모레온', items, selectedId, onSelect, children }: Props) {
   return (
     <div className={styles.root}>
-      <nav className={styles.sidebar} aria-label="오버레이 워크 메뉴">
+      <nav className={styles.sidebar} aria-label="모레온 워크 메뉴">
         <div className={styles.workspace}>{workspace}</div>
         {SECTIONS.map(({ kind, title }) => {
           const list = items.filter((item) => item.kind === kind)

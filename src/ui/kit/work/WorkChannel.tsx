@@ -5,7 +5,7 @@ import styles from './WorkChannel.module.css'
 export type WorkChannelMessage = ComponentProps<typeof WorkMessage> & { id: string }
 
 interface Props {
-  /** 상단 이름 바. 채널은 '# 업무', DM은 '박재훈 팀장' */
+  /** 상단 이름 바. 채널은 '# 업무', DM은 '김아영 팀장' */
   name: string
   /** 이름 옆 짧은 설명 */
   topic?: string

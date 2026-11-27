@@ -50,8 +50,8 @@ export function VideoInterview({
 
   return (
     <VideoCall
-      title="보안 화상면접 · 오버레이 1차 면접"
-      remoteName="박재훈 · 오버레이"
+      title="보안 화상면접 · 모레온 1차 면접"
+      remoteName="김아영 · 모레온"
       videoSrc={videoSrc}
       onVideoTime={setSec}
       onVideoEnded={() => setEnded(true)}

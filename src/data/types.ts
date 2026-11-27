@@ -13,7 +13,7 @@ export interface DayInfo {
 /** 메시지가 도착하는 곳 */
 export type Channel =
   | 'mail' // 노트북 메일
-  | 'messenger' // 노트북 오버레이 워크 메신저 (감시됨)
+  | 'messenger' // 노트북 모레온 워크 메신저 (감시됨)
   | 'sms' // 휴대폰 문자 (감시 안 됨)
   | 'bank' // 휴대폰 은행 알림
   | 'sns' // 휴대폰 내 SNS

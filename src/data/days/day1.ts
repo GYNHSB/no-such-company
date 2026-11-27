@@ -37,7 +37,7 @@ export const day1: DayScript = {
           message: {
             id: 'm_offer',
             channel: 'mail',
-            from: '오버레이 인사팀',
+            from: '모레온 인사팀',
             time: '10:12',
             body: '{name} 님, 최종 합격을 축하드립니다.',
           },
@@ -54,7 +54,7 @@ export const day1: DayScript = {
           message: {
             id: 'm_app',
             channel: 'mail',
-            from: '오버레이 인사팀',
+            from: '모레온 인사팀',
             time: '10:15',
             body: '보안을 위해 면접은 전용 ‘보안 화상면접 앱’으로만 진행합니다. 설치 후 접속해 주세요.',
           },
@@ -80,7 +80,7 @@ export const day1: DayScript = {
           message: {
             id: 'm_docs',
             channel: 'messenger',
-            from: '박재훈 팀장',
+            from: '김아영 팀장',
             time: '14:02',
             body: '{name} 씨 환영해요! 노트북 받으셨죠? 입사 서류(신분증 사본, 등본, 통장 사본, 졸업증명서) 올려주세요 :)',
           },
@@ -98,7 +98,7 @@ export const day1: DayScript = {
           message: {
             id: 'm_face',
             channel: 'messenger',
-            from: '박재훈 팀장',
+            from: '김아영 팀장',
             time: '14:20',
             body: '보안 정책상 본인 확인 영상이 필요해요. 정면 5초, 왼쪽 5초, 오른쪽 5초만 찍어서 보내주세요!',
           },

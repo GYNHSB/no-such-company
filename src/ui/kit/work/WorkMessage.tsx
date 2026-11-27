@@ -15,7 +15,7 @@ interface Props {
   deleted?: boolean
 }
 
-/** 오버레이 워크(업무 메신저)의 메시지 한 줄 */
+/** 모레온 워크(업무 메신저)의 메시지 한 줄 */
 export function WorkMessage({
   name,
   time,

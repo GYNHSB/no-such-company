@@ -6,7 +6,7 @@ import type { MessengerDay } from './WorkMessenger'
 const fromLead = (id: string, time: string, body: string): Message => ({
   id,
   channel: 'messenger',
-  from: '박재훈 팀장',
+  from: '김아영 팀장',
   time,
   body,
 })

@@ -27,7 +27,7 @@ export function InaugurationCall({ playerName, step, signed, videoSrc, children 
   return (
     <VideoCall
       title="세움파트너스 · 대표이사 취임식"
-      remoteName="박재훈"
+      remoteName="김아영"
       videoSrc={videoSrc}
       recording
       side={

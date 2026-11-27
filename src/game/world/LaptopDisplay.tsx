@@ -59,7 +59,7 @@ function Screen({ screen }: { screen: Exclude<LaptopScreen, 'off'> }) {
         />
       )
     case 'install':
-      return <InterviewAppInstall company="오버레이" host="박재훈" onJoin={() => go('interview')} />
+      return <InterviewAppInstall company="모레온" host="김아영" onJoin={() => go('interview')} />
     case 'interview':
       return <VideoInterview playerName={PLAYER_NAME} onEnd={() => go('off')} />
     case 'search':
