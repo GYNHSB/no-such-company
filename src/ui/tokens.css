@@ -42,6 +42,8 @@
     radial-gradient(120% 55% at 15% 0%, #41538c 0%, transparent 65%),
     radial-gradient(110% 50% at 95% 100%, #8a4f5f 0%, transparent 65%),
     linear-gradient(#1a2140, #0d0f1c);
+  /* 연락처 사진 자리. 위는 옅은 푸른 회색, 아래는 짙은 남보라 */
+  --phone-avatar: linear-gradient(#a9b4d8, #6c72a6);
   --phone-surface: #1c1c1e; /* 카드, 목록 묶음 */
   --phone-surface-2: #2c2c2e; /* 그 위 한 단계 */
   --phone-ink: #ffffff;

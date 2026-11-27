@@ -1,0 +1,554 @@
+/* 크기는 PhoneScreen이 정한 --pt(화면 너비 390pt 기준)로 맞춘다 */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  word-break: keep-all;
+}
+
+.page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  /* 목록 끝이 떠 있는 탭에 가리지 않게 */
+  padding-bottom: calc(var(--pt) * 20);
+}
+
+.solid {
+  width: calc(var(--pt) * 22);
+  height: calc(var(--pt) * 22);
+  fill: currentColor;
+}
+
+.line {
+  width: calc(var(--pt) * 24);
+  height: calc(var(--pt) * 24);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 화면 낭독기에만 읽히는 글 */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.empty {
+  margin: calc(var(--pt) * 120) 0 0;
+  color: var(--phone-muted);
+  text-align: center;
+}
+
+/* ── 위쪽 줄: 둥근 단추, 가운데 제목, 둥근 단추 ── */
+
+.top {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  min-height: calc(var(--pt) * 56);
+  padding-bottom: calc(var(--pt) * 8);
+}
+
+.title {
+  margin: 0;
+  font-size: calc(var(--pt) * 18);
+  font-weight: 700;
+}
+
+/* 유리 느낌의 둥근 단추 */
+.pill,
+.round {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(var(--pt) * 44);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--phone-surface);
+  box-shadow: inset 0 0 0 calc(var(--pt) * 0.6) var(--phone-notif-edge);
+  color: var(--phone-ink);
+  font: inherit;
+  font-size: calc(var(--pt) * 17);
+  font-weight: 500;
+}
+
+.pill {
+  justify-self: start;
+  gap: calc(var(--pt) * 2);
+  padding: 0 calc(var(--pt) * 16) 0 calc(var(--pt) * 10);
+  cursor: pointer;
+}
+
+.pillChevron {
+  width: calc(var(--pt) * 20);
+  height: calc(var(--pt) * 20);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.round {
+  justify-self: end;
+  width: calc(var(--pt) * 44);
+}
+
+/* ── 통화 기록, 연락처 목록 ── */
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 동그란 사진 자리, 이름과 아랫줄, 통화한 때, 통화 단추 */
+.row,
+.contact {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 12);
+  padding: calc(var(--pt) * 10) 0;
+}
+
+/* 줄 사이의 가는 선은 사진 자리 오른쪽에서 시작한다 */
+.row {
+  position: relative;
+}
+
+.row::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: calc(var(--pt) * 60);
+  height: calc(var(--pt) * 0.5);
+  background: var(--phone-line);
+}
+
+.avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: calc(var(--pt) * 48);
+  height: calc(var(--pt) * 48);
+  border-radius: 50%;
+  background: var(--phone-avatar);
+  color: var(--phone-ink);
+  font-size: calc(var(--pt) * 17);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.avatarPerson {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+.avatarBig {
+  width: calc(var(--pt) * 104);
+  height: calc(var(--pt) * 104);
+  font-size: calc(var(--pt) * 38);
+}
+
+.rowText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: calc(var(--pt) * 1);
+  min-width: 0;
+}
+
+.who,
+.missed {
+  overflow: hidden;
+  font-size: calc(var(--pt) * 18);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 못 받은 전화는 빨갛게 */
+.missed {
+  color: var(--phone-red);
+}
+
+.rowSub {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 3);
+  font-size: calc(var(--pt) * 15);
+  color: var(--phone-muted);
+}
+
+/* 건 전화는 오른쪽 위, 받은 전화는 왼쪽 아래를 가리키는 화살표 */
+.arrow {
+  width: calc(var(--pt) * 13);
+  height: calc(var(--pt) * 13);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.when {
+  flex: none;
+  font-size: calc(var(--pt) * 15);
+  color: var(--phone-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 줄 오른쪽 끝의 통화 단추 */
+.callButton {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: calc(var(--pt) * 40);
+  height: calc(var(--pt) * 40);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--phone-surface-2);
+  color: var(--phone-blue);
+  cursor: pointer;
+}
+
+.contact {
+  width: 100%;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* 연락처를 묶는 첫소리 */
+.section {
+  margin: calc(var(--pt) * 10) 0 0;
+  padding-bottom: calc(var(--pt) * 4);
+  border-bottom: calc(var(--pt) * 0.5) solid var(--phone-line);
+  font-size: calc(var(--pt) * 15);
+  font-weight: 700;
+  color: var(--phone-muted);
+}
+
+/* ── 연락처 한 사람 ── */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--pt) * 10);
+}
+
+.cardName {
+  margin: 0;
+  font-size: calc(var(--pt) * 28);
+  font-weight: 700;
+}
+
+.cardCall {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--pt) * 4);
+  min-width: calc(var(--pt) * 96);
+  padding: calc(var(--pt) * 10) calc(var(--pt) * 16);
+  border: 0;
+  border-radius: calc(var(--pt) * 14);
+  background: var(--phone-surface);
+  color: var(--phone-blue);
+  font: inherit;
+  font-size: calc(var(--pt) * 13);
+  cursor: pointer;
+}
+
+.cardGlyph {
+  width: calc(var(--pt) * 22);
+  height: calc(var(--pt) * 22);
+  fill: currentColor;
+}
+
+.cardInfo {
+  align-self: stretch;
+  margin: calc(var(--pt) * 8) 0 0;
+  padding: calc(var(--pt) * 12) calc(var(--pt) * 16);
+  border-radius: calc(var(--pt) * 14);
+  background: var(--phone-surface);
+}
+
+.cardInfo dt {
+  font-size: calc(var(--pt) * 14);
+}
+
+.cardInfo dd {
+  margin: calc(var(--pt) * 2) 0 0;
+  color: var(--phone-blue);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 키패드 ── */
+
+.keypad {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+/* 입력한 번호. 비어 있어도 자리를 차지한다 */
+.digits {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  min-height: calc(var(--pt) * 48);
+  margin: 0;
+  font-size: calc(var(--pt) * 34);
+  font-variant-numeric: tabular-nums;
+  white-space: pre;
+}
+
+.keys {
+  display: grid;
+  grid-template-columns: repeat(3, calc(var(--pt) * 74));
+  justify-content: center;
+  gap: calc(var(--pt) * 12) calc(var(--pt) * 26);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.key {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: calc(var(--pt) * 74);
+  height: calc(var(--pt) * 74);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--phone-surface-2);
+  color: var(--phone-ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.key:active {
+  background: var(--phone-faint);
+}
+
+.keyDigit {
+  font-size: calc(var(--pt) * 34);
+  line-height: 1;
+}
+
+.keyLetters {
+  min-height: calc(var(--pt) * 12);
+  font-size: calc(var(--pt) * 10);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+}
+
+/* 통화 단추 줄. 가운데 초록 단추, 오른쪽에 지우기 */
+.dial {
+  display: grid;
+  grid-template-columns: repeat(3, calc(var(--pt) * 74));
+  justify-content: center;
+  align-items: center;
+  gap: calc(var(--pt) * 26);
+  padding-top: calc(var(--pt) * 12);
+}
+
+.send,
+.end {
+  display: grid;
+  place-items: center;
+  width: calc(var(--pt) * 74);
+  height: calc(var(--pt) * 74);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--phone-ink);
+  cursor: pointer;
+}
+
+.send {
+  background: var(--phone-green);
+}
+
+.send:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.sendGlyph,
+.endGlyph {
+  width: 46%;
+  height: 46%;
+  fill: currentColor;
+}
+
+.erase {
+  display: grid;
+  place-items: center;
+  width: calc(var(--pt) * 74);
+  height: calc(var(--pt) * 74);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--phone-muted);
+  cursor: pointer;
+}
+
+/* ── 통화 중 ── */
+
+/* 어두운 배경 화면 위에 뜬다. PhoneScreen의 검은 배경을 비운다(잠금 화면과 같다) */
+.callBack {
+  --phone-bg: transparent;
+  position: absolute;
+  inset: 0;
+  background: var(--phone-wallpaper);
+}
+
+.call {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100%;
+  padding: calc(var(--pt) * 56) 0 calc(var(--pt) * 28);
+}
+
+.callStatus {
+  margin: 0;
+  font-size: calc(var(--pt) * 18);
+  color: var(--phone-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.callName {
+  margin: calc(var(--pt) * 6) 0 0;
+  font-size: calc(var(--pt) * 34);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 모양만 있는 통화 중 단추 여섯 개 */
+.callKeys {
+  display: grid;
+  grid-template-columns: repeat(3, calc(var(--pt) * 76));
+  gap: calc(var(--pt) * 22) calc(var(--pt) * 26);
+  margin: auto 0 calc(var(--pt) * 44);
+  padding: 0;
+  list-style: none;
+  font-size: calc(var(--pt) * 12);
+  text-align: center;
+}
+
+.callKeys li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--pt) * 6);
+}
+
+.callKeys i {
+  display: grid;
+  place-items: center;
+  width: calc(var(--pt) * 68);
+  height: calc(var(--pt) * 68);
+  border-radius: 50%;
+  background: var(--phone-notif-bg);
+  box-shadow: inset 0 0 0 calc(var(--pt) * 0.6) var(--phone-notif-edge);
+}
+
+/* 단추 안의 그림 */
+.callKeys svg {
+  width: calc(var(--pt) * 30);
+  height: calc(var(--pt) * 30);
+}
+
+.end {
+  background: var(--phone-red);
+}
+
+/* 끊기 단추의 수화기는 내려놓은 모양으로 돌린다 */
+.endGlyph {
+  transform: rotate(135deg);
+}
+
+/* ── 아래에 떠 있는 탭 ── */
+
+/* 목록 위에 떠 있다. 바탕이 없어서 뒤의 목록이 유리 너머로 비친다 */
+.dock {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 10);
+  /* 아래쪽을 띄워 홈 막대의 누르는 자리와 겹쳐 보이지 않게 한다 */
+  padding: calc(var(--pt) * 6) 0 calc(var(--pt) * 14);
+}
+
+.tabs,
+.search {
+  border-radius: var(--radius-pill);
+  background: var(--phone-notif-bg);
+  backdrop-filter: blur(24px) saturate(1.6);
+  box-shadow: inset 0 0 0 calc(var(--pt) * 0.6) var(--phone-notif-edge);
+}
+
+.tabs {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(3, 1fr);
+  padding: calc(var(--pt) * 4);
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--pt) * 2);
+  padding: calc(var(--pt) * 6) 0 calc(var(--pt) * 5);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--phone-ink);
+  font: inherit;
+  font-size: calc(var(--pt) * 11);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* 고른 탭은 유리 안에 한 겹 더 밝게 뜨고 파랗게 된다 */
+.tab[aria-current='page'] {
+  background: var(--phone-notif-bg);
+  box-shadow: inset 0 0 0 calc(var(--pt) * 0.6) var(--phone-notif-edge);
+  color: var(--phone-blue);
+}
+
+.tabGlyph {
+  width: calc(var(--pt) * 26);
+  height: calc(var(--pt) * 26);
+  fill: currentColor;
+}
+
+/* 모양만 있는 검색 단추 */
+.search {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: calc(var(--pt) * 58);
+  height: calc(var(--pt) * 58);
+}
