@@ -13,7 +13,7 @@ const fromLead = (id: string, time: string, body: string): Message => ({
 
 export const MESSENGER_DAYS: readonly MessengerDay[] = [
   {
-    info: { day: 1, week: 1, title: '입사' },
+    info: { day: 1, week: 1, weekday: '월', title: '입사' },
     messages: [
       fromLead(
         'm_docs',
@@ -33,7 +33,7 @@ export const MESSENGER_DAYS: readonly MessengerDay[] = [
     ],
   },
   {
-    info: { day: 2, week: 3, title: '흔적' },
+    info: { day: 2, week: 3, weekday: '수', title: '흔적' },
     messages: [
       fromLead(
         'm_d2_morning',
@@ -48,7 +48,7 @@ export const MESSENGER_DAYS: readonly MessengerDay[] = [
     ],
   },
   {
-    info: { day: 3, week: 4, title: '감시' },
+    info: { day: 3, week: 4, weekday: '금', title: '감시' },
     messages: [
       fromLead(
         'm_d3_search',
@@ -63,7 +63,7 @@ export const MESSENGER_DAYS: readonly MessengerDay[] = [
     ],
   },
   {
-    info: { day: 4, week: 6, title: '추리' },
+    info: { day: 4, week: 6, weekday: '화', title: '추리' },
     messages: [
       fromLead(
         'm_d4_morning',
@@ -78,7 +78,7 @@ export const MESSENGER_DAYS: readonly MessengerDay[] = [
     ],
   },
   {
-    info: { day: 5, week: 8, title: '결단' },
+    info: { day: 5, week: 8, weekday: '목', title: '결단' },
     messages: [
       fromLead(
         'm_d5_sign',
