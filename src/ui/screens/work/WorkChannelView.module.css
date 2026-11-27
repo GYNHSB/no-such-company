@@ -1,0 +1,37 @@
+.mention {
+  padding: 0 2px;
+  border-radius: 3px;
+  background: var(--work-mention-bg);
+  color: var(--work-link);
+  font-weight: var(--weight-strong);
+}
+
+.code {
+  padding: 1px 4px;
+  border: 1px solid var(--work-line);
+  border-radius: 4px;
+  background: var(--work-hover);
+  font: inherit;
+  font-size: 0.9em;
+}
+
+.reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reaction {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--work-line);
+  border-radius: var(--radius-pill);
+  background: var(--work-hover);
+  color: var(--work-muted);
+  font-size: var(--work-text-meta);
+}
