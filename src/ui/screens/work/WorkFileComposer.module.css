@@ -1,0 +1,185 @@
+.root {
+  position: relative;
+  display: grid;
+  gap: 8px;
+}
+/* 게임 속 파일을 입력창 위로 끌고 왔을 때 */
+.root.dragOver {
+  border-color: var(--work-link);
+  background: var(--work-hover);
+}
+
+.iconButton {
+  display: flex;
+  padding: 2px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--work-muted);
+  cursor: pointer;
+}
+.iconButton:hover {
+  color: var(--work-ink);
+}
+.iconButton:focus-visible,
+.attach:focus-visible,
+.file:focus-visible {
+  outline: 2px solid var(--work-link);
+  outline-offset: 1px;
+}
+
+/* 첨부한 파일 */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 8px;
+  border: 1px solid var(--work-line);
+  border-radius: var(--work-radius);
+  background: var(--work-hover);
+  font-size: var(--work-text-meta);
+}
+
+.placeholder {
+  margin: 0;
+  font-size: var(--work-text-body);
+  color: var(--work-muted);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.attach {
+  display: flex;
+  padding: 6px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--work-hover);
+  color: var(--work-muted);
+  cursor: pointer;
+}
+.attach:hover {
+  color: var(--work-ink);
+}
+.count {
+  flex: 1;
+  font-size: var(--work-text-meta);
+  color: var(--work-muted);
+  text-align: right;
+}
+
+/* 파일 선택 창. 입력창 바로 위에 떠서 대화 목록을 덮는다 */
+.finder {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: 600px;
+  max-width: 100%;
+  border: 1px solid var(--work-line);
+  border-radius: var(--work-radius);
+  background: var(--work-bg);
+  box-shadow: var(--web-shadow-window);
+  overflow: hidden;
+}
+.finderBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--work-line);
+  background: var(--work-hover);
+  font-size: var(--work-text-body);
+  font-weight: 700;
+}
+.finderMain {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  min-height: 220px;
+}
+.places {
+  margin: 0;
+  padding: 8px;
+  border-right: 1px solid var(--work-line);
+  background: var(--work-hover);
+  font-size: var(--work-text-meta);
+  color: var(--work-muted);
+  list-style: none;
+}
+.place {
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+.placeCurrent {
+  background: var(--work-line);
+  color: var(--work-ink);
+  font-weight: var(--weight-strong);
+}
+.path {
+  padding: 8px 16px;
+  font-size: var(--work-text-meta);
+  color: var(--work-muted);
+}
+.files {
+  margin: 0;
+  padding: 0 8px 8px;
+  list-style: none;
+}
+.file {
+  display: grid;
+  /* 아이콘 | 이름 | 종류 | 크기 */
+  grid-template-columns: auto 1fr 80px 64px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: var(--work-text-body);
+  cursor: grab;
+  user-select: none;
+}
+.file:hover {
+  background: var(--work-hover);
+}
+.selected,
+.selected:hover {
+  background: var(--work-sidebar-active);
+  color: var(--work-bg);
+}
+.attached,
+.attached:hover {
+  background: none;
+  color: var(--work-muted);
+  cursor: default;
+}
+.fileName {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.fileMeta {
+  font-size: var(--work-text-meta);
+}
+.finderFooter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--work-line);
+}
+.hint {
+  flex: 1;
+  font-size: var(--work-text-meta);
+  color: var(--work-muted);
+}
