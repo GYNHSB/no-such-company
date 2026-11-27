@@ -1,0 +1,22 @@
+.icon {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 23%;
+  color: var(--phone-ink);
+}
+
+.message {
+  background: var(--phone-green);
+}
+
+.bank {
+  background: var(--phone-orange);
+}
+
+.glyph {
+  width: 64%;
+  height: 64%;
+  fill: currentColor;
+}

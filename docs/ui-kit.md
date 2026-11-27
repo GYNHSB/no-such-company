@@ -64,7 +64,13 @@
 
 ### phone/Notification
 
-알림 배너. 잠금화면과 화면 위쪽 배너에 같이 쓴다. `app`, `time`, `title`(선택), `body`, `onOpen`.
+알림 배너. 잠금화면과 화면 위쪽 배너에 같이 쓴다. `app`, `icon`(선택), `time`, `title`(선택), `body`, `onOpen`.
+
+왼쪽에 앱 아이콘, 오른쪽에 굵은 제목과 시각, 그 아래 본문을 보여 준다. 제목이 없으면 `app`이 제목 자리에 나온다. 본문은 4줄까지만 보인다.
+
+### phone/AppIcon
+
+앱 아이콘. 색 있는 둥근 네모 안에 단순한 모양만 그린다(실제 앱의 아이콘은 쓰지 않는다). `kind`: `message`(말풍선) / `bank`(건물). 크기는 감싸는 쪽이 정한다.
 
 ### work/WorkMessage
 

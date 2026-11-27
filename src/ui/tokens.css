@@ -53,6 +53,7 @@
   --phone-red: #ff453a;
   --phone-orange: #ff9f0a;
   --phone-notif-bg: rgb(72 72 82 / 0.36); /* 알림 카드. 뒤 배경이 비치는 반투명 */
+  --phone-notif-edge: rgb(255 255 255 / 0.14); /* 알림 카드 가장자리의 옅은 빛 */
   --phone-bubble-in: #262628; /* 받은 문자 말풍선 */
   --phone-bubble-out: #0a84ff; /* 보낸 문자 말풍선 */
   --phone-text-large: 34px; /* 큰 제목 */
