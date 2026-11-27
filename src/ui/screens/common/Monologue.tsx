@@ -1,9 +1,10 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { MonologueLine } from '@/stores/monologueStore'
+import styles from './Monologue.module.css'
 
 /**
  * 주인공의 독백을 화면 아래 반투명 창에 한 줄씩 보여 준다.
- * 나중에 공용(src/ui 등)으로 옮길 것을 생각해 페이지와 상관없는 것만 둔다.
+ * 스페이스를 누르거나 창을 누르면 줄을 끝까지 보여 주고, 다 보였으면 다음 줄로 넘긴다.
  *
  * 쓰는 법:
  *   useMonologueStore.getState().say('휴대폰을 어디에 뒀지...')
@@ -16,8 +17,11 @@ const TYPE_MS = 45
 /** 다 나온 뒤 남아 있는 시간(ms). 짧은 줄도 최소 MIN_HOLD_MS는 보이고, 긴 줄은 글자 수만큼 더 보인다. */
 const MIN_HOLD_MS = 2200
 const HOLD_PER_CHAR_MS = 60
-/** 사라지는 데 걸리는 시간(ms) */
+/** 사라지는 데 걸리는 시간(ms). Monologue.module.css의 transition과 같아야 한다 */
 const FADE_MS = 400
+/** 줄을 넘기는 키. 글을 쓰는 칸이나 버튼에서 누른 것은 넘기지 않는다 */
+const SKIP_KEY = { code: 'Space', label: 'Space' }
+const IGNORE = 'input, textarea, button, select, [contenteditable]'
 
 interface MonologueProps {
   /** 지금 보여 줄 줄. null이면 창을 감춘다. */
@@ -35,6 +39,23 @@ function Typed({ line, onDone }: { line: string; onDone: () => void }) {
   const [shown, setShown] = useState(0)
   const [leaving, setLeaving] = useState(false)
   const chars = Array.from(line) // 이모지 같은 글자가 반쪽으로 잘리지 않게 글자 단위로 나눈다
+  const typing = shown < chars.length
+
+  const skip = () => (typing ? setShown(chars.length) : setLeaving(true))
+  const skipRef = useRef(skip)
+  useEffect(() => {
+    skipRef.current = skip
+  })
+  useEffect(() => {
+    const press = (e: KeyboardEvent) => {
+      if (e.code !== SKIP_KEY.code || e.repeat) return
+      if (e.target instanceof Element && e.target.closest(IGNORE)) return
+      e.preventDefault()
+      skipRef.current()
+    }
+    window.addEventListener('keydown', press)
+    return () => window.removeEventListener('keydown', press)
+  }, [])
 
   useEffect(() => {
     if (shown < chars.length) {
@@ -53,43 +74,25 @@ function Typed({ line, onDone }: { line: string; onDone: () => void }) {
   }, [shown, leaving, chars.length, onDone])
 
   return (
-    <div role="status" style={{ ...box, opacity: leaving ? 0 : 1 }}>
+    <div
+      role="status"
+      className={styles.box}
+      style={{ opacity: leaving ? 0 : 1 }}
+      onClick={(e) => {
+        e.stopPropagation()
+        skip()
+      }}
+    >
       {/* 화면 낭독기는 한 글자씩이 아니라 문장 전체를 한 번 읽는다 */}
-      <span style={hidden}>{line}</span>
+      <span className={styles.srOnly}>{line}</span>
       <span aria-hidden="true">
         {chars.slice(0, shown).join('')}
         {/* 아직 안 나온 글자도 자리는 잡아 두어 창 크기가 흔들리지 않게 한다 */}
         <span style={{ visibility: 'hidden' }}>{chars.slice(shown).join('')}</span>
       </span>
+      <kbd className={styles.key} aria-hidden="true">
+        {SKIP_KEY.label}
+      </kbd>
     </div>
   )
-}
-
-const box: CSSProperties = {
-  position: 'absolute',
-  left: '50%',
-  bottom: 96,
-  transform: 'translateX(-50%)',
-  boxSizing: 'border-box',
-  width: 'max-content',
-  maxWidth: 'min(640px, calc(100% - 32px))',
-  padding: '14px 22px',
-  borderRadius: 12,
-  background: 'rgb(0 0 0 / 0.55)',
-  backdropFilter: 'blur(4px)',
-  color: '#fff',
-  fontSize: 18,
-  lineHeight: 1.5,
-  textAlign: 'center',
-  pointerEvents: 'none',
-  transition: `opacity ${FADE_MS}ms`,
-}
-
-const hidden: CSSProperties = {
-  position: 'absolute',
-  width: 1,
-  height: 1,
-  overflow: 'hidden',
-  clip: 'rect(0 0 0 0)',
-  whiteSpace: 'nowrap',
 }

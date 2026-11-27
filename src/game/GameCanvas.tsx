@@ -17,6 +17,7 @@ import { LIGHT_SWITCH_BOX } from '@/game/world/lightSwitch'
 import { Room } from '@/game/world/Room'
 import { RoomColliders } from '@/game/world/RoomColliders'
 import { useGameStore, type View } from '@/stores/gameStore'
+import { StoryLayer } from '@/ui/screens/StoryLayer'
 
 // 해상도 배율 상한. 고해상도 화면에서 3배 이상으로 렌더링하지 않도록 2로 제한한다.
 const MAX_DPR = Math.min(2, window.devicePixelRatio)
@@ -126,6 +127,7 @@ export default function GameCanvas({ onLoad }: GameCanvasProps) {
         {/* 개발 모드에서만 FPS·CPU·GPU 표시 (프로덕션 번들에서는 제거됨) */}
         {import.meta.env.DEV && <StatsGl className="dev-stats" />}
       </Canvas>
+      <StoryLayer />
       {import.meta.env.DEV && view === 'laptop' && <LaptopScreenPicker />}
     </div>
   )

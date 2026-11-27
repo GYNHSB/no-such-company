@@ -9,7 +9,7 @@ export type View = 'room' | 'laptop' | 'phone' | 'bed'
 
 /** 노트북에 떠 있는 화면(src/ui/screens/laptop). off: 아무 앱도 없는 빈 화면 */
 export type LaptopScreen =
-  'off' | 'jobsite' | 'install' | 'interview' | 'search' | 'inauguration' | 'wipe'
+  'off' | 'jobsite' | 'mail' | 'install' | 'interview' | 'work' | 'search' | 'inauguration' | 'wipe'
 
 interface GameState {
   screen: Screen

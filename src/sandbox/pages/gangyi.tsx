@@ -17,11 +17,12 @@ import { LockScreen } from '@/ui/screens/phone/LockScreen'
 import { MessagesApp } from '@/ui/screens/phone/MessagesApp'
 import { NotesApp } from '@/ui/screens/phone/NotesApp'
 import { PhotosApp, type PhotoVideo } from '@/ui/screens/phone/PhotosApp'
+import { SnsApp, type SnsPost } from '@/ui/screens/phone/SnsApp'
 import styles from './gangyi.module.css'
 
 /**
  * 강이의 테스트 페이지. 개발 서버에서 `?sandbox=gangyi` 주소로 연다.
- * 휴대폰 화면(#35)을 하나씩 띄워 본다. 지금은 잠금 화면 알림(#49), 홈 화면(#101), 문자 앱(#50), 은행 앱(#51), 사진 앱(#52), 메모 앱(#62).
+ * 휴대폰 화면(#35)을 하나씩 띄워 본다. 지금은 잠금 화면 알림(#49), 홈 화면(#101), 문자 앱(#50), 은행 앱(#51), 사진 앱(#52), SNS(#53), 메모 앱(#62).
  * 받은 메시지와 읽음은 phoneStore가 들고 있고, 이 페이지의 버튼이 사건 실행 코드 대신 메시지를 도착시킨다.
  */
 
@@ -162,6 +163,26 @@ const CARDS: BankCard[] = [{ id: 'check', label: '하나로 체크카드', last4
  */
 const RECORDING = { id: 'interview_recording', label: '김아영 · 모레온', duration: 30 }
 
+/** 가상 SNS 이름. 대본에는 "SNS"라고만 있어 임시로 지었다. 팀 확인이 필요하다 */
+const SNS = '픽담'
+
+/**
+ * 내 SNS 게시물(4일차 장면 3). 글은 대본 그대로다.
+ * 사진 일곱 장은 아직 없어 임시 그림이 나오고, 대본대로 세 번째 사진(3/7)부터 보인다.
+ * 좋아요, 팔로워, 팔로잉 수는 대본에 없어 임의로 넣었다.
+ */
+const SNS_POSTS: SnsPost[] = [
+  {
+    id: 'sns_handwriting',
+    ago: '2년 전',
+    photos: Array.from({ length: 7 }, () => undefined),
+    photoLabel: '손글씨 메뉴판·안내문',
+    startAt: 2,
+    lines: ['동네 가게들의 손글씨 메뉴판·안내문', '삐뚤빼뚤한 글씨인데 이상하게 제일 잘 읽힌다.'],
+    likes: 4,
+  },
+]
+
 /** 누른 알림이 여는 앱 */
 const APP_NAMES: Partial<Record<Message['channel'], string>> = { sms: '문자 앱', bank: '은행 앱' }
 
@@ -171,6 +192,7 @@ const VIEWS: { id: PhoneApp; label: string }[] = [
   { id: 'messages', label: '문자 앱 (#50)' },
   { id: 'bank', label: '은행 앱 (#51)' },
   { id: 'photos', label: '사진 앱 (#52)' },
+  { id: 'sns', label: 'SNS (#53)' },
   { id: 'notes', label: '메모 앱 (#62)' },
 ]
 
@@ -272,6 +294,7 @@ export default function SandboxPage() {
   ]
   const homeApps: HomeApp<PhoneApp>[] = [
     { id: 'photos', label: '사진', icon: 'photos' },
+    { id: 'sns', label: SNS, icon: 'sns' },
     { id: 'notes', label: '메모', icon: 'notes' },
     {
       id: 'bank',
@@ -353,6 +376,18 @@ export default function SandboxPage() {
             videos={videos}
             onPlay={(id) => setOpened(`영상 재생 (${id})`)}
             onEnded={(id) => setOpened(`영상 끝까지 봄 (${id})`)}
+            onHome={goHome}
+          />
+        ) : app === 'sns' ? (
+          <SnsApp
+            key={scene.id}
+            time={time}
+            app={SNS}
+            author={name}
+            followers={23}
+            following={41}
+            posts={SNS_POSTS}
+            onSeePhoto={(id, index) => setOpened(`SNS 사진 봄 (${id} ${index + 1}/7)`)}
             onHome={goHome}
           />
         ) : app === 'notes' ? (

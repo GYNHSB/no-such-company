@@ -2,7 +2,16 @@ import { describe, expect, it } from 'vitest'
 import { SUSPICION } from '@/data/rules'
 import { day1 } from '@/data/days/day1'
 import type { DayScript } from '@/data/types'
-import { choose, endScene, newStory, runLater, signal, startDay, type Step } from './story'
+import {
+  choose,
+  closeDateCard,
+  endScene,
+  newStory,
+  runLater,
+  signal,
+  startDay,
+  type Step,
+} from './story'
 
 /** 타이머를 기다린 셈 치고 later에 쌓인 사건을 모두 실행한다 */
 function flush(step: Step, script: DayScript): Step {
@@ -16,39 +25,58 @@ function flush(step: Step, script: DayScript): Step {
   return { state, later: [] }
 }
 
+/** 1일차를 플레이어가 하는 순서대로 누른다. 타이머는 바로 끝난 셈 친다 */
+const DAY1_PRESSES = [
+  'interact_laptop',
+  'btn_jobsite_close',
+  'btn_mail_close',
+  'interact_phone',
+  'interact_laptop',
+  'btn_install_interview_app',
+  'btn_interview_join',
+  'interview_end',
+  'interact_laptop',
+  'btn_work_send',
+  'btn_work_video_send',
+]
+const press = (step: Step, objectId: string) =>
+  flush(signal(step.state, day1, { type: 'interact', objectId }), day1)
+
 describe('1일차', () => {
   it('처음부터 끝까지 이어진다', () => {
-    let step = startDay(newStory(), day1)
-    expect(step.state.goal).toBe('노트북 메일함을 확인하자')
-    expect(step.later).toEqual([{ eventId: 'd1_app', delaySec: 2 }])
-
-    step = flush(step, day1)
-    expect(step.state.goal).toBe('면접 앱을 설치하고 접속하자')
-
-    step = signal(step.state, day1, { type: 'interact', objectId: 'btn_install_interview_app' })
-    expect(step.state.scene).toBe('interview')
-    step = flush({ ...step, state: endScene(step.state) }, day1)
+    let step = flush(startDay(newStory(), day1), day1)
+    expect(step.state.goal).toBe('책상 위 노트북을 확인하세요.')
+    expect(step.state.laptop).toBe('jobsite')
+    for (const id of DAY1_PRESSES) step = press(step, id)
 
     const s = step.state
     expect(s.fired).toEqual(day1.events.map((e) => e.id))
     expect(s.evidence).toEqual(day1.evidence.map((c) => c.id))
-    expect(s.messages.map((m) => m.id)).toEqual(['m_offer', 'm_app', 'm_docs', 'm_face'])
+    expect(s.messages.map((m) => m.id)).toEqual([
+      'd1-sms-hr',
+      'm_pass',
+      'm_app',
+      'm_final',
+      'm_docs',
+      'm_face',
+      'm_first_work',
+    ])
     expect(s.flags).toEqual({ submittedDocuments: true })
-    expect(s.goal).toBe('첫 업무를 시작하자')
-    expect(s.scene).toBeNull()
+    expect(s.said[0]).toBe('나는 {name}.')
+    expect(s.dateCard).toBe('그날 오후')
+    expect(s.laptop).toBe('work')
+    expect(s.goal).toBe('1일차가 끝났습니다.')
+  })
+
+  it('대본 순서보다 먼저 누른 것은 무시한다', () => {
+    const early = press(flush(startDay(newStory(), day1), day1), 'interact_phone')
+    expect(early.state.fired).toEqual(['d1_wake'])
   })
 
   it('같은 사건은 두 번 실행되지 않는다', () => {
-    const once = signal(startDay(newStory(), day1).state, day1, {
-      type: 'interact',
-      objectId: 'btn_install_interview_app',
-    })
-    const twice = signal(once.state, day1, {
-      type: 'interact',
-      objectId: 'btn_install_interview_app',
-    })
-    expect(twice.state.evidence).toEqual(once.state.evidence)
-    expect(twice.later).toEqual([])
+    const once = press(flush(startDay(newStory(), day1), day1), 'interact_laptop')
+    const twice = press(once, 'interact_laptop')
+    expect(twice.state.said).toEqual(once.state.said)
   })
 
   it('원래 상태를 바꾸지 않는다', () => {
@@ -97,6 +125,12 @@ const toy: DayScript = {
 }
 
 describe('엔진 규칙', () => {
+  it('장면과 날짜 카드를 닫는다', () => {
+    const s = { ...newStory(), scene: 'interview', dateCard: '그날 오후' }
+    expect(endScene(s).scene).toBeNull()
+    expect(closeDateCard(s).dateCard).toBeNull()
+  })
+
   it('기다릴 시간이 없는 다음 사건은 바로 실행한다', () => {
     const { state, later } = startDay(newStory(), toy)
     expect(state.day).toBe(2)

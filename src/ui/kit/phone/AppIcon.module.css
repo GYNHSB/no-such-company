@@ -29,6 +29,11 @@
   color: var(--phone-blue);
 }
 
+/* 가상 SNS. 빨간 바탕에 흰 사진 두 장 */
+.sns {
+  background: var(--phone-red);
+}
+
 .glyph {
   width: 64%;
   height: 64%;
