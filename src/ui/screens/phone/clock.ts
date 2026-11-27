@@ -28,6 +28,13 @@ export function daysAgo(today: Date, date: Date): number {
   return Math.round((startOfDay(today) - startOfDay(date)) / DAY_MS)
 }
 
+/** 받은 때를 "오늘 15:11", "어제 15:11", "11월 23일 (월) 10:11"로 보여 준다 */
+export function formatDayTime(today: Date, date: Date, time: string): string {
+  const ago = daysAgo(today, date)
+  const day = ago <= 0 ? '오늘' : ago === 1 ? '어제' : formatDate(date)
+  return `${day} ${time}`
+}
+
 /**
  * 휴대폰 시계가 흐르게 한다. start("11:27")에서 시작해 실제로 1분이 지날 때마다 1분씩 올라간다.
  * start가 바뀌면(새 알림이 도착해 대본의 시각으로 맞출 때) 그 시각에서 다시 흐른다.

@@ -3,7 +3,7 @@ import type { Message } from '@/data/types'
 import { Bubble } from '@/ui/kit/phone/Bubble'
 import { PhoneNav } from '@/ui/kit/phone/PhoneNav'
 import { PhoneScreen } from '@/ui/kit/phone/PhoneScreen'
-import { daysAgo, formatDate, formatMonthDay } from './clock'
+import { daysAgo, formatDayTime, formatMonthDay } from './clock'
 import styles from './MessagesApp.module.css'
 
 /** 받은 문자. 대본의 Message에 받은 날을 붙인 것이다 */
@@ -53,13 +53,6 @@ const listTime = (today: Date, message: ReceivedMessage) => {
   const ago = daysAgo(today, message.date)
   if (ago <= 0) return message.time
   return ago === 1 ? '어제' : formatMonthDay(message.date)
-}
-
-/** 대화방 구분선: "오늘 15:11", "어제 15:11", "11월 23일 (월) 10:11" */
-const stamp = (today: Date, message: ReceivedMessage) => {
-  const ago = daysAgo(today, message.date)
-  const day = ago <= 0 ? '오늘' : ago === 1 ? '어제' : formatDate(message.date)
-  return `${day} ${message.time}`
 }
 
 /** 같은 날 같은 분에 온 문자는 한 묶음으로 본다 */
@@ -162,7 +155,9 @@ export function MessagesApp({
             return (
               <li key={message.id} className={styles.bubbleItem}>
                 {!sameMoment(thread.messages[index - 1], message) && (
-                  <time className={styles.stamp}>{stamp(today, message)}</time>
+                  <time className={styles.stamp}>
+                    {formatDayTime(today, message.date, message.time)}
+                  </time>
                 )}
                 <Bubble
                   side="in"
