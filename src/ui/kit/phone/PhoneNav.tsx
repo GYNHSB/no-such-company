@@ -10,6 +10,8 @@ interface Props {
   onBack?: () => void
   /** 줄 가운데에 놓을 것. 대화방의 사람 모양과 이름처럼 줄보다 높아도 된다 */
   children?: ReactNode
+  /** 줄 오른쪽 끝에 놓을 것(알림 단추 등) */
+  right?: ReactNode
   /** 줄 아래에 오는 아이폰식 큰 제목 */
   title?: string
 }
@@ -24,12 +26,19 @@ function Chevron() {
 }
 
 /**
- * 휴대폰 앱 화면 위쪽 줄. 왼쪽에 뒤로 가기, 가운데에 내용, 아래에 큰 제목을 둔다.
+ * 휴대폰 앱 화면 위쪽 줄. 왼쪽에 뒤로 가기, 가운데에 내용, 오른쪽에 단추, 아래에 큰 제목을 둔다.
  * 내용이 없어도 줄 높이는 차지해서, 앱마다 큰 제목이 같은 높이에 온다.
  * 좌우 여백은 놓는 쪽이 정한다(PhoneScreen 본문은 이미 16pt 여백이 있다).
  * 뒤로 가기 색은 --phone-accent로 바꾼다. 정하지 않으면 파랑이다.
  */
-export function PhoneNav({ backLabel, backAriaLabel = '뒤로', onBack, children, title }: Props) {
+export function PhoneNav({
+  backLabel,
+  backAriaLabel = '뒤로',
+  onBack,
+  children,
+  right,
+  title,
+}: Props) {
   const back = (
     <>
       <Chevron />
@@ -56,6 +65,7 @@ export function PhoneNav({ backLabel, backAriaLabel = '뒤로', onBack, children
           )
         )}
         {children && <div className={styles.center}>{children}</div>}
+        {right && <div className={styles.right}>{right}</div>}
       </div>
       {title && <h1 className={styles.title}>{title}</h1>}
     </header>
