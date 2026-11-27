@@ -1,0 +1,335 @@
+/* 웹 화면이라서 휴대폰 색이 아니라 웹 화면 색(--web-*, --search-*)을 쓰는 밝은 화면이다.
+   PhoneScreen이 쓰는 휴대폰 색을 이 안에서만 웹 색으로 바꾼다. */
+.theme {
+  --phone-bg: var(--web-surface);
+  --phone-ink: var(--web-ink);
+  --phone-muted: var(--web-muted);
+  --phone-line: var(--web-line);
+  position: absolute;
+  inset: 0;
+}
+
+/* 크기는 PhoneScreen이 정한 --pt(화면 너비 390pt 기준)로 맞춘다 */
+.browser {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  font-family: var(--web-font);
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.line {
+  width: calc(var(--pt) * 20);
+  height: calc(var(--pt) * 20);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ── 검색창 ── */
+
+/* 둥근 알약 모양. 왼쪽 돋보기가 검색 단추다 */
+.form {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: calc(var(--pt) * 50);
+  border: calc(var(--pt) * 1) solid var(--web-line);
+  border-radius: var(--radius-pill);
+  background: var(--web-surface);
+  box-shadow: var(--web-shadow);
+}
+
+.form:focus-within {
+  border-color: var(--search-brand);
+}
+
+.submit {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: calc(var(--pt) * 48);
+  height: 100%;
+  padding: 0 0 0 calc(var(--pt) * 6);
+  border: 0;
+  background: none;
+  color: var(--web-muted);
+  cursor: pointer;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 calc(var(--pt) * 18) 0 0;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--web-ink);
+  font: inherit;
+  font-size: calc(var(--pt) * 16);
+}
+
+.input::placeholder {
+  color: var(--web-muted);
+}
+
+/* ── 첫 화면: 가운데 이름, 검색창, 바로 가기 ── */
+
+.start {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--pt) * 26);
+  padding-top: calc(var(--pt) * 120);
+}
+
+/* 사이트 이름. 마지막 글자만 둘째 색 */
+.logo,
+.logoSmall {
+  margin: 0;
+  color: var(--search-brand);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.logo span,
+.logoSmall span {
+  color: var(--search-brand-2);
+}
+
+.logo {
+  font-size: calc(var(--pt) * 52);
+  line-height: 1;
+}
+
+/* 바로 가기. 동그란 아이콘 아래에 이름 */
+.shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: calc(var(--pt) * 18);
+  margin: calc(var(--pt) * 6) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shortcut {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--pt) * 8);
+  width: calc(var(--pt) * 76);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--web-ink);
+  font: inherit;
+  font-size: calc(var(--pt) * 12);
+  line-height: 1.3;
+  text-align: center;
+  cursor: pointer;
+}
+
+.shortcutIcon {
+  display: grid;
+  place-items: center;
+  width: calc(var(--pt) * 52);
+  height: calc(var(--pt) * 52);
+  border-radius: 50%;
+  background: var(--search-field);
+  color: var(--search-brand);
+  font-size: calc(var(--pt) * 20);
+  font-weight: 800;
+}
+
+/* ── 검색 결과 ── */
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pt) * 12);
+  padding: calc(var(--pt) * 8) 0 calc(var(--pt) * 20);
+}
+
+.resultsHead {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--pt) * 10);
+  margin: 0 calc(var(--pt) * -16);
+  padding: 0 calc(var(--pt) * 16) calc(var(--pt) * 14);
+  border-bottom: calc(var(--pt) * 1) solid var(--web-line);
+}
+
+.logoSmall {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: calc(var(--pt) * 26);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.count {
+  margin: 0;
+  font-size: calc(var(--pt) * 13);
+  color: var(--web-muted);
+}
+
+.empty {
+  margin: calc(var(--pt) * 8) 0 calc(var(--pt) * 10);
+  font-size: calc(var(--pt) * 16);
+}
+
+.tips {
+  display: grid;
+  gap: calc(var(--pt) * 4);
+  margin: 0;
+  padding-left: calc(var(--pt) * 18);
+  font-size: calc(var(--pt) * 14);
+  color: var(--web-muted);
+}
+
+.hits {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 검색 결과 한 건: 사이트(동그란 글자와 주소), 파란 제목, 설명 */
+.hit {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pt) * 5);
+  width: 100%;
+  padding: calc(var(--pt) * 6) 0 calc(var(--pt) * 16);
+  border: 0;
+  border-bottom: calc(var(--pt) * 1) solid var(--web-line);
+  background: none;
+  color: var(--web-ink);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.hitSite {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 8);
+}
+
+.favicon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: calc(var(--pt) * 28);
+  height: calc(var(--pt) * 28);
+  border-radius: 50%;
+  background: var(--search-field);
+  color: var(--search-brand);
+  font-size: calc(var(--pt) * 13);
+  font-weight: 800;
+}
+
+.hitAddress {
+  font-size: calc(var(--pt) * 13);
+  color: var(--web-muted);
+}
+
+.hitTitle {
+  color: var(--search-link);
+  font-size: calc(var(--pt) * 19);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.hitText {
+  font-size: calc(var(--pt) * 14);
+  line-height: 1.5;
+  color: var(--web-muted);
+}
+
+/* ── 브라우저 아래 줄 ── */
+
+/* 화면 아래에 붙어 있다. PhoneScreen 본문의 좌우 여백까지 덮는다 */
+.bar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 10);
+  margin: 0 calc(var(--pt) * -16);
+  /* 아래쪽을 띄워 홈 막대의 누르는 자리와 겹쳐 보이지 않게 한다 */
+  padding: calc(var(--pt) * 8) calc(var(--pt) * 16) calc(var(--pt) * 14);
+  border-top: calc(var(--pt) * 1) solid var(--web-line);
+  /* 그 아래 홈 막대 자리와 같은 색으로 이어지게 한다 */
+  background: var(--phone-bg);
+}
+
+.back {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: calc(var(--pt) * 4);
+  padding: calc(var(--pt) * 8) calc(var(--pt) * 4) calc(var(--pt) * 8) 0;
+  border: 0;
+  background: none;
+  color: var(--search-brand);
+  font: inherit;
+  font-size: calc(var(--pt) * 17);
+  cursor: pointer;
+}
+
+.back svg {
+  width: calc(var(--pt) * 11);
+  height: calc(var(--pt) * 19);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 주소창 */
+.address {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  gap: calc(var(--pt) * 6);
+  min-width: 0;
+  height: calc(var(--pt) * 40);
+  margin: 0;
+  padding: 0 calc(var(--pt) * 12);
+  border-radius: calc(var(--pt) * 12);
+  background: var(--search-field);
+  color: var(--web-ink);
+  font-size: calc(var(--pt) * 15);
+}
+
+.address span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lock {
+  flex: none;
+  width: calc(var(--pt) * 14);
+  height: calc(var(--pt) * 14);
+  fill: none;
+  stroke: var(--web-muted);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}

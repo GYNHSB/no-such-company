@@ -91,6 +91,12 @@
   --blabla-brand: #0a9f8d; /* 대표 색. 실제 서비스의 색과 겹치지 않게 골랐다 */
   --blabla-brand-tint: #e0f5f2; /* 대표 색을 옅게 깐 바탕 */
 
+  /* ── 휴대폰 브라우저의 검색 사이트 (가상 서비스. 실제 검색 서비스의 색 조합과 겹치지 않게 골랐다) ── */
+  --search-brand: #3457d5; /* 이름, 뒤로 가기 */
+  --search-brand-2: #f08a00; /* 이름의 마지막 글자 */
+  --search-link: #1a3fb0; /* 검색 결과 제목 */
+  --search-field: #f1f3f6; /* 검색창, 주소창 */
+
   /* ── 개인 노트북의 웹 화면 (브라우저, 취업 사이트, 검색) ── */
   --web-font: 'Pretendard', var(--font-ui);
   --web-chrome: #dfe3e8; /* 브라우저 탭 줄 */
