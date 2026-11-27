@@ -1,4 +1,5 @@
-import type { Message } from '@/data/types'
+import type { Channel, Message } from '@/data/types'
+import { AppIcon, type AppIconKind } from '@/ui/kit/phone/AppIcon'
 import { Notification } from '@/ui/kit/phone/Notification'
 import { PhoneScreen } from '@/ui/kit/phone/PhoneScreen'
 import styles from './LockScreen.module.css'
@@ -13,6 +14,9 @@ interface Props {
   /** 알림을 눌렀을 때. 어떤 앱을 열지는 받는 쪽이 정한다 */
   onOpen?: (message: Message) => void
 }
+
+/** 알림 왼쪽에 붙는 앱 아이콘 */
+const ICONS: Partial<Record<Channel, AppIconKind>> = { sms: 'message', bank: 'bank' }
 
 const toMinutes = (clock: string) => {
   const [hour = 0, minute = 0] = clock.split(':').map(Number)
@@ -33,7 +37,7 @@ const ago = (now: string, at: string) => {
 
 /**
  * 휴대폰 잠금 화면. PhoneCloseup 안에 넣는다.
- * 문자는 앱 이름 "메시지" 아래에 보낸 사람을, 그 밖의 알림은 보낸 곳을 앱 이름 자리에 보여 준다.
+ * 문자는 보낸 사람을, 그 밖의 알림은 보낸 곳을 제목 자리에 보여 준다.
  * 알림이 언제 도착하는지는 엔진이 정하고, 이 화면은 받은 목록을 그리고 누른 알림을 넘기기만 한다.
  */
 export function LockScreen({ time, date, messages, onOpen }: Props) {
@@ -50,10 +54,12 @@ export function LockScreen({ time, date, messages, onOpen }: Props) {
           <ul className={styles.list} aria-label="알림">
             {newestFirst.map((message) => {
               const isSms = message.channel === 'sms'
+              const icon = ICONS[message.channel]
               return (
                 <li key={message.id} className={styles.item}>
                   <Notification
                     app={isSms ? '메시지' : message.from}
+                    icon={icon && <AppIcon kind={icon} />}
                     title={isSms ? message.from : undefined}
                     time={ago(time, message.time)}
                     body={message.body}
