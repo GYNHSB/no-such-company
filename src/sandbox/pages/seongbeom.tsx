@@ -6,6 +6,7 @@ import { MESSENGER_DAYS } from '@/ui/screens/work/messengerScript'
 import { WebMail } from '@/ui/screens/work/WebMail'
 import { WorkChannelView } from '@/ui/screens/work/WorkChannelView'
 import { WorkMessenger, type MessengerDay } from '@/ui/screens/work/WorkMessenger'
+import { WorkVideoCapture } from '@/ui/screens/work/WorkVideoCapture'
 import { ONBOARDING_FILES, ONBOARDING_FOLDER } from '@/ui/screens/work/onboardingFiles'
 import { WorkFileComposer } from '@/ui/screens/work/WorkFileComposer'
 import { WorkMailbox, type Mail } from '@/ui/screens/work/WorkMailbox'
@@ -55,6 +56,25 @@ export default function SandboxPage() {
       .join('\n'),
   }))
 
+  // 본인 확인 영상(#40): 영상을 보내 준 요청 메시지 id
+  const [videoSentFor, setVideoSentFor] = useState<string[]>([])
+  // 4일차 장면 6의 선택지 "찍어서 보낸다"를 고른 것을 흉내 낸다(선택지 고르기는 별도 이슈)
+  const [choseReshoot, setChoseReshoot] = useState(false)
+  const arrived = daysUpTo(count)
+  const lastId = arrived.flatMap((day) => day.messages).at(-1)?.id ?? ''
+  const isVideoPending = !videoSentFor.includes(lastId)
+  const isReshootChoice = lastId === 'm_d4_face_again' && isVideoPending && !choseReshoot
+  // 영상 요청이 마지막으로 온 메시지이고 아직 보내지 않았으면 입력창 자리에 영상 찍기가 나온다
+  const wantsVideo =
+    isVideoPending && (lastId === 'm_face' || (lastId === 'm_d4_face_again' && choseReshoot))
+  const videoMessage = (requestId: string): Message => ({
+    id: `m_sent_video_${requestId}`,
+    channel: 'messenger',
+    from: '{name}',
+    time: requestId === 'm_face' ? '14:22' : '16:35',
+    body: '[본인확인_영상.mp4] 동영상 · 0:15',
+  })
+
   const withUnread = (mails: readonly Mail[]) =>
     mails.map((mail) => ({ ...mail, unread: !read.includes(mail.id) }))
   const mailProps = {
@@ -103,10 +123,17 @@ export default function SandboxPage() {
               onClick={() => {
                 setCount(1)
                 setSent([])
+                setVideoSentFor([])
+                setChoseReshoot(false)
               }}
             >
               처음부터
             </button>
+            {isReshootChoice && (
+              <button type="button" onClick={() => setChoseReshoot(true)}>
+                선택지 흉내: 찍어서 보낸다 (#40)
+              </button>
+            )}
             <button
               type="button"
               disabled={count >= TOTAL}
@@ -156,22 +183,38 @@ export default function SandboxPage() {
               ) : selectedId === DM_LEAD_ID ? (
                 <WorkMessenger
                   name="김아영 팀장"
-                  days={daysUpTo(count).map((day, index) =>
-                    index === 0 ? { ...day, messages: [...day.messages, ...sentMessages] } : day,
-                  )}
+                  days={arrived.map((day, index) => ({
+                    ...day,
+                    messages: [
+                      ...day.messages,
+                      ...(index === 0 ? sentMessages : []),
+                      ...day.messages
+                        .filter((message) => videoSentFor.includes(message.id))
+                        .map((message) => videoMessage(message.id)),
+                    ],
+                  }))}
                   playerName={playerName}
                   onOpenTask={(task, message) => setClicked(`${message.id} · ${task.label}`)}
                   composer={
-                    <WorkFileComposer
-                      files={ONBOARDING_FILES}
-                      folder={ONBOARDING_FOLDER}
-                      required={ONBOARDING_FILES.map((file) => file.id)}
-                      placeholder="김아영 팀장에게 메시지 보내기"
-                      onSend={(ids) => {
-                        setSent((all) => [...all, ids])
-                        setClicked(`서류 보내기 · ${ids.join(', ')}`)
-                      }}
-                    />
+                    wantsVideo ? (
+                      <WorkVideoCapture
+                        onSend={() => {
+                          setVideoSentFor((ids) => [...ids, lastId])
+                          setClicked(`영상 보내기 · ${lastId}`)
+                        }}
+                      />
+                    ) : (
+                      <WorkFileComposer
+                        files={ONBOARDING_FILES}
+                        folder={ONBOARDING_FOLDER}
+                        required={ONBOARDING_FILES.map((file) => file.id)}
+                        placeholder="김아영 팀장에게 메시지 보내기"
+                        onSend={(ids) => {
+                          setSent((all) => [...all, ids])
+                          setClicked(`서류 보내기 · ${ids.join(', ')}`)
+                        }}
+                      />
+                    )
                   }
                 />
               ) : (
