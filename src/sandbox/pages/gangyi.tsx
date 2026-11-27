@@ -102,6 +102,9 @@ const SCENES: Scene[] = [
   },
 ]
 
+/** 잠금 화면 왼쪽 위에 보이는 가상 통신망 이름(도담텔레콤의 줄임말). 실존 통신사 이름은 쓰지 않는다 */
+const CARRIER = 'DT'
+
 /** 누른 알림이 여는 앱. 앱 화면은 다른 이슈(#50 문자, #51 은행)에서 만든다 */
 const APP_NAMES: Partial<Record<Message['channel'], string>> = { sms: '문자 앱', bank: '은행 앱' }
 
@@ -152,6 +155,7 @@ export default function SandboxPage() {
       >
         <LockScreen
           time={time}
+          carrier={CARRIER}
           date={dateOf(scene.week, scene.weekday)}
           messages={messages}
           onOpen={(m) =>
