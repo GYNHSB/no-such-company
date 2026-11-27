@@ -9,17 +9,19 @@ import {
   usePhoneStore,
 } from '@/stores/phoneStore'
 import { PhoneCloseup } from '@/ui/kit/phone/PhoneCloseup'
+import { INTERVIEW_LINES } from '@/ui/screens/laptop/videoScript'
 import { type BankAccount, BankApp, type BankCard } from '@/ui/screens/phone/BankApp'
 import { useFlowingClock } from '@/ui/screens/phone/clock'
 import { type HomeApp, HomeScreen } from '@/ui/screens/phone/HomeScreen'
 import { LockScreen } from '@/ui/screens/phone/LockScreen'
 import { MessagesApp } from '@/ui/screens/phone/MessagesApp'
 import { NotesApp } from '@/ui/screens/phone/NotesApp'
+import { PhotosApp, type PhotoVideo } from '@/ui/screens/phone/PhotosApp'
 import styles from './gangyi.module.css'
 
 /**
  * 강이의 테스트 페이지. 개발 서버에서 `?sandbox=gangyi` 주소로 연다.
- * 휴대폰 화면(#35)을 하나씩 띄워 본다. 지금은 잠금 화면 알림(#49), 홈 화면(#101), 문자 앱(#50), 은행 앱(#51), 메모 앱(#62).
+ * 휴대폰 화면(#35)을 하나씩 띄워 본다. 지금은 잠금 화면 알림(#49), 홈 화면(#101), 문자 앱(#50), 은행 앱(#51), 사진 앱(#52), 메모 앱(#62).
  * 받은 메시지와 읽음은 phoneStore가 들고 있고, 이 페이지의 버튼이 사건 실행 코드 대신 메시지를 도착시킨다.
  */
 
@@ -154,6 +156,12 @@ const ACCOUNTS: (Omit<BankAccount, 'opened'> & { openedBy?: string })[] = [
 /** 내 카드 견본. 대본에 없어 임의로 넣었다 */
 const CARDS: BankCard[] = [{ id: 'check', label: '하나로 체크카드', last4: '2917', spent: 128_400 }]
 
+/**
+ * 사진 앱에 들어 있는 면접 녹화(1일차 장면 5, 약 30초). 영상 파일은 아직 없어서 임시 화면으로 재생된다.
+ * 자막은 노트북의 화상 면접 화면과 같은 대사다.
+ */
+const RECORDING = { id: 'interview_recording', label: '김아영 · 모레온', duration: 30 }
+
 /** 누른 알림이 여는 앱 */
 const APP_NAMES: Partial<Record<Message['channel'], string>> = { sms: '문자 앱', bank: '은행 앱' }
 
@@ -162,6 +170,7 @@ const VIEWS: { id: PhoneApp; label: string }[] = [
   { id: 'home', label: '홈 화면 (#101)' },
   { id: 'messages', label: '문자 앱 (#50)' },
   { id: 'bank', label: '은행 앱 (#51)' },
+  { id: 'photos', label: '사진 앱 (#52)' },
   { id: 'notes', label: '메모 앱 (#62)' },
 ]
 
@@ -253,7 +262,16 @@ export default function SandboxPage() {
     const notice = notices.find((n) => n.id === openedBy)
     return notice ? [{ ...account, opened: { date: notice.date, time: notice.time } }] : []
   })
+  // 면접 녹화는 1일차에 찍힌 것이다
+  const videos: PhotoVideo[] = [
+    {
+      ...RECORDING,
+      date: dateOfDay(weekOne, SCENES[0].info),
+      captions: INTERVIEW_LINES.map((line) => ({ ...line, text: fill(line.text) })),
+    },
+  ]
   const homeApps: HomeApp<PhoneApp>[] = [
+    { id: 'photos', label: '사진', icon: 'photos' },
     { id: 'notes', label: '메모', icon: 'notes' },
     {
       id: 'bank',
@@ -325,6 +343,16 @@ export default function SandboxPage() {
               markRead(ids)
               setOpened(`은행 알림 읽음 (${ids.join(', ')})`)
             }}
+            onHome={goHome}
+          />
+        ) : app === 'photos' ? (
+          <PhotosApp
+            key={scene.id}
+            time={time}
+            today={today}
+            videos={videos}
+            onPlay={(id) => setOpened(`영상 재생 (${id})`)}
+            onEnded={(id) => setOpened(`영상 끝까지 봄 (${id})`)}
             onHome={goHome}
           />
         ) : app === 'notes' ? (
