@@ -1,4 +1,4 @@
-import { Html, OrbitControls } from '@react-three/drei'
+import { Html, OrbitControls, useGLTF } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import { Suspense, useEffect, useState } from 'react'
 import { LAPTOP_SCREEN } from '@/game/world/anchors'
@@ -57,7 +57,8 @@ function RoomLaptopTest() {
       <Canvas flat camera={{ position: CAMERA_POSITION, fov: 70, near: 0.05 }}>
         <ambientLight intensity={1.2} />
         <Suspense fallback={null}>
-          <Room />
+          <Room hide={ROOM_HIDE} />
+          <Laptop />
           <Html
             transform
             position={SCREEN_CENTER}
@@ -78,6 +79,16 @@ function RoomLaptopTest() {
       </Canvas>
     </div>
   )
+}
+
+const LAPTOP_URL = `${import.meta.env.BASE_URL}models/laptop.glb`
+// 옛 노트북은 숨기고 laptop.glb로 바꿔 보여 준다. Room이 매번 다시 만들지 않게 밖에 둔다
+const ROOM_HIDE = ['interact_laptop'] as const
+
+/** 새 노트북 모델(laptop.glb)을 room.glb의 interact_laptop 자리에 둔다. 화면 위치는 옛 모델과 같다 */
+function Laptop() {
+  const { scene } = useGLTF(LAPTOP_URL)
+  return <primitive object={scene} position={[-1.3, 0.74, 0.489]} />
 }
 
 // 2D로만 보는 노트북 테스트. 다시 보려면 SandboxPage에서 <RoomLaptopTest /> 대신 <LaptopTest />
