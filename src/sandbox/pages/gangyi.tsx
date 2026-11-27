@@ -10,21 +10,24 @@ import {
 } from '@/stores/phoneStore'
 import { PhoneCloseup } from '@/ui/kit/phone/PhoneCloseup'
 import { INTERVIEW_LINES } from '@/ui/screens/laptop/videoScript'
+import { INVITE_SENDER_ADDRESS } from '@/ui/screens/work/mailScript'
 import { type BankAccount, BankApp, type BankCard } from '@/ui/screens/phone/BankApp'
 import { BlablaApp, type BlablaPost } from '@/ui/screens/phone/BlablaApp'
+import { BrowserApp } from '@/ui/screens/phone/BrowserApp'
 import { CallApp, type Contact } from '@/ui/screens/phone/CallApp'
 import { useFlowingClock } from '@/ui/screens/phone/clock'
 import { type HomeApp, HomeScreen } from '@/ui/screens/phone/HomeScreen'
 import { LockScreen } from '@/ui/screens/phone/LockScreen'
 import { MessagesApp } from '@/ui/screens/phone/MessagesApp'
 import { NotesApp } from '@/ui/screens/phone/NotesApp'
+import { RemoteAdminPage } from '@/ui/screens/phone/RemoteAdminPage'
 import { PhotosApp, type PhotoVideo } from '@/ui/screens/phone/PhotosApp'
 import { SnsApp, type SnsPost } from '@/ui/screens/phone/SnsApp'
 import styles from './gangyi.module.css'
 
 /**
  * 강이의 테스트 페이지. 개발 서버에서 `?sandbox=gangyi` 주소로 연다.
- * 휴대폰 화면(#35)을 하나씩 띄워 본다. 지금은 잠금 화면 알림(#49), 홈 화면(#101), 문자 앱(#50), 은행 앱(#51), 사진 앱(#52), SNS(#53), 블라블라(#54), 전화 앱(#56), 메모 앱(#62).
+ * 휴대폰 화면(#35)을 하나씩 띄워 본다. 지금은 잠금 화면 알림(#49), 홈 화면(#101), 문자 앱(#50), 은행 앱(#51), 사진 앱(#52), SNS(#53), 블라블라(#54), 인터넷과 원격 관리 정보(#55), 전화 앱(#56), 메모 앱(#62).
  * 받은 메시지와 읽음은 phoneStore가 들고 있고, 이 페이지의 버튼이 사건 실행 코드 대신 메시지를 도착시킨다.
  */
 
@@ -36,6 +39,8 @@ interface Scene {
   /** 항의 문자가 쏟아질 때처럼 손이 떨리는 장면 */
   shaking?: boolean
   messages: Message[]
+  /** 도착하는 메시지가 없는 장면에서 시계가 시작하는 시각 */
+  clock?: string
 }
 
 /** 견본 데이터. 문구는 대본 v1-2(docs/261126_대본_v1-2.md) 그대로다 */
@@ -124,6 +129,13 @@ const SCENES: Scene[] = [
         body: '매월 8% 확정 수익이라더니 출금이 안 됩니다. 신고합니다.',
       },
     ],
+  },
+  {
+    id: 'd5s4',
+    label: '5일차 장면 4',
+    info: { day: 5, week: 8, weekday: '목', title: '결단' }, // 대본에 요일이 없어 임의로 정했다
+    messages: [],
+    clock: '10:06', // 취임식 중. 대본의 마지막 메신저가 10:03이다
   },
 ]
 
@@ -310,6 +322,23 @@ const BLABLA_POSTS: BlablaPost[] = [
 /** 검색창 아래에 미리 보여 줄 검색어. 내 회사 이름과, 면접에서 들은 칭찬이다 */
 const BLABLA_SUGGESTIONS = [MY_COMPANY, '남들이 안 보는 걸 보시더라고요']
 
+/**
+ * 휴대폰 브라우저의 첫 화면. 노트북의 검색 화면(SearchScreen)과 같은 이름의 가상 검색 사이트 "찾아봄"이다.
+ * 주소는 실제로 쓰이지 않는 것으로 골랐다(2026-11-27에 등록되지 않은 것을 확인).
+ */
+const SEARCH_SITE = { name: '찾아봄', address: 'm.chajabom.co.kr' }
+
+/**
+ * 원격 관리 프로그램의 기기 정보(5일차 장면 4). 대본에는 "관리자 계정"과 "초대 메일을 보낸 그 주소"만 있다.
+ * 프로그램 이름은 노트북의 원격 초기화 화면과 같고, 허용된 것은 면접 앱 설치 화면의 권한 목록과 같다.
+ * 페이지 주소는 임의로 지었다(2026-11-27에 등록되지 않은 것을 확인).
+ */
+const REMOTE = {
+  address: 'remote-agent.co.kr/device',
+  program: '원격 관리 에이전트',
+  permissions: ['카메라와 마이크 사용', '화면 녹화', '원격 지원 연결', '부팅할 때 자동 실행'],
+}
+
 /** 누른 알림이 여는 앱 */
 const APP_NAMES: Partial<Record<Message['channel'], string>> = { sms: '문자 앱', bank: '은행 앱' }
 
@@ -321,6 +350,7 @@ const VIEWS: { id: PhoneApp; label: string }[] = [
   { id: 'photos', label: '사진 앱 (#52)' },
   { id: 'sns', label: 'SNS (#53)' },
   { id: 'blabla', label: '블라블라 (#54)' },
+  { id: 'browser', label: '인터넷 (#55)' },
   { id: 'phone', label: '전화 앱 (#56)' },
   { id: 'notes', label: '메모 앱 (#62)' },
 ]
@@ -453,11 +483,12 @@ export default function SandboxPage() {
       icon: 'message',
       badge: texts.filter((m) => !readIds.includes(m.id)).length,
     },
+    { id: 'browser', label: '인터넷', icon: 'browser' },
   ]
   const withName = <T extends Message>(m: T): T => ({ ...m, body: fill(m.body) })
   // 마지막으로 도착한 알림의 시각(대본)에서 시작해 실제 시간만큼 흐른다
   const time = useFlowingClock(
-    (scene.messages[arrived - 1] ?? scene.messages[0]).time,
+    (scene.messages[arrived - 1] ?? scene.messages[0])?.time ?? scene.clock ?? '09:00',
     fast ? 60 : 1,
   )
 
@@ -571,6 +602,35 @@ export default function SandboxPage() {
             suggestions={BLABLA_SUGGESTIONS}
             onSearch={(query) => setOpened(`블라블라 검색 (${query})`)}
             onRead={(id) => setOpened(`블라블라 글 읽음 (${id})`)}
+            onHome={goHome}
+          />
+        ) : app === 'browser' ? (
+          <BrowserApp
+            key={scene.id}
+            time={time}
+            search={SEARCH_SITE}
+            sites={[
+              {
+                id: 'remote',
+                title: REMOTE.program,
+                address: REMOTE.address,
+                description: '이 계정에 등록된 기기와 관리자 계정을 확인합니다.',
+                content: (
+                  <RemoteAdminPage
+                    program={REMOTE.program}
+                    devices={[
+                      { name: `${name}의 노트북`, kind: 'laptop' },
+                      { name: `${name}의 휴대폰`, kind: 'phone' },
+                    ]}
+                    admin={INVITE_SENDER_ADDRESS}
+                    registeredOn={dateOfDay(weekOne, SCENES[0].info)}
+                    permissions={REMOTE.permissions}
+                    onSee={() => setOpened('원격 관리 정보 봄')}
+                  />
+                ),
+              },
+            ]}
+            onSearch={(query) => setOpened(`인터넷 검색 (${query})`)}
             onHome={goHome}
           />
         ) : app === 'notes' ? (
