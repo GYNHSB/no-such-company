@@ -3,7 +3,7 @@ import type { Message } from '@/data/types'
 import { PhoneCloseup } from '@/ui/kit/phone/PhoneCloseup'
 import { useFlowingClock } from '@/ui/screens/phone/clock'
 import { LockScreen } from '@/ui/screens/phone/LockScreen'
-import { MessagesApp } from '@/ui/screens/phone/MessagesApp'
+import { MessagesApp, type ReceivedMessage } from '@/ui/screens/phone/MessagesApp'
 import styles from './gangyi.module.css'
 
 /**
@@ -140,12 +140,25 @@ export default function SandboxPage() {
   const [view, setView] = useState<View>('lock')
   // 문자 앱을 열 때 바로 보여 줄 대화. 잠금 화면 알림을 눌러 들어오면 그 대화가 열린다
   const [thread, setThread] = useState<string>()
+  // 읽은 문자의 id. 실제 게임에서는 스토어가 들고 있을 값이다
+  const [readIds, setReadIds] = useState<string[]>([])
 
-  const scene = SCENES.find((s) => s.id === sceneId) ?? SCENES[0]
+  const sceneIndex = Math.max(
+    0,
+    SCENES.findIndex((s) => s.id === sceneId),
+  )
+  const scene = SCENES[sceneIndex]
+  const today = dateOf(scene.week, scene.weekday)
   // 이름 바꾸기는 화면 밖에서 한다. 화면은 받은 글을 그대로 보여 준다
-  const messages = scene.messages
-    .slice(0, arrived)
-    .map((m) => ({ ...m, body: m.body.replaceAll('{name}', name) }))
+  const withName = (m: Message) => ({ ...m, body: m.body.replaceAll('{name}', name) })
+  const messages = scene.messages.slice(0, arrived).map(withName)
+  // 문자 앱에는 앞 장면에서 받은 문자도 쌓여 있다. 받은 날은 그 장면의 날짜다
+  const received: ReceivedMessage[] = [
+    ...SCENES.slice(0, sceneIndex).flatMap((s) =>
+      s.messages.map((m) => ({ ...withName(m), date: dateOf(s.week, s.weekday) })),
+    ),
+    ...messages.map((m) => ({ ...m, date: today })),
+  ].filter((m) => m.channel === 'sms')
   // 마지막으로 도착한 알림의 시각(대본)에서 시작해 실제 시간만큼 흐른다
   const time = useFlowingClock((messages.at(-1) ?? scene.messages[0]).time, fast ? 60 : 1)
 
@@ -154,6 +167,9 @@ export default function SandboxPage() {
     setArrived(0)
     setOpened('')
     setThread(undefined)
+    // 앞 장면에서 받은 문자는 이미 읽은 것으로 둔다
+    const index = SCENES.findIndex((s) => s.id === id)
+    setReadIds(SCENES.slice(0, index).flatMap((s) => s.messages.map((m) => m.id)))
   }
 
   const pickView = (id: View) => {
@@ -173,7 +189,7 @@ export default function SandboxPage() {
           <LockScreen
             time={time}
             carrier={CARRIER}
-            date={dateOf(scene.week, scene.weekday)}
+            date={today}
             messages={messages}
             onOpen={(m) => {
               setOpened(`${APP_NAMES[m.channel] ?? m.channel} 열기 (${m.from} ${m.time})`)
@@ -187,9 +203,14 @@ export default function SandboxPage() {
           <MessagesApp
             key={`${scene.id}-${thread ?? ''}`}
             time={time}
-            messages={messages.filter((m) => m.channel === 'sms')}
+            today={today}
+            messages={received}
+            readIds={readIds}
+            onRead={(ids) => {
+              setReadIds((prev) => [...new Set([...prev, ...ids])])
+              setOpened(`문자 읽음 (${ids.join(', ')})`)
+            }}
             defaultThread={thread}
-            onOpenThread={(from) => setOpened(`대화 열기 (${from})`)}
           />
         )}
       </PhoneCloseup>
