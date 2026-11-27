@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { BlankSentence, DayInfo, EvidenceCard, Message } from '@/data/types'
 import { useGameStore } from '@/stores/gameStore'
 import {
@@ -11,6 +11,7 @@ import {
 import { PhoneCloseup } from '@/ui/kit/phone/PhoneCloseup'
 import { INTERVIEW_LINES } from '@/ui/screens/laptop/videoScript'
 import { type BankAccount, BankApp, type BankCard } from '@/ui/screens/phone/BankApp'
+import { CallApp, type CallRecord, type Contact } from '@/ui/screens/phone/CallApp'
 import { useFlowingClock } from '@/ui/screens/phone/clock'
 import { type HomeApp, HomeScreen } from '@/ui/screens/phone/HomeScreen'
 import { LockScreen } from '@/ui/screens/phone/LockScreen'
@@ -22,7 +23,7 @@ import styles from './gangyi.module.css'
 
 /**
  * 강이의 테스트 페이지. 개발 서버에서 `?sandbox=gangyi` 주소로 연다.
- * 휴대폰 화면(#35)을 하나씩 띄워 본다. 지금은 잠금 화면 알림(#49), 홈 화면(#101), 문자 앱(#50), 은행 앱(#51), 사진 앱(#52), SNS(#53), 메모 앱(#62).
+ * 휴대폰 화면(#35)을 하나씩 띄워 본다. 지금은 잠금 화면 알림(#49), 홈 화면(#101), 문자 앱(#50), 은행 앱(#51), 사진 앱(#52), SNS(#53), 전화 앱(#56), 메모 앱(#62).
  * 받은 메시지와 읽음은 phoneStore가 들고 있고, 이 페이지의 버튼이 사건 실행 코드 대신 메시지를 도착시킨다.
  */
 
@@ -183,6 +184,34 @@ const SNS_POSTS: SnsPost[] = [
   },
 ]
 
+/**
+ * 연락처 견본. 대본에는 "엄마한테 전화해야 하는데"만 있어서 엄마를 넣었고, 나머지는 임의로 넣었다.
+ * 번호는 실제로 쓰이지 않게 010-0000으로 시작한다.
+ */
+const CONTACTS: Contact[] = [
+  { id: 'mom', name: '엄마', number: '01000000412' },
+  { id: 'dad', name: '아빠', number: '01000000413' },
+  { id: 'landlord', name: '집주인', number: '01000002207' },
+  { id: 'office', name: '관리실', number: '01000003301' },
+  { id: 'friend', name: '서준', number: '01000005128' },
+  { id: 'senior', name: '박 대리', number: '01000007744' },
+]
+
+/**
+ * 최근 통화 견본. 대본에 없어 임의로 넣었다. 4일차의 부재중 전화는
+ * 항의 문자의 "전화 좀 받으세요"에 맞춘 것이다. day는 그 통화가 있었던 날(몇 일차)이다.
+ */
+const CALLS: (Omit<CallRecord, 'date'> & { day: DayInfo })[] = [
+  { id: 'c1', number: '01000000412', kind: 'in', time: '19:42', day: SCENES[0].info },
+  { id: 'c2', number: '01000005128', kind: 'out', time: '21:05', day: SCENES[1].info },
+  { id: 'c3', number: '01000000412', kind: 'missed', time: '20:17', day: SCENES[2].info },
+  { id: 'c4', number: '01000009031', kind: 'missed', time: '15:09', day: SCENES[3].info },
+  { id: 'c5', number: '01000006618', kind: 'missed', time: '15:12', day: SCENES[3].info },
+]
+
+/** 신고처 번호. 엔딩 화면의 안내와 같은 번호(경찰 112, 금융감독원 1332)만 연결된다 */
+const REPORT_NUMBERS = ['112', '1332']
+
 /** 누른 알림이 여는 앱 */
 const APP_NAMES: Partial<Record<Message['channel'], string>> = { sms: '문자 앱', bank: '은행 앱' }
 
@@ -193,6 +222,7 @@ const VIEWS: { id: PhoneApp; label: string }[] = [
   { id: 'bank', label: '은행 앱 (#51)' },
   { id: 'photos', label: '사진 앱 (#52)' },
   { id: 'sns', label: 'SNS (#53)' },
+  { id: 'phone', label: '전화 앱 (#56)' },
   { id: 'notes', label: '메모 앱 (#62)' },
 ]
 
@@ -245,6 +275,9 @@ const startScene = (id: string) => {
 
 export default function SandboxPage() {
   const [sceneId, setSceneId] = useState(SCENES[0].id)
+  // 지금 건 전화가 연결됐는지. 실제 게임에서는 엔진이 정한다
+  const [connected, setConnected] = useState(false)
+  const connectTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
   // 맞춰 본 문장의 결과. 실제 게임에서는 엔진이 판정해서 넘긴다
   const [noteStatus, setNoteStatus] = useState<Record<string, 'solved' | 'wrong'>>({})
   const [opened, setOpened] = useState('')
@@ -292,6 +325,10 @@ export default function SandboxPage() {
       captions: INTERVIEW_LINES.map((line) => ({ ...line, text: fill(line.text) })),
     },
   ]
+  // 이 장면의 날까지 있었던 통화만 보인다
+  const calls: CallRecord[] = CALLS.filter((c) => c.day.day <= scene.info.day).map(
+    ({ day, ...record }) => ({ ...record, date: dateOfDay(weekOne, day) }),
+  )
   const homeApps: HomeApp<PhoneApp>[] = [
     { id: 'photos', label: '사진', icon: 'photos' },
     { id: 'sns', label: SNS, icon: 'sns' },
@@ -304,6 +341,7 @@ export default function SandboxPage() {
     },
   ]
   const dockApps: HomeApp<PhoneApp>[] = [
+    { id: 'phone', label: '전화', icon: 'phone' },
     {
       id: 'messages',
       label: '메시지',
@@ -388,6 +426,32 @@ export default function SandboxPage() {
             following={41}
             posts={SNS_POSTS}
             onSeePhoto={(id, index) => setOpened(`SNS 사진 봄 (${id} ${index + 1}/7)`)}
+            onHome={goHome}
+          />
+        ) : app === 'phone' ? (
+          <CallApp
+            key={scene.id}
+            time={time}
+            today={today}
+            contacts={CONTACTS}
+            calls={calls}
+            connected={connected}
+            onCall={(number) => {
+              setConnected(false)
+              setOpened(`전화 걸기 (${number})`)
+              // 엔진 대신: 신고처 번호만 2초 뒤에 연결된다
+              if (REPORT_NUMBERS.includes(number)) {
+                connectTimer.current = setTimeout(() => {
+                  setConnected(true)
+                  setOpened(`신고 전화 연결됨 (${number})`)
+                }, 2000)
+              }
+            }}
+            onHangUp={(number) => {
+              clearTimeout(connectTimer.current)
+              setConnected(false)
+              setOpened(`전화 끊기 (${number})`)
+            }}
             onHome={goHome}
           />
         ) : app === 'notes' ? (
