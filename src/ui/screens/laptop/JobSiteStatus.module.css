@@ -90,8 +90,69 @@
   font-weight: 600;
 }
 .more {
+  display: block;
+  width: 100%;
   padding: 12px 18px;
-  text-align: center;
-  color: var(--web-muted);
+  border: 0;
+  background: none;
+  color: var(--web-accent);
+  font: inherit;
   font-size: var(--web-text-meta);
+  font-weight: 600;
+  cursor: pointer;
+}
+.more:hover,
+.more:focus-visible {
+  background: var(--web-bg);
+}
+.tab {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.tab:hover,
+.tab:focus-visible {
+  color: var(--web-ink);
+}
+.note {
+  margin: -8px 0 0;
+  font-size: var(--web-text-meta);
+  color: var(--web-muted);
+}
+.posting {
+  grid-template-columns: 1fr 1.4fr 160px 96px;
+}
+.apply,
+.applied {
+  justify-self: end;
+  padding: 5px 12px;
+  border-radius: var(--web-radius);
+  font: inherit;
+  font-size: var(--web-text-meta);
+  font-weight: 700;
+}
+.apply {
+  border: 0;
+  background: var(--web-accent);
+  color: var(--web-surface);
+  cursor: pointer;
+}
+.applied {
+  border: 1px solid var(--web-line);
+  background: none;
+  color: var(--web-muted);
+}
+.portfolioRow {
+  grid-template-columns: 36px 1fr 1fr;
+}
+.pageNo {
+  color: var(--web-muted);
+  font-variant-numeric: tabular-nums;
+}
+.tab.current {
+  color: var(--web-ink);
+  font-weight: 700;
 }

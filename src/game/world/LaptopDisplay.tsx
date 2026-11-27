@@ -4,7 +4,11 @@ import { useGameStore, type LaptopScreen } from '@/stores/gameStore'
 import { InaugurationCall } from '@/ui/screens/laptop/InaugurationCall'
 import { InterviewAppInstall } from '@/ui/screens/laptop/InterviewAppInstall'
 import { JobSiteStatus } from '@/ui/screens/laptop/JobSiteStatus'
-import { SAMPLE_APPLICATIONS, SAMPLE_REJECTED_TOTAL } from '@/ui/screens/laptop/jobSiteSample'
+import {
+  SAMPLE_APPLICATIONS,
+  SAMPLE_PORTFOLIO,
+  SAMPLE_POSTINGS,
+} from '@/ui/screens/laptop/jobSiteSample'
 import { RemoteWipe } from '@/ui/screens/laptop/RemoteWipe'
 import { SearchScreen } from '@/ui/screens/laptop/SearchScreen'
 import { VideoInterview } from '@/ui/screens/laptop/VideoInterview'
@@ -48,7 +52,8 @@ function Screen({ screen }: { screen: Exclude<LaptopScreen, 'off'> }) {
       return (
         <JobSiteStatus
           applications={SAMPLE_APPLICATIONS}
-          rejectedTotal={SAMPLE_REJECTED_TOTAL}
+          postings={SAMPLE_POSTINGS}
+          portfolio={SAMPLE_PORTFOLIO}
           portfolioViews={0}
           onClose={() => go('off')}
         />
