@@ -1,0 +1,14 @@
+/* 3D 화면 위 전체를 덮는 칸. 누르는 것은 그대로 3D로 지나가고, 누를 수 있는 화면만 받는다.
+   노트북 화면(drei Html)이 아주 큰 z-index를 쓰므로 혼잣말과 안내가 그 위에 오게 바로 아래 값을 쓴다. */
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  pointer-events: none;
+}
+
+.interactive {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+}

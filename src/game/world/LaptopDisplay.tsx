@@ -1,6 +1,7 @@
 import { Html } from '@react-three/drei'
 import { LAPTOP_SCREEN, type Vec3 } from '@/game/world/anchors'
 import { useGameStore, type LaptopScreen } from '@/stores/gameStore'
+import { useStoryStore } from '@/stores/storyStore'
 import { InaugurationCall } from '@/ui/screens/laptop/InaugurationCall'
 import { InterviewAppInstall } from '@/ui/screens/laptop/InterviewAppInstall'
 import { JobSiteStatus } from '@/ui/screens/laptop/JobSiteStatus'
@@ -12,6 +13,9 @@ import {
 import { RemoteWipe } from '@/ui/screens/laptop/RemoteWipe'
 import { SearchScreen } from '@/ui/screens/laptop/SearchScreen'
 import { VideoInterview } from '@/ui/screens/laptop/VideoInterview'
+import { DAY1_MAILS, REJECTION_MAILS } from '@/ui/screens/work/mailScript'
+import { WebMail } from '@/ui/screens/work/WebMail'
+import { WorkScreen } from '@/ui/screens/work/WorkScreen'
 
 /** 노트북 화면은 이 해상도로 그리고 화면 크기에 맞춰 줄인다(px) */
 const SCREEN_W = 1280
@@ -24,11 +28,9 @@ const TILT = -Math.asin(LAPTOP_SCREEN.facing[1])
 const LIFT = 0.002
 const POSITION = LAPTOP_SCREEN.center.map((v, i) => v + LAPTOP_SCREEN.facing[i] * LIFT) as Vec3
 
-// shortcut: 플레이어 이름 칸(#57)이 생기기 전까지 쓰는 이름. 칸이 생기면 gameStore에서 읽는다.
-const PLAYER_NAME = '○○'
-
 /**
- * 노트북 앞에 앉았을 때 화면 자리에 띄우는 UI. 무엇을 띄울지는 gameStore의 laptopScreen이 정한다.
+ * 노트북 앞에 앉았을 때 화면 자리에 띄우는 UI. 무엇을 띄울지는 gameStore의 laptopScreen이 정하고,
+ * 본편에서는 엔진(storyStore)이 그 값을 바꾼다. 화면 속 버튼은 엔진에 그 버튼 id로 알린다.
  * 방을 걸어 다닐 때는 그리지 않는다. Html은 3D 물체에 가려지지 않아서 벽 너머로 보이기 때문이다.
  */
 export function LaptopDisplay({ visible }: { visible: boolean }) {
@@ -47,6 +49,13 @@ export function LaptopDisplay({ visible }: { visible: boolean }) {
 
 function Screen({ screen }: { screen: Exclude<LaptopScreen, 'off'> }) {
   const go = useGameStore((s) => s.setLaptopScreen)
+  const name = useGameStore((s) => s.playerName)
+  const story = useStoryStore((s) => s.story)
+  const info = useStoryStore((s) => s.script.info)
+  const send = useStoryStore((s) => s.send)
+  const press = (objectId: string) => send({ type: 'interact', objectId })
+  const arrived = (channel: string) =>
+    new Set(story.messages.filter((m) => m.channel === channel).map((m) => m.id))
   switch (screen) {
     case 'jobsite':
       return (
@@ -55,17 +64,48 @@ function Screen({ screen }: { screen: Exclude<LaptopScreen, 'off'> }) {
           postings={SAMPLE_POSTINGS}
           portfolio={SAMPLE_PORTFOLIO}
           portfolioViews={0}
-          onClose={() => go('off')}
+          onClose={() => press('btn_jobsite_close')}
         />
       )
     case 'install':
-      return <InterviewAppInstall company="모레온" host="김아영" onJoin={() => go('interview')} />
+      return (
+        <InterviewAppInstall
+          company="모레온"
+          host="김아영"
+          onJoin={() => press('btn_interview_join')}
+        />
+      )
     case 'interview':
-      return <VideoInterview playerName={PLAYER_NAME} onEnd={() => go('off')} />
+      // 면접 영상이 끝나면 화면이 보내는 신호. 누르는 버튼은 아니다
+      return <VideoInterview playerName={name} onEnd={() => press('interview_end')} />
+    case 'mail': {
+      const got = arrived('mail')
+      return (
+        <WebMail
+          // 새 메일이 위로. 불합격 메일 53통은 처음부터 있다
+          mails={[...DAY1_MAILS.filter((m) => got.has(m.id)).reverse(), ...REJECTION_MAILS]}
+          playerName={name}
+          onAction={press}
+          onClose={() => press('btn_mail_close')}
+        />
+      )
+    }
+    case 'work':
+      return (
+        <WorkScreen
+          info={info}
+          messages={story.messages.filter((m) => m.channel === 'messenger')}
+          playerName={name}
+          // shortcut: 1일차 사건 id로 보냈는지 본다. 다른 날 서류·영상 요청이 생기면 엔진 기록(flag)으로 바꾼다
+          docsSent={story.fired.includes('d1_documents_sent')}
+          videoSent={story.fired.includes('d1_first_work')}
+          onPress={press}
+        />
+      )
     case 'search':
       return <SearchScreen onClose={() => go('off')} />
     case 'inauguration':
-      return <InaugurationCall playerName={PLAYER_NAME} step="sign" signed={false} />
+      return <InaugurationCall playerName={name} step="sign" signed={false} />
     case 'wipe':
       // 공유기 전원 뽑기(3D)가 생기면 stopped를 잇는다
       return <RemoteWipe stopped={false} />
@@ -75,14 +115,16 @@ function Screen({ screen }: { screen: Exclude<LaptopScreen, 'off'> }) {
 const PICKS: LaptopScreen[] = [
   'off',
   'jobsite',
+  'mail',
   'install',
   'interview',
+  'work',
   'search',
   'inauguration',
   'wipe',
 ]
 
-/** 개발 모드에서 노트북 화면을 골라 보는 버튼. 장면 진행(엔진)이 생기면 지운다 */
+/** 개발 모드에서 노트북 화면을 골라 보는 버튼. 엔진 순서를 건너뛰고 화면만 바꾼다 */
 export function LaptopScreenPicker() {
   const screen = useGameStore((s) => s.laptopScreen)
   const go = useGameStore((s) => s.setLaptopScreen)

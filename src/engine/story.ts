@@ -20,6 +20,12 @@ export interface StoryState {
   /** 지금 고르길 기다리는 선택지 */
   choice: { prompt: string; choices: Choice[] } | null
   webcamOn: boolean
+  /** 노트북에 띄울 화면. null이면 대본이 아직 정하지 않았다 */
+  laptop: string | null
+  /** 지금 띄울 날짜 카드 문구. 화면이 카드를 다 보여 주면 closeDateCard로 비운다 */
+  dateCard: string | null
+  /** 지금까지 띄우라고 한 혼잣말 줄. 화면은 새로 늘어난 줄만 창에 넘긴다 */
+  said: string[]
 }
 
 /** 엔진에 알리는 일. Trigger에서 afterEvent를 뺀 것 */
@@ -48,10 +54,13 @@ export function newStory(day: DayNumber = 1): StoryState {
     scene: null,
     choice: null,
     webcamOn: false,
+    laptop: null,
+    dateCard: null,
+    said: [],
   }
 }
 
-/** 하루를 시작한다. 경계심, 증거, 기록은 이어지고 그날의 사건 기록과 목표, 장면은 비운다 */
+/** 하루를 시작한다. 경계심, 증거, 기록, 메시지는 이어지고 그날의 사건 기록, 목표, 장면, 날짜 카드는 비운다 */
 export function startDay(prev: StoryState, script: DayScript): Step {
   const state: StoryState = {
     ...structuredClone(prev),
@@ -60,6 +69,7 @@ export function startDay(prev: StoryState, script: DayScript): Step {
     goal: null,
     scene: null,
     choice: null,
+    dateCard: null,
   }
   return run(state, (s, later) => emit(s, script, { type: 'dayStart' }, later))
 }
@@ -87,6 +97,11 @@ export function endScene(prev: StoryState): StoryState {
   return { ...prev, scene: null }
 }
 
+/** 날짜 카드를 다 보여 줬을 때 */
+export function closeDateCard(prev: StoryState): StoryState {
+  return { ...prev, dateCard: null }
+}
+
 // ── 안쪽: state는 복사본이라 직접 바꾼다 ──
 
 type Later = Delayed[]
@@ -111,7 +126,12 @@ function matches(t: Trigger, sig: Signal): boolean {
 }
 
 function emit(s: StoryState, script: DayScript, sig: Signal, later: Later) {
-  for (const e of script.events) if (matches(e.trigger, sig)) fire(s, script, e.id, later)
+  for (const e of script.events) {
+    const t = e.trigger
+    // 대본 순서보다 먼저 누른 것은 무시한다
+    if (t.type === 'interact' && t.after && !s.fired.includes(t.after)) continue
+    if (matches(t, sig)) fire(s, script, e.id, later)
+  }
 }
 
 function fire(s: StoryState, script: DayScript, eventId: string, later: Later) {
@@ -156,6 +176,15 @@ function applyEffects(s: StoryState, script: DayScript, effects: Effect[], later
         break
       case 'goal':
         s.goal = fx.text
+        break
+      case 'monologue':
+        s.said.push(...fx.lines)
+        break
+      case 'dateCard':
+        s.dateCard = fx.text
+        break
+      case 'laptop':
+        s.laptop = fx.screen
         break
     }
   }
