@@ -113,27 +113,10 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: calc(var(--pt) * 4);
   margin: 0 calc(var(--pt) * -16);
   padding: calc(var(--pt) * 2) calc(var(--pt) * 16) calc(var(--pt) * 8);
   border-bottom: calc(var(--pt) * 0.5) solid var(--phone-line);
   background: var(--phone-bg);
-}
-
-.back {
-  position: absolute;
-  top: 0;
-  left: calc(var(--pt) * 10);
-  padding: 0 calc(var(--pt) * 8);
-  border: 0;
-  background: none;
-  color: var(--phone-blue);
-  font-size: calc(var(--pt) * 36);
-  line-height: 1;
-  cursor: pointer;
 }
 
 .threadName {
