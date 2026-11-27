@@ -1,0 +1,226 @@
+/* 어둡게 가라앉은 방 위에 우편물 한 장. 종이는 게임 글자색, 글씨는 게임 바탕색을 뒤집어 쓴다.
+   꾸밈은 우편물다운 것(등기 도장, 바코드, 공문서 이중선, 표 칸)뿐이고, 힘은 종이에 박힌 내 이름 한 곳에만 준다.
+   shortcut: 종이 색 토큰(--paper)과 게임 화면용 크기·간격 토큰이 아직 없어(tokens.css "정할 자리") 크기와 여백만 숫자로 둔다. 토큰이 생기면 바꾼다. */
+.scrim {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  justify-items: center;
+  align-items: center;
+  gap: 24px;
+  padding: 48px 24px 32px;
+  background: color-mix(in srgb, var(--game-bg) 72%, transparent);
+  animation: fade 240ms ease-out both;
+}
+
+.envelope,
+.paper {
+  --ink: var(--game-bg);
+  --soft: color-mix(in srgb, var(--game-bg) 62%, transparent);
+  --rule: color-mix(in srgb, var(--game-bg) 16%, transparent);
+
+  box-sizing: border-box;
+  border-radius: 2px;
+  background: var(--game-ink);
+  box-shadow: 0 24px 48px color-mix(in srgb, var(--game-bg) 60%, transparent);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  word-break: keep-all;
+  animation: lift 360ms ease-out both;
+}
+
+/* ── 겉봉: 가로로 긴 규격 봉투 ── */
+.envelope {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto 1fr;
+  width: min(600px, 100%);
+  aspect-ratio: 2.2;
+  padding: 28px 32px;
+}
+
+.sender {
+  margin: 0;
+  color: var(--soft);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+
+/* 오른쪽 위: 빨간 "등기" 도장과 등기번호 바코드 */
+.registered {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
+.stamp {
+  padding: 2px 8px;
+  border: 2px solid var(--danger);
+  border-radius: 4px;
+  color: var(--danger);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+}
+
+.barcode {
+  width: 132px;
+  height: 24px;
+  fill: var(--ink);
+}
+
+.tracking {
+  color: var(--soft);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+/* 오른쪽 아래: 받는 사람 */
+.recipient {
+  grid-column: 1 / -1;
+  align-self: end;
+  justify-self: end;
+  display: grid;
+  gap: 4px;
+}
+
+.address {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.to {
+  margin: 0;
+  font-size: 17px;
+  letter-spacing: 0.08em;
+}
+
+/* ── 속 서류 ── */
+.paper {
+  width: min(520px, 100%);
+  padding: 40px 44px 48px;
+}
+
+/* 보낸 곳: 공문서 머리처럼 작게, 아래에 이중선 */
+.from {
+  padding-bottom: 12px;
+  border-bottom: 3px double var(--rule);
+  color: var(--soft);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+}
+
+/* 글자 사이를 벌린 만큼 왼쪽을 밀어 가운데를 맞춘다 */
+.title {
+  margin: 32px 0 8px;
+  padding-left: 0.4em;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0.4em;
+  text-align: center;
+}
+
+.body {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.body p {
+  margin: 0;
+}
+
+/* "상호: 주식회사 세움파트너스" 같은 줄은 표 칸처럼 */
+.field {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+
+.field + .field {
+  margin-top: -12px;
+}
+
+.label {
+  color: var(--soft);
+}
+
+/* 종이에 박힌 내 이름. 이 화면에서 가장 눈에 띄는 곳 */
+.name {
+  padding: 0 4px;
+  border-bottom: 1px solid var(--ink);
+  background: color-mix(in srgb, var(--game-bg) 8%, transparent);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ── 버튼 ── */
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.primary,
+.close {
+  min-width: 120px;
+  min-height: 40px;
+  padding: 0 20px;
+  border: 1px solid color-mix(in srgb, var(--game-ink) 28%, transparent);
+  border-radius: var(--radius-pill);
+  font: inherit;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.primary {
+  border-color: var(--game-ink);
+  background: var(--game-ink);
+  color: var(--game-bg);
+}
+
+.close {
+  background: transparent;
+  color: var(--game-ink);
+}
+
+.close:hover {
+  background: color-mix(in srgb, var(--game-ink) 12%, transparent);
+}
+
+.primary:focus-visible,
+.close:focus-visible {
+  outline: 2px solid var(--game-ink);
+  outline-offset: 4px;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes lift {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrim,
+  .envelope,
+  .paper {
+    animation: none;
+  }
+}
