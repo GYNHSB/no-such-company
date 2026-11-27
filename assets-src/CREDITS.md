@@ -23,3 +23,10 @@
 
 - Blender 5.3 Cycles, Diffuse(Direct + Indirect, Color 끔), 1024px, 512 샘플, 여백 2px(Extend), 2026-11-26.
 - 빛: 창 안쪽 Area Light(차가운 낮빛), 책상 스탠드 Point Light(따뜻한 빛).
+
+## 노트북 (`public/models/laptop.glb`, 원본 `assets-src/laptop/laptop.blend`)
+
+- 기본 도형을 조합해 직접 만듦: 둥근 모서리 본체·덮개, 키보드(6줄), 터치패드, 힌지, 화면 베젤, 웹캠, 앞쪽 홈 (2026-11-26, Claude Code + Blender MCP). 외부 자료를 쓰지 않았다.
+- 원점은 바닥면 가운데. 루트 이름은 `interact_laptop`이라 겨냥 판정이 그대로 된다.
+- 화면(`laptop_screen`, 스스로 빛나는 면)의 가운데·방향·크기는 `room.glb`의 노트북과 같다. 원점 기준 가운데 (0, 0.1237, -0.1107) m(glTF 좌표), 바라보는 방향 (0, 0.2571, 0.9664), 0.31 x 0.19 m.
+- 조명을 굽지 않았다(두 번째 UV 없음). 원룸에 합칠 때는 `room.glb`의 `interact_laptop` 자리(-1.3, 0.74, 0.489)에 두고, 조명을 다시 구울지 원룸 담당과 정한다.

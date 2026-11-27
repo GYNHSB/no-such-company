@@ -1,0 +1,90 @@
+.root {
+  display: grid;
+  /* 사이드바는 너비의 22%. 고정 px 대신 비율로 늘어난다 */
+  grid-template-columns: minmax(9rem, 22%) 1fr;
+  width: 100%;
+  height: 100%;
+  font-family: var(--work-font);
+}
+
+.sidebar {
+  overflow-y: auto;
+  padding: 12px 0;
+  background: var(--work-sidebar);
+  color: var(--work-sidebar-muted);
+}
+
+.workspace {
+  padding: 4px 16px 16px;
+  color: var(--work-sidebar-ink);
+  font-size: calc(var(--work-text-name) * 1.2);
+  font-weight: 700;
+}
+
+.section {
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  padding: 4px 16px;
+  font-size: var(--work-text-meta);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 16px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: var(--work-text-body);
+  text-align: left;
+  cursor: pointer;
+}
+
+.item:hover {
+  color: var(--work-sidebar-ink);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--work-sidebar-ink);
+  outline-offset: -2px;
+}
+
+.unread {
+  color: var(--work-sidebar-ink);
+  font-weight: 700;
+}
+
+.selected {
+  background: var(--work-sidebar-active);
+  color: var(--work-sidebar-ink);
+}
+
+.label {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.badge {
+  min-width: 1.6em;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--work-action);
+  color: var(--work-bg);
+  font-size: var(--work-text-meta);
+  font-weight: 700;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.body {
+  min-width: 0;
+  min-height: 0;
+  background: var(--work-bg);
+}
