@@ -9,6 +9,7 @@ import {
   usePhoneStore,
 } from '@/stores/phoneStore'
 import { PhoneCloseup } from '@/ui/kit/phone/PhoneCloseup'
+import { type BankAccount, BankApp, type BankCard } from '@/ui/screens/phone/BankApp'
 import { useFlowingClock } from '@/ui/screens/phone/clock'
 import { type HomeApp, HomeScreen } from '@/ui/screens/phone/HomeScreen'
 import { LockScreen } from '@/ui/screens/phone/LockScreen'
@@ -18,7 +19,7 @@ import styles from './gangyi.module.css'
 
 /**
  * 강이의 테스트 페이지. 개발 서버에서 `?sandbox=gangyi` 주소로 연다.
- * 휴대폰 화면(#35)을 하나씩 띄워 본다. 지금은 잠금 화면 알림(#49), 홈 화면(#101), 문자 앱(#50), 메모 앱(#62).
+ * 휴대폰 화면(#35)을 하나씩 띄워 본다. 지금은 잠금 화면 알림(#49), 홈 화면(#101), 문자 앱(#50), 은행 앱(#51), 메모 앱(#62).
  * 받은 메시지와 읽음은 phoneStore가 들고 있고, 이 페이지의 버튼이 사건 실행 코드 대신 메시지를 도착시킨다.
  */
 
@@ -77,6 +78,20 @@ const SCENES: Scene[] = [
     ],
   },
   {
+    id: 'd3s4',
+    label: '3일차 장면 4',
+    info: { day: 3, week: 4, weekday: '금', title: '감시' }, // 대본: 고객명단_금요일
+    messages: [
+      {
+        id: 'd3-bank-count',
+        channel: 'bank',
+        from: '하나로은행',
+        time: '12:40',
+        body: '{name} 님 명의 계좌 3개.',
+      },
+    ],
+  },
+  {
     id: 'd4s5',
     label: '4일차 장면 5',
     info: { day: 4, week: 6, weekday: '화', title: '추리' }, // 대본에 요일이 없어 임의로 정했다
@@ -110,13 +125,43 @@ const SCENES: Scene[] = [
 /** 잠금 화면 왼쪽 위에 보이는 가상 통신망 이름(도담텔레콤의 줄임말). 실존 통신사 이름은 쓰지 않는다 */
 const CARRIER = 'DT'
 
-/** 누른 알림이 여는 앱. 은행 앱 화면은 다른 이슈(#51)에서 만든다 */
+/** 대본의 은행 이름. 실존 은행과 겹치지 않는지 팀 확인이 필요하다 */
+const BANK = '하나로은행'
+
+/**
+ * 내 명의 계좌 견본. 대본에는 "계좌 3개"와 "내가 만든 건 하나뿐"만 있어서,
+ * 원래 계좌 하나에 2일차 개설 알림 두 건이 올 때마다 하나씩 늘어나게 했다.
+ * 계좌 번호와 잔액은 대본에 없어 임의로 넣었다.
+ */
+const ACCOUNTS: (Omit<BankAccount, 'opened'> & { openedBy?: string })[] = [
+  { id: 'mine', label: '입출금통장', number: '412-208-173904', balance: 847_200 },
+  {
+    id: 'opened-1',
+    label: '입출금통장',
+    number: '412-208-518327',
+    balance: 0,
+    openedBy: 'd2-bank-open-1',
+  },
+  {
+    id: 'opened-2',
+    label: '입출금통장',
+    number: '412-208-518401',
+    balance: 0,
+    openedBy: 'd2-bank-open-2',
+  },
+]
+
+/** 내 카드 견본. 대본에 없어 임의로 넣었다 */
+const CARDS: BankCard[] = [{ id: 'check', label: '하나로 체크카드', last4: '2917', spent: 128_400 }]
+
+/** 누른 알림이 여는 앱 */
 const APP_NAMES: Partial<Record<Message['channel'], string>> = { sms: '문자 앱', bank: '은행 앱' }
 
 const VIEWS: { id: PhoneApp; label: string }[] = [
   { id: 'lock', label: '잠금 화면 (#49)' },
   { id: 'home', label: '홈 화면 (#101)' },
   { id: 'messages', label: '문자 앱 (#50)' },
+  { id: 'bank', label: '은행 앱 (#51)' },
   { id: 'notes', label: '메모 앱 (#62)' },
 ]
 
@@ -201,7 +246,22 @@ export default function SandboxPage() {
   const texts = messagesOf(received, weekOne, 'sms')
   const goHome = () => openApp('home')
   // 홈 화면의 앱. 화면이 있는 앱만 놓는다
-  const homeApps: HomeApp<PhoneApp>[] = [{ id: 'notes', label: '메모', icon: 'notes' }]
+  const notices = messagesOf(received, weekOne, 'bank')
+  // 개설 알림이 온 계좌만 보인다. 만들어진 때는 그 알림을 받은 때다
+  const accounts: BankAccount[] = ACCOUNTS.flatMap(({ openedBy, ...account }) => {
+    if (!openedBy) return [account]
+    const notice = notices.find((n) => n.id === openedBy)
+    return notice ? [{ ...account, opened: { date: notice.date, time: notice.time } }] : []
+  })
+  const homeApps: HomeApp<PhoneApp>[] = [
+    { id: 'notes', label: '메모', icon: 'notes' },
+    {
+      id: 'bank',
+      label: BANK,
+      icon: 'bank',
+      badge: notices.filter((n) => !readIds.includes(n.id)).length,
+    },
+  ]
   const dockApps: HomeApp<PhoneApp>[] = [
     {
       id: 'messages',
@@ -241,11 +301,32 @@ export default function SandboxPage() {
             onOpen={(m) => {
               setOpened(`${APP_NAMES[m.channel] ?? m.channel} 열기 (${m.from} ${m.time})`)
               if (m.channel === 'sms') openApp('messages', m.from)
+              if (m.channel === 'bank') {
+                // 누른 알림은 읽은 것으로 친다. 나머지는 은행 앱의 알림 탭에서 읽는다
+                markRead([m.id])
+                openApp('bank')
+              }
             }}
             onUnlock={goHome}
           />
         ) : app === 'home' ? (
           <HomeScreen time={time} apps={homeApps} dock={dockApps} onOpen={(id) => openApp(id)} />
+        ) : app === 'bank' ? (
+          <BankApp
+            time={time}
+            today={today}
+            bank={BANK}
+            owner={name}
+            accounts={accounts}
+            cards={CARDS}
+            notices={notices.map(withName)}
+            readIds={readIds}
+            onRead={(ids) => {
+              markRead(ids)
+              setOpened(`은행 알림 읽음 (${ids.join(', ')})`)
+            }}
+            onHome={goHome}
+          />
         ) : app === 'notes' ? (
           <NotesApp
             time={time}
