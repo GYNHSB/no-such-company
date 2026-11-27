@@ -7,6 +7,10 @@ export type Screen = 'title' | 'world'
 /** 방 안에서 무엇을 보고 있는지. room: 방을 걸어 다님, laptop: 의자에 앉아 노트북을 봄, phone: 휴대폰을 손에 쥠, bed: 침대에 누움 */
 export type View = 'room' | 'laptop' | 'phone' | 'bed'
 
+/** 노트북에 떠 있는 화면(src/ui/screens/laptop). off: 아무 앱도 없는 빈 화면 */
+export type LaptopScreen =
+  'off' | 'jobsite' | 'install' | 'interview' | 'search' | 'inauguration' | 'wipe'
+
 interface GameState {
   screen: Screen
   view: View
@@ -27,6 +31,8 @@ interface GameState {
   /** 천장등과 책상 스탠드가 켜져 있는지. 플레이어가 스위치와 스탠드를 눌러 켜고 끈다. */
   ceilingLight: boolean
   deskLamp: boolean
+  /** 노트북에 떠 있는 화면. 장면 진행(엔진)이 바꾼다 */
+  laptopScreen: LaptopScreen
   start: () => void
   /** 보는 것을 바꾼다. 휴대폰을 한 번 열면 집은 것으로 친다. */
   openView: (view: View) => void
@@ -40,6 +46,7 @@ interface GameState {
   dropMail: () => void
   toggleCeilingLight: () => void
   toggleDeskLamp: () => void
+  setLaptopScreen: (screen: LaptopScreen) => void
 }
 
 export const useGameStore = create<GameState>()((set) => ({
@@ -54,6 +61,7 @@ export const useGameStore = create<GameState>()((set) => ({
   mailAt: 0,
   ceilingLight: false,
   deskLamp: false,
+  laptopScreen: 'off',
   start: () => set({ screen: 'world' }),
   openView: (view) => set((state) => ({ view, hasPhone: state.hasPhone || view === 'phone' })),
   aimAt: (aim) => set({ aim }),
@@ -64,4 +72,5 @@ export const useGameStore = create<GameState>()((set) => ({
   dropMail: () => set({ mailAt: performance.now() }),
   toggleCeilingLight: () => set((state) => ({ ceilingLight: !state.ceilingLight })),
   toggleDeskLamp: () => set((state) => ({ deskLamp: !state.deskLamp })),
+  setLaptopScreen: (laptopScreen) => set({ laptopScreen }),
 }))

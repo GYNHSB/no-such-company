@@ -11,6 +11,7 @@ import { Player } from '@/game/player/Player'
 import { START } from '@/game/world/anchors'
 import { DeskPhone } from '@/game/world/DeskPhone'
 import { Details } from '@/game/world/Details'
+import { LaptopDisplay, LaptopScreenPicker } from '@/game/world/LaptopDisplay'
 import { LIGHT_SWITCH_BOX } from '@/game/world/lightSwitch'
 import { Room } from '@/game/world/Room'
 import { RoomColliders } from '@/game/world/RoomColliders'
@@ -104,6 +105,7 @@ export default function GameCanvas({ onLoad }: GameCanvasProps) {
                 lockSelector={LOCK_SELECTOR}
               />
               <LaptopView seated={view === 'laptop'} />
+              <LaptopDisplay visible={view === 'laptop'} />
               <InteractionRay
                 enabled={view === 'room'}
                 ignore={hasPhone ? PHONE_SLAB : undefined}
@@ -120,6 +122,7 @@ export default function GameCanvas({ onLoad }: GameCanvasProps) {
         {/* 개발 모드에서만 FPS·CPU·GPU 표시 (프로덕션 번들에서는 제거됨) */}
         {import.meta.env.DEV && <StatsGl className="dev-stats" />}
       </Canvas>
+      {import.meta.env.DEV && view === 'laptop' && <LaptopScreenPicker />}
     </div>
   )
 }
