@@ -1,0 +1,31 @@
+/* 테스트용 조작 패널. 게임 화면이 아니다 */
+.panel {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 320px;
+  padding: 12px;
+  border-radius: var(--phone-radius-card);
+  background: var(--phone-surface);
+  color: var(--phone-ink);
+  font-size: var(--phone-text-foot);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.row button[aria-pressed='true'] {
+  outline: 2px solid var(--phone-blue);
+}
+
+.log {
+  margin: 0;
+  color: var(--phone-muted);
+}
