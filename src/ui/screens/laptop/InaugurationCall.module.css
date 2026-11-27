@@ -1,0 +1,70 @@
+.side {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  font-size: var(--web-text-body);
+}
+.doc {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--web-line);
+  border-radius: var(--web-radius);
+}
+.docTitle {
+  margin: 0;
+  font-size: var(--web-text-body);
+  text-align: center;
+  letter-spacing: 0.3em;
+}
+.docBody {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  line-height: 1.6;
+}
+.signRow {
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 1px solid var(--web-line);
+  border-radius: var(--web-radius);
+}
+.signLabel {
+  font-size: var(--web-text-meta);
+  color: var(--web-muted);
+}
+.prefilled {
+  font-weight: 700;
+}
+.signature {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--web-ink);
+  color: var(--web-muted);
+  font-size: var(--web-text-meta);
+}
+.signed {
+  color: var(--web-accent);
+  font-size: var(--web-text-title);
+  font-style: italic;
+  font-weight: 700;
+}
+.done {
+  margin: 0;
+  font-size: var(--web-text-meta);
+  color: var(--web-accent);
+  font-weight: 700;
+}
+.ask {
+  font-size: var(--web-text-meta);
+  color: var(--danger);
+  font-weight: 700;
+}
+.readText {
+  font-size: var(--web-text-title);
+  line-height: 1.5;
+}
