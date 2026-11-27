@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect, useState } from 'react'
 import { PhoneScreen } from '@/ui/kit/phone/PhoneScreen'
 import styles from './CallApp.module.css'
-import { daysAgo, formatMonthDay } from './clock'
+import { daysAgo } from './clock'
 
 /** 연락처 하나 */
 export interface Contact {
@@ -163,13 +163,18 @@ const duration = (sec: number) =>
   `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`
 
 const weekday = new Intl.DateTimeFormat('ko-KR', { weekday: 'long' })
+const fullDate = new Intl.DateTimeFormat('ko-KR', {
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+})
 
-/** 통화한 때: 오늘이면 시각, 어제면 "어제", 한 주 안이면 요일, 그 전이면 날짜 */
+/** 통화한 때: 오늘이면 시각, 어제면 "어제", 한 주 안이면 요일, 그 전이면 "2026. 11. 20." */
 const whenOf = (today: Date, record: CallRecord) => {
   const ago = daysAgo(today, record.date)
   if (ago <= 0) return record.time
   if (ago === 1) return '어제'
-  return ago < 7 ? weekday.format(record.date) : formatMonthDay(record.date)
+  return ago < 7 ? weekday.format(record.date) : fullDate.format(record.date)
 }
 
 const KIND_LABEL = { in: '받은 전화', out: '건 전화', missed: '부재중 전화' } as const
