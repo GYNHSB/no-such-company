@@ -10,30 +10,13 @@
   margin: 0 calc(var(--pt) * -16);
   font-family: var(--phone-font);
   word-break: keep-all;
+  /* 위쪽 줄(PhoneNav)의 뒤로 가기 색 */
+  --phone-accent: var(--phone-orange);
 }
 
-.nav {
-  display: flex;
-  align-items: center;
-  height: calc(var(--pt) * 44);
-  padding: 0 calc(var(--pt) * 8);
-}
-
-.navBack {
-  padding: 0 calc(var(--pt) * 8);
-  border: 0;
-  background: none;
-  color: var(--phone-orange);
-  font: inherit;
-  font-size: calc(var(--pt) * 17);
-  cursor: pointer;
-}
-
-.largeTitle {
-  margin: 0;
-  padding: 0 calc(var(--pt) * 16) calc(var(--pt) * 8);
-  font-size: calc(var(--pt) * 34);
-  font-weight: 700;
+/* 위쪽 줄과 큰 제목. 다른 휴대폰 앱과 같은 좌우 여백을 준다 */
+.top {
+  padding: 0 calc(var(--pt) * 16);
 }
 
 .search {
