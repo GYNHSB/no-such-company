@@ -4,45 +4,17 @@ import { usePageHistory } from '@/ui/screens/laptop/pageHistory'
 import type { Mail } from './WorkMailbox'
 import styles from './WebMail.module.css'
 
-// laptop/icons.tsx에 없는 메일 전용 아이콘. 같은 굵기와 크기 규칙으로 그린다 (24x24, 선만 사용)
-const PATHS = {
-  menu: 'M3 6h18M3 12h18M3 18h18',
-  compose: 'M4 20h4L19 9l-4-4L4 16v4zM13 7l4 4',
-  inbox: 'M3 13l3-8h12l3 8v6H3v-6zM3 13h5l1 3h6l1-3h5',
-  sent: 'M4 4l17 8-17 8 3-8-3-8zM7 12h14',
-  spam: 'M12 3l10 18H2L12 3zM12 10v5M12 18v.01',
-  trash: 'M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14',
-}
-
-function MailIcon({ name, size = 18 }: { name: keyof typeof PATHS; size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d={PATHS[name]} />
-    </svg>
-  )
-}
-
 /** 목록 화면의 history 값. 메일을 열면 그 메일의 id가 된다 */
 const INBOX = 'inbox'
 
 // 받은편지함만 열린다. 나머지 메뉴와 편지쓰기, 검색창은 모양만 있다.
 const FOLDERS = [
-  { label: '받은편지함', icon: <MailIcon name="inbox" /> },
+  { label: '받은편지함', icon: <Icon name="inbox" /> },
   { label: '별표편지함', icon: <Icon name="star" /> },
-  { label: '보낸편지함', icon: <MailIcon name="sent" /> },
+  { label: '보낸편지함', icon: <Icon name="send" /> },
   { label: '임시보관함', icon: <Icon name="doc" /> },
-  { label: '스팸함', icon: <MailIcon name="spam" /> },
-  { label: '휴지통', icon: <MailIcon name="trash" /> },
+  { label: '스팸함', icon: <Icon name="warning" /> },
+  { label: '휴지통', icon: <Icon name="trash" /> },
 ]
 
 interface Props {
@@ -79,7 +51,7 @@ export function WebMail({ mails, playerName, onOpen, onAction, onClose }: Props)
       <div className={styles.root}>
         <header className={styles.top}>
           <span className={styles.brand}>
-            <MailIcon name="menu" size={24} /> 메일
+            <Icon name="menu" size={24} /> 메일
           </span>
           <span className={styles.search}>
             <Icon name="search" /> 메일 검색
@@ -91,7 +63,7 @@ export function WebMail({ mails, playerName, onOpen, onAction, onClose }: Props)
         <div className={styles.main}>
           <nav className={styles.side} aria-label="메일 메뉴">
             <span className={styles.compose}>
-              <MailIcon name="compose" /> 편지쓰기
+              <Icon name="pencil" /> 편지쓰기
             </span>
             <ul className={styles.folders}>
               {FOLDERS.map((folder, index) => (

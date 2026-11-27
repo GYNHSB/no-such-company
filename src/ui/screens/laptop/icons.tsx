@@ -24,6 +24,12 @@ const PATHS = {
   shield: 'M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6z',
   check: 'm5 12 5 5 9-10',
   doc: 'M7 3h7l4 4v14H7zM14 3v4h4',
+  menu: 'M3 6h18M3 12h18M3 18h18',
+  pencil: 'M4 20h4L19 9l-4-4L4 16v4zM13 7l4 4',
+  inbox: 'M3 13l3-8h12l3 8v6H3v-6zM3 13h5l1 3h6l1-3h5',
+  send: 'M4 4l17 8-17 8 3-8-3-8zM7 12h14',
+  warning: 'M12 3l10 18H2L12 3zM12 10v5M12 18v.01',
+  trash: 'M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14',
 } as const
 
 export type IconName = keyof typeof PATHS
