@@ -1,0 +1,47 @@
+/* 날짜 카드의 큰 날짜와 같은 글꼴, 자간, 줄 높이를 작게 쓴다(그래야 날아온 글자와 딱 겹친다).
+   밝은 벽 위에서도 읽히게 옅은 그림자를 깐다. 자리와 크기는 dayBadgeSpot.ts에서 온다. */
+.badge {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  color: var(--game-ink);
+  font-family: var(--font-ui);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: 0.2em;
+  text-shadow: 0 1px 8px color-mix(in srgb, var(--game-bg) 70%, transparent);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* 웹캠 불빛처럼 천천히 깜빡이는 초록 점. 날짜가 내려앉은 뒤에 켜진다. */
+.light {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--watch);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--game-bg) 50%, transparent);
+  animation:
+    on 400ms ease-out both,
+    blink 2400ms 400ms ease-in-out infinite;
+}
+
+@keyframes on {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .light {
+    animation: none;
+  }
+}
