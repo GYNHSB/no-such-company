@@ -24,6 +24,12 @@
 - Blender 5.3 Cycles, Diffuse(Direct + Indirect, Color 끔), 1024px, 512 샘플, 여백 2px(Extend), 2026-11-26.
 - 빛: 창 안쪽 Area Light(차가운 낮빛), 책상 스탠드 Point Light(따뜻한 빛).
 
+## 시작 화면 (`public/videos/title_sign_night.mp4`, `public/images/title_sign_night.webp`)
+
+- 영상: 펜이 "sign"을 쓰고 제목이 나오는 18초 영상(1920 x 1080). Claude Design으로 생성 (2026-11-27, 신협성).
+- 그림: 왼쪽 제목 "sign"과 손글씨 부제, 오른쪽 서명하는 손. Claude Design으로 생성 (2026-11-27, 신협성). 원본 PNG는 `assets-src/title/title_sign_night.png`, 게임에는 WebP(품질 86)로 바꿔 넣었다.
+- 그림 안에 플레이어 이름은 없다. 게임은 영상 12.95초에서 멈추고 이 그림으로 바꾼다(영상의 부제 대신 그림의 손글씨 부제를 쓰려고).
+
 ## 노트북 (`public/models/laptop.glb`, 원본 `assets-src/laptop/laptop.blend`)
 
 - 기본 도형을 조합해 직접 만듦: 둥근 모서리 본체·덮개, 키보드(6줄), 터치패드, 힌지, 화면 베젤, 웹캠, 앞쪽 홈 (2026-11-26, Claude Code + Blender MCP). 외부 자료를 쓰지 않았다.
