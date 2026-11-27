@@ -10,6 +10,24 @@ export function addMinutes(clock: string, minutes: number): string {
   return `${pad(Math.floor(total / 60))}:${pad(total % 60)}`
 }
 
+const monthDay = new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric' })
+const weekday = new Intl.DateTimeFormat('ko-KR', { weekday: 'short' })
+
+/** "11월 27일" */
+export const formatMonthDay = (date: Date) => monthDay.format(date)
+
+/** "11월 27일 (금)" */
+export const formatDate = (date: Date) => `${monthDay.format(date)} (${weekday.format(date)})`
+
+const DAY_MS = 24 * 60 * 60 * 1000
+const startOfDay = (date: Date) =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
+
+/** date가 today에서 며칠 전인지. 같은 날이면 0, 어제면 1. 시각은 보지 않는다 */
+export function daysAgo(today: Date, date: Date): number {
+  return Math.round((startOfDay(today) - startOfDay(date)) / DAY_MS)
+}
+
 /**
  * 휴대폰 시계가 흐르게 한다. start("11:27")에서 시작해 실제로 1분이 지날 때마다 1분씩 올라간다.
  * start가 바뀌면(새 알림이 도착해 대본의 시각으로 맞출 때) 그 시각에서 다시 흐른다.
