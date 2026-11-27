@@ -33,7 +33,10 @@ interface GameState {
   deskLamp: boolean
   /** 노트북에 떠 있는 화면. 장면 진행(엔진)이 바꾼다 */
   laptopScreen: LaptopScreen
-  start: () => void
+  /** 시작 화면에서 플레이어가 입력한 이름. 자료의 {name} 자리에 들어간다. 브라우저 밖으로 보내지 않는다. */
+  playerName: string
+  /** 이름을 받아 게임을 시작한다. 앞뒤 빈칸은 지운다. */
+  start: (name: string) => void
   /** 보는 것을 바꾼다. 휴대폰을 한 번 열면 집은 것으로 친다. */
   openView: (view: View) => void
   aimAt: (id: string | null) => void
@@ -62,7 +65,8 @@ export const useGameStore = create<GameState>()((set) => ({
   ceilingLight: false,
   deskLamp: false,
   laptopScreen: 'off',
-  start: () => set({ screen: 'world' }),
+  playerName: '',
+  start: (name) => set({ screen: 'world', playerName: name.trim() }),
   openView: (view) => set((state) => ({ view, hasPhone: state.hasPhone || view === 'phone' })),
   aimAt: (aim) => set({ aim }),
   setSuspicion: (value) => set({ suspicion: Math.min(SUSPICION.max, Math.max(0, value)) }),

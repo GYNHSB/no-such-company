@@ -1,29 +1,202 @@
+/* 영상(그림)이 화면을 가득 채우고, 버튼과 이름 칸은 그림 속 제목 바로 아래 왼쪽 빈자리에 놓인다.
+   그림의 16:9 판(.stage)을 화면에 꽉 차게 키우고, 그 판을 기준으로 자리(%)와 글자 크기(cqw)를 정해서
+   화면 크기가 달라도 그림 속 제목과 버튼이 함께 움직인다. 1cqw = 판 너비의 1% (1920px 판에서 19.2px).
+   shortcut: 게임 화면용 글자 크기·간격 토큰이 아직 없어 판 기준 숫자로 둔다. 토큰이 생기면 바꾼다. */
 .root {
-  display: grid;
-  place-content: center;
-  gap: 24px;
+  position: relative;
   height: 100%;
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
-    env(safe-area-inset-left);
-  text-align: center;
+  overflow: hidden;
+  background: var(--game-bg);
+  color: var(--game-ink);
+  font-family: var(--font-ui);
+  word-break: keep-all;
 }
 
-.title {
-  margin: 0;
-  font-size: clamp(28px, 6vw, 56px);
-  letter-spacing: -0.02em;
+.stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100vw, calc(100vh * 16 / 9));
+  aspect-ratio: 16 / 9;
+  transform: translate(-50%, -50%);
+  container-type: inline-size;
+}
+
+.media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 영상이 멈춘 자리 위로 그림이 천천히 떠오른다 */
+.still {
+  animation: fade-in 900ms ease-out both;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* 그림 왼쪽 검은 자리(판 너비의 0~41%) 가운데에, 부제 아래(위 58%)부터 쌓인다 */
+.menu {
+  position: absolute;
+  top: 58%;
+  left: 0;
+  display: grid;
+  justify-items: center;
+  gap: 2.4cqw;
+  width: 41%;
+  text-align: center;
+  animation: appear 900ms 500ms ease-out both;
 }
 
 .start {
   justify-self: center;
-  min-width: 160px;
-  min-height: 48px;
-  padding: 0 24px;
-  border: 0;
-  border-radius: 999px;
-  background: #e8eaf0;
-  color: #0b0d12;
+  min-width: 10cqw;
+  min-height: 2.6cqw;
+  padding: 0 1.6cqw;
+  border: 1px solid color-mix(in srgb, var(--game-ink) 40%, transparent);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--game-ink);
   font: inherit;
-  font-weight: 600;
+  font-size: 1cqw;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   cursor: pointer;
+  transition:
+    background-color 200ms ease-out,
+    color 200ms ease-out,
+    border-color 200ms ease-out,
+    opacity 200ms ease-out;
+}
+
+.start:hover:not(:disabled) {
+  border-color: var(--game-ink);
+  background: var(--game-ink);
+  color: var(--game-bg);
+}
+
+.start:focus-visible {
+  outline: 2px solid var(--game-ink);
+  outline-offset: 4px;
+}
+
+.start:disabled {
+  opacity: 0.32;
+  cursor: default;
+}
+
+.form {
+  display: grid;
+  justify-items: center;
+  gap: 0.8cqw;
+  width: 22cqw;
+}
+
+.label {
+  color: color-mix(in srgb, var(--game-ink) 64%, transparent);
+  font-size: 0.9cqw;
+}
+
+/* 어디에 쓰면 되는지 한눈에 보이게 테두리가 있는 네모 칸 */
+.input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.6cqw 0.8cqw;
+  border: 1px solid color-mix(in srgb, var(--game-ink) 36%, transparent);
+  border-radius: 6px;
+  outline: none;
+  background: color-mix(in srgb, var(--game-ink) 6%, transparent);
+  color: var(--game-ink);
+  font: inherit;
+  font-size: 1.2cqw;
+  letter-spacing: 0.04em;
+  text-align: center;
+  transition:
+    border-color 200ms ease-out,
+    background-color 200ms ease-out;
+}
+
+.input:hover {
+  border-color: color-mix(in srgb, var(--game-ink) 56%, transparent);
+}
+
+.input:focus-visible {
+  border-color: var(--game-ink);
+  background: color-mix(in srgb, var(--game-ink) 10%, transparent);
+}
+
+.note {
+  margin: 0 0 0.8cqw;
+  color: color-mix(in srgb, var(--game-ink) 40%, transparent);
+  font-size: 0.68cqw;
+  line-height: 1.6;
+}
+
+.controls {
+  display: grid;
+  gap: 0.4cqw;
+  margin: 0;
+  padding: 0;
+  color: color-mix(in srgb, var(--game-ink) 40%, transparent);
+  font-size: 0.68cqw;
+  list-style: none;
+}
+
+.controls kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.1cqw;
+  height: 1.1cqw;
+  padding: 0 0.2cqw;
+  border: 1px solid color-mix(in srgb, var(--game-ink) 28%, transparent);
+  border-radius: 4px;
+  color: color-mix(in srgb, var(--game-ink) 64%, transparent);
+  font: inherit;
+  font-size: 0.6cqw;
+}
+
+/* 영상이 나오는 동안 오른쪽 아래의 작은 안내 */
+.skip {
+  position: absolute;
+  right: 24px;
+  bottom: 20px;
+  margin: 0;
+  color: color-mix(in srgb, var(--game-ink) 40%, transparent);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.dev {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .still,
+  .menu {
+    animation: none;
+  }
 }

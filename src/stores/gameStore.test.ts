@@ -10,9 +10,9 @@ describe('gameStore', () => {
     expect(useGameStore.getState().screen).toBe('title')
   })
 
-  it('start를 호출하면 월드 화면으로 바뀐다', () => {
-    useGameStore.getState().start()
-    expect(useGameStore.getState().screen).toBe('world')
+  it('이름을 넣어 start를 호출하면 월드 화면으로 바뀌고 이름이 남는다', () => {
+    useGameStore.getState().start('  한결 ')
+    expect(useGameStore.getState()).toMatchObject({ screen: 'world', playerName: '한결' })
   })
 
   it('노트북을 열어도 휴대폰을 집은 것으로 치지 않는다', () => {
