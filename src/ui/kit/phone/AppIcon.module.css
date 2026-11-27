@@ -11,8 +11,10 @@
   background: var(--phone-green);
 }
 
+/* 가상 은행의 대표 색. 배경이 밝든 어둡든 무늬는 흰색이다 */
 .bank {
-  background: var(--phone-orange);
+  background: var(--bank-brand);
+  color: var(--bank-surface);
 }
 
 /* 흰 종이에 주황 줄 */

@@ -49,6 +49,13 @@ button.back {
   min-width: 0;
 }
 
+.right {
+  display: flex;
+  grid-column: 3;
+  justify-self: end;
+  align-items: center;
+}
+
 .title {
   margin: 0;
   padding-bottom: calc(var(--pt) * 8);

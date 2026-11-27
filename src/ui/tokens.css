@@ -66,6 +66,19 @@
   --phone-radius-bubble: 18px;
   --phone-radius-notif: 20px; /* 잠금화면 알림 */
 
+  /* ── 휴대폰 은행 앱 (가상 은행. 기본 앱이 아니라서 자기 색을 쓰는 밝은 화면이다) ── */
+  --bank-bg: #f2f3f6; /* 앱 바탕 */
+  --bank-surface: #ffffff; /* 카드 */
+  --bank-surface-2: #eceef2; /* 단추, 아이콘 바탕 */
+  --bank-ink: #191b22;
+  --bank-muted: #6b7280;
+  --bank-faint: #a3a9b5;
+  --bank-line: #e3e5ea;
+  --bank-brand: #5746e0; /* 가상 은행의 대표 색. 실제 은행의 색과 겹치지 않게 골랐다 */
+  --bank-brand-tint: #ebe8fd; /* 대표 색을 옅게 깐 바탕 */
+  --bank-alert: #e5484d; /* 새 계좌, 새 알림 */
+  --bank-alert-tint: #fde8e8;
+
   /* ── 개인 노트북의 웹 화면 (브라우저, 취업 사이트, 검색) ── */
   --web-font: 'Pretendard', var(--font-ui);
   --web-chrome: #dfe3e8; /* 브라우저 탭 줄 */

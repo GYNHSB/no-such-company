@@ -1,0 +1,342 @@
+/* 은행 앱은 휴대폰 기본 앱이 아니라서 밝은 화면에 가상 은행의 색(--bank-*)을 쓴다.
+   PhoneScreen과 PhoneNav가 쓰는 휴대폰 색을 이 안에서만 은행 색으로 바꾼다.
+   실제 은행 앱의 고유 색은 쓰지 않는다. */
+.theme {
+  --phone-bg: var(--bank-bg);
+  --phone-ink: var(--bank-ink);
+  --phone-muted: var(--bank-muted);
+  --phone-faint: var(--bank-faint);
+  --phone-line: var(--bank-line);
+  --phone-accent: var(--bank-brand);
+  position: absolute;
+  inset: 0;
+}
+
+/* 크기는 PhoneScreen이 정한 --pt(화면 너비 390pt 기준)로 맞춘다 */
+.bank {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: calc(var(--pt) * 12);
+  padding-bottom: calc(var(--pt) * 16);
+}
+
+/* 흰 카드. 테두리 없이 바탕과 밝기 차이로만 구분한다 */
+.card {
+  margin: 0;
+  padding: calc(var(--pt) * 20) calc(var(--pt) * 20) calc(var(--pt) * 8);
+  border-radius: calc(var(--pt) * 22);
+  background: var(--bank-surface);
+  list-style: none;
+}
+
+/* ── 내 계좌 ── */
+
+.cardHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 0 0 calc(var(--pt) * 6);
+  font-size: calc(var(--pt) * 15);
+  font-weight: 600;
+  color: var(--bank-muted);
+}
+
+.count {
+  color: var(--bank-brand);
+  font-weight: 700;
+}
+
+.accounts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 왼쪽 둥근 아이콘, 가운데 이름과 큰 잔액, 오른쪽 이체 단추 */
+.account {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 14);
+  padding: calc(var(--pt) * 14) 0;
+}
+
+.accountIcon {
+  flex: none;
+  width: calc(var(--pt) * 42);
+  height: calc(var(--pt) * 42);
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+.accountText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: calc(var(--pt) * 1);
+  min-width: 0;
+}
+
+.accountLabel {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 6);
+  font-size: calc(var(--pt) * 14);
+  color: var(--bank-muted);
+}
+
+.balance {
+  font-size: calc(var(--pt) * 21);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* 잔액을 가려 둔 계좌 */
+.hidden {
+  font-size: calc(var(--pt) * 17);
+  font-weight: 600;
+  color: var(--bank-faint);
+}
+
+.accountMeta {
+  font-size: calc(var(--pt) * 12);
+  color: var(--bank-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 오늘 만들어진 계좌 */
+.tag {
+  padding: calc(var(--pt) * 1) calc(var(--pt) * 6);
+  border-radius: calc(var(--pt) * 6);
+  background: var(--bank-alert-tint);
+  color: var(--bank-alert);
+  font-size: calc(var(--pt) * 11);
+  font-weight: 700;
+}
+
+/* 모양만 있는 이체 단추 */
+.transfer {
+  flex: none;
+  padding: calc(var(--pt) * 7) calc(var(--pt) * 13);
+  border-radius: calc(var(--pt) * 10);
+  background: var(--bank-surface-2);
+  color: var(--bank-muted);
+  font-size: calc(var(--pt) * 14);
+  font-weight: 600;
+}
+
+/* 모양만 있는 "계좌 추가" 줄 */
+.add {
+  color: var(--bank-muted);
+  font-size: calc(var(--pt) * 15);
+  font-weight: 600;
+}
+
+.addIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: calc(var(--pt) * 42);
+  height: calc(var(--pt) * 42);
+  border-radius: 50%;
+  background: var(--bank-surface-2);
+  font-size: calc(var(--pt) * 22);
+  font-weight: 400;
+  line-height: 1;
+}
+
+/* ── 내 카드 ── */
+
+/* 작은 카드 그림. 대표 색 바탕에 칩 하나 */
+.plastic {
+  position: relative;
+  flex: none;
+  width: calc(var(--pt) * 42);
+  height: calc(var(--pt) * 28);
+  border-radius: calc(var(--pt) * 5);
+  background: linear-gradient(135deg, var(--bank-brand), var(--bank-ink));
+}
+
+.plastic i {
+  position: absolute;
+  top: calc(var(--pt) * 8);
+  left: calc(var(--pt) * 6);
+  width: calc(var(--pt) * 9);
+  height: calc(var(--pt) * 7);
+  border-radius: calc(var(--pt) * 2);
+  background: var(--bank-brand-tint);
+}
+
+.cardLabel {
+  font-size: calc(var(--pt) * 16);
+  font-weight: 600;
+}
+
+.spent {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: calc(var(--pt) * 1);
+  font-size: calc(var(--pt) * 16);
+}
+
+/* 오른쪽 위 알림 단추 */
+.bellButton {
+  display: grid;
+  place-items: center;
+  width: calc(var(--pt) * 40);
+  height: calc(var(--pt) * 40);
+  margin-right: calc(var(--pt) * -6);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--bank-ink);
+  cursor: pointer;
+}
+
+/* 모양만 있는 메뉴 */
+.menu {
+  padding-top: calc(var(--pt) * 8);
+  font-size: calc(var(--pt) * 16);
+  font-weight: 600;
+}
+
+.menu li {
+  display: flex;
+  justify-content: space-between;
+  padding: calc(var(--pt) * 13) 0;
+}
+
+.menu span {
+  color: var(--bank-faint);
+}
+
+/* ── 알림 ── */
+
+.empty {
+  margin: calc(var(--pt) * 96) 0 0;
+  color: var(--bank-muted);
+  text-align: center;
+}
+
+/* 새 알림이 위로 온다 */
+.notices {
+  padding-top: calc(var(--pt) * 6);
+}
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: calc(var(--pt) * 14);
+  padding: calc(var(--pt) * 14) 0;
+  animation: arrive 0.3s ease-out;
+}
+
+.noticeIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: calc(var(--pt) * 42);
+  height: calc(var(--pt) * 42);
+  border-radius: 50%;
+  background: var(--bank-brand-tint);
+  color: var(--bank-brand);
+}
+
+.noticeText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: calc(var(--pt) * 4);
+  min-width: 0;
+  font-size: calc(var(--pt) * 16);
+  line-height: 1.4;
+}
+
+.noticeTime {
+  font-size: calc(var(--pt) * 13);
+  color: var(--bank-muted);
+}
+
+/* ── 아래 탭 ── */
+
+/* 화면 아래에 붙어 있다. PhoneScreen 본문의 좌우 여백까지 덮는다 */
+.tabs {
+  position: sticky;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 0 calc(var(--pt) * -16);
+  padding: calc(var(--pt) * 6) calc(var(--pt) * 16) 0;
+  border-top: calc(var(--pt) * 0.5) solid var(--bank-line);
+  /* 아래 막대 자리와 이어지게 앱 바탕색을 쓴다 */
+  background: var(--bank-bg);
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--pt) * 2);
+  padding: calc(var(--pt) * 4) 0;
+  border: 0;
+  background: none;
+  color: var(--bank-faint);
+  font: inherit;
+  font-size: calc(var(--pt) * 11);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab[aria-current='page'] {
+  color: var(--bank-ink);
+}
+
+.glyph {
+  width: calc(var(--pt) * 24);
+  height: calc(var(--pt) * 24);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bell {
+  position: relative;
+  display: grid;
+}
+
+/* 읽지 않은 알림이 있으면 종 옆에 빨간 점 */
+.bell i {
+  position: absolute;
+  top: calc(var(--pt) * -1);
+  right: calc(var(--pt) * -3);
+  width: calc(var(--pt) * 8);
+  height: calc(var(--pt) * 8);
+  border-radius: 50%;
+  background: var(--bank-alert);
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--pt) * -8));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notice {
+    animation: none;
+  }
+}
