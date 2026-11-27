@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import styles from './AppIcon.module.css'
 
-export type AppIconKind = 'message' | 'bank' | 'notes' | 'photos' | 'sns' | 'phone' | 'blabla'
+export type AppIconKind =
+  'message' | 'bank' | 'notes' | 'photos' | 'sns' | 'phone' | 'blabla' | 'browser'
 
 const GLYPHS: Record<AppIconKind, ReactNode> = {
   // 말풍선
@@ -35,6 +36,10 @@ const GLYPHS: Record<AppIconKind, ReactNode> = {
       fillRule="evenodd"
       d="M4 5h16v11h-8.5L7 19.5V16H4zM7.4 10.5a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0-2.2 0zM10.9 10.5a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0-2.2 0zM14.4 10.5a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0-2.2 0z"
     />
+  ),
+  // 지구본. 선으로 그린다
+  browser: (
+    <path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16zM4 12h16M12 4c2.2 2.2 3.3 4.9 3.3 8s-1.1 5.8-3.3 8M12 4c-2.2 2.2-3.3 4.9-3.3 8s1.1 5.8 3.3 8" />
   ),
   // 겹쳐 놓은 사진 두 장
   sns: (
