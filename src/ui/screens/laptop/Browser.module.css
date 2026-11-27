@@ -1,0 +1,71 @@
+.window {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  font-family: var(--web-font);
+  color: var(--web-ink);
+  background: var(--web-bg);
+}
+.tabs {
+  display: flex;
+  padding: 8px 8px 0;
+  background: var(--web-chrome);
+}
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 240px;
+  padding: 8px 12px;
+  border-radius: var(--web-radius) var(--web-radius) 0 0;
+  background: var(--web-chrome-tab);
+  font-size: var(--web-text-meta);
+}
+.tabTitle {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.close {
+  border: 0;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: none;
+  color: var(--web-muted);
+  font-size: var(--web-text-body);
+  line-height: 1;
+  cursor: pointer;
+}
+.close:hover,
+.close:focus-visible {
+  background: var(--web-chrome-field);
+  color: var(--web-ink);
+}
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--web-line);
+  background: var(--web-chrome-tab);
+}
+.nav {
+  color: var(--web-muted);
+  font-size: var(--web-text-body);
+  letter-spacing: 6px;
+}
+.address {
+  flex: 1;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--web-chrome-field);
+  font-size: var(--web-text-meta);
+  color: var(--web-muted);
+}
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}

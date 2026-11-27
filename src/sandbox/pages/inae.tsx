@@ -3,6 +3,8 @@ import { Canvas } from '@react-three/fiber'
 import { Suspense, useEffect, useState } from 'react'
 import { LAPTOP_SCREEN } from '@/game/world/anchors'
 import { Room } from '@/game/world/Room'
+import { JobSiteStatus } from '@/ui/screens/laptop/JobSiteStatus'
+import { SAMPLE_APPLICATIONS, SAMPLE_REJECTED_TOTAL } from '@/ui/screens/laptop/jobSiteSample'
 import { Bubble } from '../../ui/kit/phone/Bubble'
 import { Notification } from '../../ui/kit/phone/Notification'
 import { PhoneScreen } from '../../ui/kit/phone/PhoneScreen'
@@ -64,7 +66,12 @@ function RoomLaptopTest() {
             distanceFactor={SCREEN_DISTANCE_FACTOR}
           >
             <div style={{ width: SCREEN_W, height: SCREEN_H }}>
-              <LaptopScreen />
+              <JobSiteStatus
+                applications={SAMPLE_APPLICATIONS}
+                rejectedTotal={SAMPLE_REJECTED_TOTAL}
+                portfolioViews={0}
+                onClose={() => console.info('[inae] btn_jobsite_close')}
+              />
             </div>
           </Html>
         </Suspense>

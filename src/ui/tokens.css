@@ -59,6 +59,24 @@
   --phone-radius-bubble: 18px;
   --phone-radius-notif: 20px; /* 잠금화면 알림 */
 
+  /* ── 개인 노트북의 웹 화면 (브라우저, 취업 사이트, 검색) ── */
+  --web-font: 'Pretendard', var(--font-ui);
+  --web-chrome: #dfe3e8; /* 브라우저 탭 줄 */
+  --web-chrome-tab: #ffffff; /* 열린 탭, 주소창 줄 */
+  --web-chrome-field: #eef1f4; /* 주소창 */
+  --web-bg: #f4f5f7; /* 사이트 바탕 */
+  --web-surface: #ffffff; /* 카드, 목록 */
+  --web-ink: #1f2328;
+  --web-muted: #6b7280;
+  --web-line: #e3e6ea;
+  --web-accent: #2f6f62; /* 가상 사이트의 대표색 (실제 서비스 색을 피한 짙은 청록) */
+  --web-reject: #b4232a; /* 서류 탈락 */
+  --web-reject-bg: #fbecec;
+  --web-text-body: 15px;
+  --web-text-meta: 13px;
+  --web-text-title: 22px;
+  --web-radius: 8px;
+
   /* ── 상태 신호 (기기 밖, 게임 HUD) ── */
   --watch: #30d158; /* 웹캠 켜짐 */
   --warn: #ff9f0a; /* 웹캠 켜지기 직전 */
