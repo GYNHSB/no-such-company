@@ -3,7 +3,7 @@
 import type { DayScript } from '../types'
 
 export const day1: DayScript = {
-  info: { day: 1, week: 1, title: '입사' },
+  info: { day: 1, week: 1, weekday: '월', title: '입사' },
 
   evidence: [
     {

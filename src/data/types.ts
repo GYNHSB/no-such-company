@@ -3,10 +3,13 @@
 
 export type DayNumber = 1 | 2 | 3 | 4 | 5
 
+export type Weekday = '월' | '화' | '수' | '목' | '금' | '토' | '일'
+
 /** 화면 표기 "3일차 · 입사 5주 차" */
 export interface DayInfo {
   day: DayNumber
   week: number // 입사 N주 차
+  weekday: Weekday // 그 주의 무슨 요일인지. 휴대폰에 보이는 날짜를 정한다
   title: string // 내부용 이름: 입사, 흔적, 감시, 추리, 결단
 }
 

@@ -1,25 +1,29 @@
-import { useState } from 'react'
-import type { Message } from '@/data/types'
+import { useEffect, useState } from 'react'
+import type { DayInfo, Message } from '@/data/types'
+import {
+  dateOfDay,
+  lockNotifications,
+  messagesOf,
+  type PhoneApp,
+  usePhoneStore,
+} from '@/stores/phoneStore'
 import { PhoneCloseup } from '@/ui/kit/phone/PhoneCloseup'
 import { useFlowingClock } from '@/ui/screens/phone/clock'
 import { LockScreen } from '@/ui/screens/phone/LockScreen'
-import { MessagesApp, type ReceivedMessage } from '@/ui/screens/phone/MessagesApp'
+import { MessagesApp } from '@/ui/screens/phone/MessagesApp'
 import styles from './gangyi.module.css'
 
 /**
  * 강이의 테스트 페이지. 개발 서버에서 `?sandbox=gangyi` 주소로 연다.
  * 휴대폰 화면(#35)을 하나씩 띄워 본다. 지금은 잠금 화면 알림(#49)과 문자 앱(#50).
+ * 받은 메시지와 읽음은 phoneStore가 들고 있고, 이 페이지의 버튼이 사건 실행 코드 대신 메시지를 도착시킨다.
  */
-
-const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'] as const
-type Weekday = (typeof WEEKDAYS)[number]
 
 interface Scene {
   id: string
   label: string
-  /** 입사 N주 차와 요일. 잠금 화면 날짜를 정하는 데 쓴다 */
-  week: number
-  weekday: Weekday
+  /** 몇 일차인지. 휴대폰에 보이는 날짜를 정한다 */
+  info: DayInfo
   /** 항의 문자가 쏟아질 때처럼 손이 떨리는 장면 */
   shaking?: boolean
   messages: Message[]
@@ -30,8 +34,7 @@ const SCENES: Scene[] = [
   {
     id: 'd1s3',
     label: '1일차 장면 3',
-    week: 1,
-    weekday: '월', // 대본: 고객명단_월요일
+    info: { day: 1, week: 1, weekday: '월', title: '입사' }, // 대본: 고객명단_월요일
     messages: [
       {
         id: 'd1-sms-hr',
@@ -45,8 +48,7 @@ const SCENES: Scene[] = [
   {
     id: 'd2s4',
     label: '2일차 장면 4',
-    week: 3,
-    weekday: '수', // 대본: 고객명단_수요일
+    info: { day: 2, week: 3, weekday: '수', title: '흔적' }, // 대본: 고객명단_수요일
     messages: [
       {
         id: 'd2-bank-open-1',
@@ -74,8 +76,7 @@ const SCENES: Scene[] = [
   {
     id: 'd4s5',
     label: '4일차 장면 5',
-    week: 6,
-    weekday: '화', // 대본에 요일이 없어 임시로 정했다
+    info: { day: 4, week: 6, weekday: '화', title: '추리' }, // 대본에 요일이 없어 임의로 정했다
     shaking: true,
     messages: [
       {
@@ -109,11 +110,10 @@ const CARRIER = 'DT'
 /** 누른 알림이 여는 앱. 은행 앱 화면은 다른 이슈(#51)에서 만든다 */
 const APP_NAMES: Partial<Record<Message['channel'], string>> = { sms: '문자 앱', bank: '은행 앱' }
 
-const VIEWS = [
+const VIEWS: { id: PhoneApp; label: string }[] = [
   { id: 'lock', label: '잠금 화면 (#49)' },
   { id: 'messages', label: '문자 앱 (#50)' },
-] as const
-type View = (typeof VIEWS)[number]['id']
+]
 
 // 손 이미지(협성 님 테스트 페이지와 같은 파일)와 그 안의 화면 자리. 이미지의 검은 화면 영역을 픽셀로 잰 값이다
 const HAND_URL = `${import.meta.env.BASE_URL}images/hand_phone_day.webp`
@@ -121,60 +121,56 @@ const IMAGE_SIZE = { width: 1239, height: 1269 }
 const SCREEN = { left: 418, top: 149, right: 818, bottom: 1000, radius: 41 }
 
 /**
- * 플레이어의 이번 주 월요일을 입사 1주 차 월요일로 보고, 주 차와 요일에 맞는 날짜를 돌려준다.
- * 대본의 요일(1일차 월, 2일차 수, 3일차 금)과 잠금 화면 요일을 맞추기 위해서다.
+ * 장면을 처음부터 시작한다. 새 게임처럼 휴대폰을 비운 뒤,
+ * 앞 장면에서 온 메시지는 이미 받아서 읽은 것으로 넣어 둔다.
  */
-const dateOf = (week: number, weekday: Weekday) => {
-  const date = new Date()
-  const sinceMonday = (date.getDay() + 6) % 7
-  date.setDate(date.getDate() - sinceMonday + (week - 1) * 7 + WEEKDAYS.indexOf(weekday))
-  return date
+const startScene = (id: string) => {
+  const phone = usePhoneStore.getState()
+  const earlier = SCENES.slice(
+    0,
+    SCENES.findIndex((s) => s.id === id),
+  )
+  phone.reset()
+  earlier.forEach((s) => s.messages.forEach((m) => phone.receive(m, s.info)))
+  phone.markRead(earlier.flatMap((s) => s.messages.map((m) => m.id)))
 }
 
 export default function SandboxPage() {
   const [sceneId, setSceneId] = useState(SCENES[0].id)
-  const [arrived, setArrived] = useState(0)
   const [name, setName] = useState('홍길동')
   const [opened, setOpened] = useState('')
   const [fast, setFast] = useState(false)
-  const [view, setView] = useState<View>('lock')
-  // 문자 앱을 열 때 바로 보여 줄 대화. 잠금 화면 알림을 눌러 들어오면 그 대화가 열린다
-  const [thread, setThread] = useState<string>()
-  // 읽은 문자의 id. 실제 게임에서는 스토어가 들고 있을 값이다
-  const [readIds, setReadIds] = useState<string[]>([])
 
-  const sceneIndex = Math.max(
-    0,
-    SCENES.findIndex((s) => s.id === sceneId),
-  )
-  const scene = SCENES[sceneIndex]
-  const today = dateOf(scene.week, scene.weekday)
-  // 이름 바꾸기는 화면 밖에서 한다. 화면은 받은 글을 그대로 보여 준다
-  const withName = (m: Message) => ({ ...m, body: m.body.replaceAll('{name}', name) })
-  const messages = scene.messages.slice(0, arrived).map(withName)
-  // 문자 앱에는 앞 장면에서 받은 문자도 쌓여 있다. 받은 날은 그 장면의 날짜다
-  const received: ReceivedMessage[] = [
-    ...SCENES.slice(0, sceneIndex).flatMap((s) =>
-      s.messages.map((m) => ({ ...withName(m), date: dateOf(s.week, s.weekday) })),
-    ),
-    ...messages.map((m) => ({ ...m, date: today })),
-  ].filter((m) => m.channel === 'sms')
+  const received = usePhoneStore((s) => s.received)
+  const readIds = usePhoneStore((s) => s.readIds)
+  const app = usePhoneStore((s) => s.app)
+  const thread = usePhoneStore((s) => s.thread)
+  const weekOne = usePhoneStore((s) => s.weekOne)
+  const receive = usePhoneStore((s) => s.receive)
+  const markRead = usePhoneStore((s) => s.markRead)
+  const openApp = usePhoneStore((s) => s.openApp)
+
+  useEffect(() => startScene(SCENES[0].id), [])
+
+  const scene = SCENES.find((s) => s.id === sceneId) ?? SCENES[0]
+  const today = dateOfDay(weekOne, scene.info)
+  // 이 장면의 메시지 가운데 지금까지 도착한 수
+  const arrived = scene.messages.filter((m) => received.some((r) => r.message.id === m.id)).length
+  // 이름 바꾸기는 화면에 넘길 때 한다. 스토어에는 대본 그대로({name}) 들어 있다
+  const withName = <T extends Message>(m: T): T => ({
+    ...m,
+    body: m.body.replaceAll('{name}', name),
+  })
   // 마지막으로 도착한 알림의 시각(대본)에서 시작해 실제 시간만큼 흐른다
-  const time = useFlowingClock((messages.at(-1) ?? scene.messages[0]).time, fast ? 60 : 1)
+  const time = useFlowingClock(
+    (scene.messages[arrived - 1] ?? scene.messages[0]).time,
+    fast ? 60 : 1,
+  )
 
   const pickScene = (id: string) => {
     setSceneId(id)
-    setArrived(0)
     setOpened('')
-    setThread(undefined)
-    // 앞 장면에서 받은 문자는 이미 읽은 것으로 둔다
-    const index = SCENES.findIndex((s) => s.id === id)
-    setReadIds(SCENES.slice(0, index).flatMap((s) => s.messages.map((m) => m.id)))
-  }
-
-  const pickView = (id: View) => {
-    setView(id)
-    setThread(undefined)
+    startScene(id)
   }
 
   return (
@@ -185,19 +181,15 @@ export default function SandboxPage() {
         screen={SCREEN}
         shaking={scene.shaking && arrived > 0}
       >
-        {view === 'lock' ? (
+        {app === 'lock' ? (
           <LockScreen
             time={time}
             carrier={CARRIER}
             date={today}
-            // 잠금 화면에는 오늘 받고 아직 읽지 않은 것만 남는다
-            messages={messages.filter((m) => !readIds.includes(m.id))}
+            messages={lockNotifications(received, readIds, scene.info.day).map(withName)}
             onOpen={(m) => {
               setOpened(`${APP_NAMES[m.channel] ?? m.channel} 열기 (${m.from} ${m.time})`)
-              if (m.channel === 'sms') {
-                setThread(m.from)
-                setView('messages')
-              }
+              if (m.channel === 'sms') openApp('messages', m.from)
             }}
           />
         ) : (
@@ -205,13 +197,13 @@ export default function SandboxPage() {
             key={`${scene.id}-${thread ?? ''}`}
             time={time}
             today={today}
-            messages={received}
+            messages={messagesOf(received, weekOne, 'sms').map(withName)}
             readIds={readIds}
             onRead={(ids) => {
-              setReadIds((prev) => [...new Set([...prev, ...ids])])
+              markRead(ids)
               setOpened(`문자 읽음 (${ids.join(', ')})`)
             }}
-            defaultThread={thread}
+            defaultThread={thread ?? undefined}
           />
         )}
       </PhoneCloseup>
@@ -223,8 +215,8 @@ export default function SandboxPage() {
             <button
               key={v.id}
               type="button"
-              aria-pressed={v.id === view}
-              onClick={() => pickView(v.id)}
+              aria-pressed={v.id === app}
+              onClick={() => openApp(v.id)}
             >
               {v.label}
             </button>
@@ -246,7 +238,7 @@ export default function SandboxPage() {
           <button
             type="button"
             disabled={arrived >= scene.messages.length}
-            onClick={() => setArrived((n) => n + 1)}
+            onClick={() => receive(scene.messages[arrived], scene.info)}
           >
             다음 알림·문자 도착 ({arrived}/{scene.messages.length})
           </button>
