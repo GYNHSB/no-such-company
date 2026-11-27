@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import styles from './AppIcon.module.css'
 
-export type AppIconKind = 'message' | 'bank' | 'notes' | 'photos'
+export type AppIconKind = 'message' | 'bank' | 'notes' | 'photos' | 'sns'
 
 const GLYPHS: Record<AppIconKind, ReactNode> = {
   // 말풍선
@@ -23,6 +23,13 @@ const GLYPHS: Record<AppIconKind, ReactNode> = {
     <>
       <circle cx="8" cy="8.5" r="2.25" />
       <path d="M3.5 19l5.5-7 3.5 4.5 2.5-3 5.5 5.5z" />
+    </>
+  ),
+  // 겹쳐 놓은 사진 두 장
+  sns: (
+    <>
+      <path d="M5 5h11v2H7v9H5z" />
+      <path d="M8.5 8.5H19V19H8.5z" />
     </>
   ),
 }
