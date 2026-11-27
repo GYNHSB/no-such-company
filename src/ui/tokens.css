@@ -37,6 +37,11 @@
   --phone-font: system-ui, -apple-system, 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
   --phone-frame: #1c1c1e;
   --phone-bg: #000000; /* 기본 배경 */
+  /* 잠금 화면 배경 화면. 어두운 남색 바탕에 위쪽은 푸른 빛, 아래쪽은 붉은 빛이 번진다 */
+  --phone-wallpaper:
+    radial-gradient(120% 55% at 15% 0%, #41538c 0%, transparent 65%),
+    radial-gradient(110% 50% at 95% 100%, #8a4f5f 0%, transparent 65%),
+    linear-gradient(#1a2140, #0d0f1c);
   --phone-surface: #1c1c1e; /* 카드, 목록 묶음 */
   --phone-surface-2: #2c2c2e; /* 그 위 한 단계 */
   --phone-ink: #ffffff;
@@ -47,6 +52,8 @@
   --phone-green: #30d158;
   --phone-red: #ff453a;
   --phone-orange: #ff9f0a;
+  --phone-notif-bg: rgb(72 72 82 / 0.36); /* 알림 카드. 뒤 배경이 비치는 반투명 */
+  --phone-notif-edge: rgb(255 255 255 / 0.14); /* 알림 카드 가장자리의 옅은 빛 */
   --phone-bubble-in: #262628; /* 받은 문자 말풍선 */
   --phone-bubble-out: #0a84ff; /* 보낸 문자 말풍선 */
   --phone-text-large: 34px; /* 큰 제목 */
