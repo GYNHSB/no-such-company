@@ -190,7 +190,8 @@ export default function SandboxPage() {
             time={time}
             carrier={CARRIER}
             date={today}
-            messages={messages}
+            // 잠금 화면에는 오늘 받고 아직 읽지 않은 것만 남는다
+            messages={messages.filter((m) => !readIds.includes(m.id))}
             onOpen={(m) => {
               setOpened(`${APP_NAMES[m.channel] ?? m.channel} 열기 (${m.from} ${m.time})`)
               if (m.channel === 'sms') {
