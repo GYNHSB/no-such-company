@@ -75,6 +75,7 @@
   --web-text-body: 15px;
   --web-text-meta: 13px;
   --web-text-title: 22px;
+  --web-text-hero: 56px; /* 검색 사이트 첫 화면 이름 */
   --web-radius: 8px;
 
   /* ── 상태 신호 (기기 밖, 게임 HUD) ── */
