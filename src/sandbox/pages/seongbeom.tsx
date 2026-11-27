@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import type { Message } from '@/data/types'
 import { CHANNELS } from '@/ui/screens/work/channelScript'
+import { earlierNames, isCustomerList, splitNames } from '@/ui/screens/work/customerList'
 import { DAY1_MAILS, DAY5_MAILS, REJECTION_MAILS } from '@/ui/screens/work/mailScript'
 import { MESSENGER_DAYS } from '@/ui/screens/work/messengerScript'
 import { PROOFREAD_LABEL, PROOFREADS, fixTypo } from '@/ui/screens/work/proofread'
 import { WebMail } from '@/ui/screens/work/WebMail'
 import { WorkChannelView } from '@/ui/screens/work/WorkChannelView'
+import { WorkCustomerList } from '@/ui/screens/work/WorkCustomerList'
 import { WorkMessenger, type MessengerDay } from '@/ui/screens/work/WorkMessenger'
 import { WorkProofread } from '@/ui/screens/work/WorkProofread'
 import { WorkVideoCapture } from '@/ui/screens/work/WorkVideoCapture'
@@ -20,6 +22,8 @@ const SCREEN_W = 1280
 const SCREEN_H = 800
 
 const TOTAL = MESSENGER_DAYS.reduce((sum, day) => sum + day.messages.length, 0)
+// 대본의 메시지 전체. 명단의 신규와 기존은 앞선 날의 명단을 보고 가른다
+const SCRIPT_MESSAGES = MESSENGER_DAYS.flatMap((day) => day.messages)
 
 /** 앞에서부터 count개의 메시지만 도착한 상태 */
 function daysUpTo(count: number): MessengerDay[] {
@@ -81,6 +85,12 @@ export default function SandboxPage() {
   const [proofreadDone, setProofreadDone] = useState<string[]>([])
   const [proofreading, setProofreading] = useState<{ id: string; sentence: string } | null>(null)
 
+  // 고객 명단 정리(#42): 정리를 마친 명단의 메시지 id와, 카드를 눌러 지금 열어 둔 명단
+  const [listDone, setListDone] = useState<string[]>([])
+  const [listing, setListing] = useState<{ id: string; title: string; names: string[] } | null>(
+    null,
+  )
+
   const withUnread = (mails: readonly Mail[]) =>
     mails.map((mail) => ({ ...mail, unread: !read.includes(mail.id) }))
   const mailProps = {
@@ -133,6 +143,8 @@ export default function SandboxPage() {
                 setChoseReshoot(false)
                 setProofreadDone([])
                 setProofreading(null)
+                setListDone([])
+                setListing(null)
               }}
             >
               처음부터
@@ -208,7 +220,8 @@ export default function SandboxPage() {
                   }))}
                   playerName={playerName}
                   isTaskDone={(task, message) =>
-                    task.label === PROOFREAD_LABEL && proofreadDone.includes(message.id)
+                    (task.label === PROOFREAD_LABEL && proofreadDone.includes(message.id)) ||
+                    (isCustomerList(task) && listDone.includes(message.id))
                   }
                   onOpenTask={(task, message) => {
                     setClicked(`${message.id} · ${task.label}`)
@@ -216,10 +229,35 @@ export default function SandboxPage() {
                       task.label === PROOFREAD_LABEL &&
                       message.id in PROOFREADS &&
                       !proofreadDone.includes(message.id)
-                    if (canProofread) setProofreading({ id: message.id, sentence: task.content })
+                    const canList = isCustomerList(task) && !listDone.includes(message.id)
+                    // 입력창 자리가 하나라서 한 번에 업무 하나만 열어 둔다
+                    if (canProofread) {
+                      setProofreading({ id: message.id, sentence: task.content })
+                      setListing(null)
+                    }
+                    if (canList) {
+                      setListing({
+                        id: message.id,
+                        title: task.label,
+                        names: splitNames(task.content),
+                      })
+                      setProofreading(null)
+                    }
                   }}
                   composer={
-                    proofreading ? (
+                    listing ? (
+                      <WorkCustomerList
+                        key={listing.id}
+                        title={listing.title}
+                        names={listing.names}
+                        earlier={earlierNames(SCRIPT_MESSAGES, listing.id)}
+                        onDone={() => {
+                          setListDone((ids) => [...ids, listing.id])
+                          setListing(null)
+                          setClicked(`정리 완료 · ${listing.id}`)
+                        }}
+                      />
+                    ) : proofreading ? (
                       <WorkProofread
                         key={proofreading.id}
                         sentence={proofreading.sentence}
