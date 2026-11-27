@@ -11,6 +11,7 @@ import { Player } from '@/game/player/Player'
 import { START } from '@/game/world/anchors'
 import { DeskPhone } from '@/game/world/DeskPhone'
 import { Details } from '@/game/world/Details'
+import { Laptop } from '@/game/world/Laptop'
 import { LaptopDisplay, LaptopScreenPicker } from '@/game/world/LaptopDisplay'
 import { LIGHT_SWITCH_BOX } from '@/game/world/lightSwitch'
 import { Room } from '@/game/world/Room'
@@ -38,6 +39,8 @@ const SWITCHES: Record<string, () => void> = {
 
 /** 책상 위 휴대폰 자리의 납작한 상자. 화면에는 DeskPhone이 대신 그리고, 집은 뒤에는 가리킬 수도 없다. */
 const PHONE_SLAB = ['interact_phone']
+/** room.glb에서 그리지 않는 물건. 휴대폰은 DeskPhone이, 노트북은 Laptop(laptop.glb)이 대신 그린다 */
+const ROOM_HIDE = [...PHONE_SLAB, 'interact_laptop']
 /** 이름이 interact_*가 아니지만 누를 수 있는 물건. room.glb에서 interact_*로 이름을 바꾸면 여기서 지운다. */
 const NAMED = ['bed', 'desk_lamp', 'light_switch']
 /** room.glb 밖에서 코드로 만든 누를 수 있는 물체 */
@@ -90,13 +93,14 @@ export default function GameCanvas({ onLoad }: GameCanvasProps) {
           <Suspense fallback={null}>
             <Physics>
               <Room
-                hide={PHONE_SLAB}
+                hide={ROOM_HIDE}
                 night={night}
                 ceilingLight={ceilingLight}
                 deskLamp={deskLamp}
               />
               <RoomColliders />
               {!hasPhone && <DeskPhone />}
+              <Laptop />
               <Details />
               <primitive object={LIGHT_SWITCH_BOX} />
               <Player

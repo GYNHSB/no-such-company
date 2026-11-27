@@ -11,9 +11,15 @@ export const START: { position: Vec3; target: Vec3 } = {
   target: [0.9, EYE, 1],
 }
 
-/** 노트북 화면(밝은 네모)의 가운데 위치와 크기 */
+/** 노트북(laptop.glb)을 놓은 자리. room.glb의 옛 노트북(interact_laptop)과 같은 자리다 */
+export const LAPTOP_AT: Vec3 = [-1.3, 0.74, 0.489]
+
+/**
+ * 노트북 화면(밝은 네모)의 가운데 위치와 크기.
+ * center는 laptop.glb의 laptop_screen 위치 (0, 0.12396, -0.10973)에 LAPTOP_AT을 더한 값이다.
+ */
 export const LAPTOP_SCREEN: { center: Vec3; facing: Vec3; width: number; height: number } = {
-  center: [-1.3, 0.8637, 0.3783],
+  center: [-1.3, 0.864, 0.3793],
   // 뒤로 젖힌 화면이 바라보는 방향(길이 1)
   facing: [0, 0.2571, 0.9664],
   width: 0.31,
