@@ -1,0 +1,182 @@
+/* 펼친 수첩. 종이색은 디자이너의 증거 카드·빈칸 문장 부품과 같은 --paper 계열을 쓴다.
+   shortcut: --paper 토큰이 아직 없어 부품과 같은 임시 값을 대체값으로 둔다. 토큰이 정해지면 대체값을 지운다. */
+.scrim {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  justify-items: center;
+  align-items: center;
+  gap: 20px;
+  padding: 40px 24px 28px;
+  background: color-mix(in srgb, var(--game-bg) 72%, transparent);
+  animation: fade 240ms ease-out both;
+}
+
+/* 두 쪽이 나란히 펼쳐진 수첩. 가운데 접힌 선을 그림자로 흉내 낸다 */
+.book {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  box-sizing: border-box;
+  width: min(1040px, 100%);
+  height: 100%;
+  max-height: 600px;
+  border-radius: 6px;
+  background: var(--paper, #f3efe6);
+  box-shadow:
+    inset -1px 0 0 var(--paper-line, #d8cfbd),
+    0 24px 48px color-mix(in srgb, var(--game-bg) 60%, transparent);
+  color: var(--paper-ink, #2a2620);
+  font-family: var(--font-ui);
+  word-break: keep-all;
+  animation: lift 320ms ease-out both;
+}
+
+.page {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 16px;
+  min-height: 0;
+  padding: 32px 32px 24px;
+  /* 수첩 줄 */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 31px,
+    color-mix(in srgb, var(--paper-line, #d8cfbd) 60%, transparent) 31px 32px
+  );
+}
+
+.page:first-child {
+  border-right: 1px solid var(--paper-line, #d8cfbd);
+  box-shadow: inset -12px 0 16px -12px color-mix(in srgb, var(--game-bg) 25%, transparent);
+}
+
+.heading {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.empty {
+  margin: 0;
+  color: var(--paper-muted, #6b6153);
+  font-size: 14px;
+}
+
+/* 카드 묶음. 많아지면 이 쪽 안에서만 스크롤된다 */
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: start;
+  gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.sentences {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 0;
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.sentence {
+  display: grid;
+  gap: 4px;
+}
+
+.row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  min-height: 32px;
+  margin-top: -8px;
+}
+
+.submit {
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--paper-ink, #2a2620);
+  border-radius: 6px;
+  background: var(--paper-ink, #2a2620);
+  color: var(--paper, #f3efe6);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.submit:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.submit:focus-visible {
+  outline: 2px solid var(--paper-ink, #2a2620);
+  outline-offset: 2px;
+}
+
+.ok {
+  color: var(--ok, #1f7a4d);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.no {
+  color: var(--danger);
+  font-size: 13px;
+}
+
+.howto {
+  margin: 0;
+  color: var(--paper-muted, #6b6153);
+  font-size: 12px;
+}
+
+.close {
+  min-width: 120px;
+  min-height: 40px;
+  padding: 0 20px;
+  border: 1px solid color-mix(in srgb, var(--game-ink) 28%, transparent);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--game-ink);
+  font: inherit;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  transition: background-color 150ms ease-out;
+}
+
+.close:hover {
+  background: color-mix(in srgb, var(--game-ink) 12%, transparent);
+}
+
+.close:focus-visible {
+  outline: 2px solid var(--game-ink);
+  outline-offset: 4px;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes lift {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrim,
+  .book {
+    animation: none;
+  }
+}
