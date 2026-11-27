@@ -1,0 +1,282 @@
+/* 크기는 PhoneScreen이 정한 --pt(화면 너비 390pt 기준)로 맞춘다.
+   색은 흑백만 쓴다(실제 SNS의 고유 색은 쓰지 않는다). */
+.sns {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  /* 위쪽 줄(PhoneNav)의 뒤로 가기 색 */
+  --phone-accent: var(--phone-ink);
+}
+
+.page {
+  flex: 1;
+  padding-bottom: calc(var(--pt) * 16);
+}
+
+.avatarBack {
+  fill: var(--phone-surface-2);
+}
+
+.glyph {
+  width: calc(var(--pt) * 26);
+  height: calc(var(--pt) * 26);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 위쪽 줄 가운데의 앱 이름 */
+.appName {
+  margin: 0;
+  font-size: calc(var(--pt) * 18);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+/* ── 내 계정 ── */
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 16);
+  padding: calc(var(--pt) * 4) 0 calc(var(--pt) * 10);
+}
+
+.bigAvatar {
+  flex: none;
+  width: calc(var(--pt) * 60);
+  height: calc(var(--pt) * 60);
+  color: var(--phone-muted);
+}
+
+.profileText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: calc(var(--pt) * 4);
+  min-width: 0;
+}
+
+.name {
+  margin: 0;
+  font-size: calc(var(--pt) * 17);
+  font-weight: 700;
+}
+
+/* 게시물, 팔로워, 팔로잉 수 */
+.stats {
+  display: flex;
+  gap: calc(var(--pt) * 24);
+  margin: 0;
+}
+
+.stats div {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: calc(var(--pt) * 1);
+}
+
+.stats dt {
+  font-size: calc(var(--pt) * 12);
+  color: var(--phone-muted);
+}
+
+.stats dd {
+  margin: 0;
+  font-size: calc(var(--pt) * 17);
+  font-weight: 700;
+}
+
+.empty {
+  margin: calc(var(--pt) * 80) 0 0;
+  color: var(--phone-muted);
+  text-align: center;
+}
+
+/* ── 게시물 ── */
+
+.post {
+  padding-bottom: calc(var(--pt) * 20);
+}
+
+.postHead {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 8);
+  padding: calc(var(--pt) * 8) 0;
+}
+
+.smallAvatar {
+  flex: none;
+  width: calc(var(--pt) * 30);
+  height: calc(var(--pt) * 30);
+  color: var(--phone-muted);
+}
+
+.author {
+  font-size: calc(var(--pt) * 14);
+  font-weight: 700;
+}
+
+.ago {
+  font-size: calc(var(--pt) * 13);
+  color: var(--phone-muted);
+}
+
+/* 정사각형 사진. 화면 끝까지 쓰려고 PhoneScreen 본문의 좌우 여백을 되돌린다 */
+.photo {
+  position: relative;
+  margin: 0 calc(var(--pt) * -16);
+  aspect-ratio: 1;
+  background: var(--phone-surface);
+}
+
+.image,
+.temp {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.image {
+  object-fit: cover;
+}
+
+/* 사진이 아직 없을 때 */
+.temp {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: calc(var(--pt) * 10);
+  padding: 0 calc(var(--pt) * 40);
+  color: var(--phone-muted);
+  font-size: calc(var(--pt) * 14);
+  text-align: center;
+}
+
+.tempGlyph {
+  width: calc(var(--pt) * 56);
+  height: calc(var(--pt) * 56);
+  fill: var(--phone-faint);
+}
+
+/* 몇 번째 사진인지 */
+.counter {
+  position: absolute;
+  top: calc(var(--pt) * 12);
+  right: calc(var(--pt) * 12);
+  padding: calc(var(--pt) * 4) calc(var(--pt) * 10);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--phone-bg) 65%, transparent);
+  font-size: calc(var(--pt) * 13);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 사진을 넘기는 화살표 */
+.turn {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: calc(var(--pt) * 32);
+  height: calc(var(--pt) * 32);
+  padding: 0 0 calc(var(--pt) * 3);
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--phone-ink) 80%, transparent);
+  color: var(--phone-bg);
+  font: inherit;
+  font-size: calc(var(--pt) * 22);
+  line-height: 1;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.prev {
+  left: calc(var(--pt) * 10);
+}
+
+.next {
+  right: calc(var(--pt) * 10);
+}
+
+/* 사진 아래 단추 줄. 가운데에 사진 수만큼 점이 있다 */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 14);
+  padding: calc(var(--pt) * 10) 0 calc(var(--pt) * 6);
+}
+
+.actions > :last-child {
+  margin-left: auto;
+}
+
+.dots {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  gap: calc(var(--pt) * 4);
+  /* 왼쪽 단추 세 개만큼 밀린 것을 되돌려 화면 가운데에 둔다 */
+  margin-right: calc(var(--pt) * 80);
+}
+
+.dots i {
+  width: calc(var(--pt) * 6);
+  height: calc(var(--pt) * 6);
+  border-radius: 50%;
+  background: var(--phone-faint);
+}
+
+.dots .dotOn {
+  background: var(--phone-ink);
+}
+
+.likes {
+  margin: 0 0 calc(var(--pt) * 4);
+  font-size: calc(var(--pt) * 14);
+  font-weight: 700;
+}
+
+/* 글. 이름 다음에 한 줄씩 */
+.caption {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pt) * 2);
+  margin: 0;
+  font-size: calc(var(--pt) * 14);
+  line-height: 1.4;
+}
+
+/* ── 아래 탭 ── */
+
+/* 화면 아래에 붙어 있다. PhoneScreen 본문의 좌우 여백까지 덮는다 */
+.tabs {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin: 0 calc(var(--pt) * -16);
+  /* 아래쪽을 넉넉히 띄워 홈 막대의 누르는 자리와 겹쳐 보이지 않게 한다 */
+  padding: calc(var(--pt) * 14) calc(var(--pt) * 16) calc(var(--pt) * 18);
+  border-top: calc(var(--pt) * 0.5) solid var(--phone-line);
+  background: var(--phone-bg);
+  color: var(--phone-muted);
+}
+
+.tabAvatar {
+  width: calc(var(--pt) * 26);
+  height: calc(var(--pt) * 26);
+  border-radius: 50%;
+  outline: calc(var(--pt) * 1.5) solid var(--phone-ink);
+  outline-offset: calc(var(--pt) * 1.5);
+  color: var(--phone-muted);
+}
