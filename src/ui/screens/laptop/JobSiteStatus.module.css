@@ -1,158 +1,473 @@
+/* ── 사이트 머리 ── */
 .site {
-  display: flex;
-  align-items: center;
-  gap: 40px;
-  padding: 14px 48px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
   border-bottom: 1px solid var(--web-line);
   background: var(--web-surface);
 }
+.siteInner,
+.footerInner,
+.page {
+  width: 1060px;
+  margin: 0 auto;
+}
+.siteInner {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  height: 56px;
+}
 .logo {
-  font-size: var(--web-text-title);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--web-ink);
+  font: inherit;
+  font-size: 20px;
   font-weight: 800;
-  color: var(--web-accent);
+  letter-spacing: -0.03em;
+  cursor: pointer;
+}
+.logoMark {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: var(--web-accent);
+  color: var(--web-surface);
+  font-size: 14px;
 }
 .menu {
   display: flex;
+  align-self: stretch;
   gap: 28px;
-  font-size: var(--web-text-body);
-  color: var(--web-muted);
 }
-.current {
+.tab {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 0;
+  background: none;
   color: var(--web-ink);
+  font: inherit;
+  font-size: var(--web-text-body);
+  font-weight: 600;
+  cursor: pointer;
+}
+.tab:hover,
+.tab:focus-visible {
+  color: var(--web-accent);
+}
+.tab.current {
+  border-bottom-color: var(--web-accent);
+  color: var(--web-accent);
+}
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-left: auto;
+  color: var(--web-ink);
+}
+.bell {
+  position: relative;
+  display: flex;
+}
+.bell::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--web-reject);
+}
+.me {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: var(--web-thumb-3);
+  font-size: 12px;
   font-weight: 700;
 }
+.divider {
+  width: 1px;
+  height: 12px;
+  background: var(--web-line);
+}
+.biz {
+  padding: 5px 10px;
+  border: 1px solid var(--web-line);
+  border-radius: 999px;
+  font-size: var(--web-text-meta);
+  color: var(--web-muted);
+}
+
+/* ── 본문 공통 ── */
 .page {
-  display: grid;
-  gap: 20px;
-  padding: 28px 48px 40px;
+  padding: 36px 0 56px;
 }
 .title {
-  margin: 0;
-  font-size: var(--web-text-title);
+  margin: 0 0 20px;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
-.summary {
+
+/* ── 지원 현황 ── */
+.board {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(5, 1fr);
+  padding: 22px 0;
+  border: 1px solid var(--web-line);
+  border-radius: 12px;
+  background: var(--web-surface);
 }
 .stat {
-  display: grid;
-  gap: 4px;
-  padding: 14px 18px;
-  border: 1px solid var(--web-line);
-  border-radius: var(--web-radius);
-  background: var(--web-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.stat + .stat {
+  border-left: 1px solid var(--web-line);
+}
+.statValue {
+  font-size: 28px;
+  font-weight: 700;
 }
 .statLabel {
   font-size: var(--web-text-meta);
   color: var(--web-muted);
 }
-.statValue {
-  font-size: var(--web-text-title);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
 .reject {
   color: var(--web-reject);
 }
-.list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border: 1px solid var(--web-line);
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 28px;
+  padding: 12px 16px;
   border-radius: var(--web-radius);
+  background: var(--web-accent-soft);
+  font-size: var(--web-text-meta);
+  color: var(--web-accent);
+}
+.table {
+  border-top: 2px solid var(--web-ink);
   background: var(--web-surface);
 }
-.row {
+.tr {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 100px 90px;
+  grid-template-columns: 1.3fr 1.3fr 0.6fr 0.6fr;
   align-items: center;
-  gap: 16px;
-  padding: 11px 18px;
+  min-height: 56px;
+  padding: 0 16px;
   border-bottom: 1px solid var(--web-line);
   font-size: var(--web-text-body);
 }
+.th {
+  min-height: 42px;
+  font-size: var(--web-text-meta);
+  font-weight: 600;
+  color: var(--web-muted);
+  background: var(--web-bg);
+}
 .company {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-weight: 600;
 }
-.role,
-.date {
-  color: var(--web-muted);
+.companyLogo {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--web-thumb-ink);
   font-size: var(--web-text-meta);
+  font-weight: 700;
+}
+.role {
+  color: var(--web-ink);
+}
+.date {
+  font-size: var(--web-text-meta);
+  color: var(--web-muted);
 }
 .badge {
-  justify-self: end;
-  padding: 3px 10px;
+  padding: 4px 10px;
   border-radius: 999px;
   background: var(--web-reject-bg);
-  color: var(--web-reject);
   font-size: var(--web-text-meta);
   font-weight: 600;
+  color: var(--web-reject);
 }
 .more {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   width: 100%;
-  padding: 12px 18px;
-  border: 0;
-  background: none;
-  color: var(--web-accent);
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--web-line);
+  border-radius: var(--web-radius);
+  background: var(--web-surface);
+  color: var(--web-ink);
   font: inherit;
-  font-size: var(--web-text-meta);
-  font-weight: 600;
+  font-size: var(--web-text-body);
   cursor: pointer;
 }
 .more:hover,
 .more:focus-visible {
   background: var(--web-bg);
 }
-.tab {
-  padding: 0;
+
+/* ── 채용 공고 ── */
+.filterHead {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+.select {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.sort {
+  display: flex;
+  margin-left: auto;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--web-line);
+}
+.sortButton {
+  padding: 6px 14px;
   border: 0;
+  border-radius: 999px;
   background: none;
-  color: inherit;
+  color: var(--web-muted);
   font: inherit;
+  font-size: var(--web-text-meta);
   cursor: pointer;
 }
-.tab:hover,
-.tab:focus-visible {
+.sortOn {
+  background: var(--web-surface);
   color: var(--web-ink);
+  font-weight: 600;
+  box-shadow: var(--web-shadow);
 }
-.note {
-  margin: -8px 0 0;
+.chips {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 28px;
+  padding: 0 0 20px;
+  border-bottom: 1px solid var(--web-line);
+  list-style: none;
+}
+.chip {
+  padding: 8px 14px;
+  border: 1px solid var(--web-line);
+  border-radius: var(--web-radius);
+  background: var(--web-surface);
+  font-size: var(--web-text-meta);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.thumb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  margin-bottom: 10px;
+  border-radius: var(--web-radius);
+}
+.thumbName {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--web-thumb-ink);
+}
+.due {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--web-surface);
+  font-size: 12px;
+  font-weight: 700;
+}
+.mark {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  padding: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--web-thumb-ink);
+  cursor: pointer;
+}
+.mark:hover,
+.mark:focus-visible {
+  background: var(--web-hover-dark);
+}
+.marked svg {
+  fill: var(--web-accent);
+  stroke: var(--web-accent);
+}
+.cardRole {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.cardCompany {
+  font-size: var(--web-text-body);
+  font-weight: 500;
+}
+.cardMeta {
   font-size: var(--web-text-meta);
   color: var(--web-muted);
-}
-.posting {
-  grid-template-columns: 1fr 1.4fr 160px 96px;
 }
 .apply,
 .applied {
-  justify-self: end;
-  padding: 5px 12px;
+  margin-top: 10px;
+  padding: 9px 0;
   border-radius: var(--web-radius);
   font: inherit;
   font-size: var(--web-text-meta);
-  font-weight: 700;
+  font-weight: 600;
 }
 .apply {
-  border: 0;
+  border: 1px solid var(--web-accent);
+  background: var(--web-surface);
+  color: var(--web-accent);
+  cursor: pointer;
+}
+.apply:hover,
+.apply:focus-visible {
   background: var(--web-accent);
   color: var(--web-surface);
-  cursor: pointer;
 }
 .applied {
   border: 1px solid var(--web-line);
-  background: none;
+  background: var(--web-bg);
   color: var(--web-muted);
 }
-.portfolioRow {
-  grid-template-columns: 36px 1fr 1fr;
+
+/* ── 내 포트폴리오 ── */
+.profileLayout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 40px;
+  align-items: start;
 }
-.pageNo {
+.profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 28px 20px;
+  border: 1px solid var(--web-line);
+  border-radius: 12px;
+  background: var(--web-surface);
+}
+.avatar {
+  width: 72px;
+  height: 72px;
+  margin-bottom: 8px;
+  border-radius: 999px;
+  background: var(--web-thumb-3);
+}
+.profileName {
+  font-size: 18px;
+}
+.facts {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  width: 100%;
+  margin: 20px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--web-line);
+  font-size: var(--web-text-meta);
+}
+.facts dt {
   color: var(--web-muted);
-  font-variant-numeric: tabular-nums;
 }
-.tab.current {
+.facts dd {
+  margin: 0;
+  font-weight: 600;
+}
+.pages {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pageCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pageThumb {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  margin-bottom: 8px;
+  border-radius: var(--web-radius);
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--web-thumb-ink);
+}
+
+/* ── 바닥글 ── */
+.footer {
+  border-top: 1px solid var(--web-line);
+  background: var(--web-surface);
+}
+.footerInner {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 28px 0 36px;
+  font-size: 12px;
+  color: var(--web-muted);
+}
+.footerLogo {
+  font-size: var(--web-text-body);
+  font-weight: 800;
   color: var(--web-ink);
-  font-weight: 700;
 }
