@@ -44,6 +44,18 @@
   color: var(--blabla-bg);
 }
 
+/* 인터넷(브라우저). 파란 바탕에 흰 선으로 그린 지구본 */
+.browser {
+  background: var(--phone-blue);
+}
+
+.browser .glyph {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+}
+
 .glyph {
   width: 64%;
   height: 64%;
