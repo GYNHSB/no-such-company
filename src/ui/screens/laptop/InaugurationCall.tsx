@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Icon } from './icons'
 import styles from './InaugurationCall.module.css'
 import { VideoCall } from './VideoCall'
 import { fillName } from './videoScript'
@@ -31,6 +32,10 @@ export function InaugurationCall({ playerName, step, signed, videoSrc, children 
       recording
       side={
         <div className={styles.side}>
+          <div className={styles.viewer}>
+            <Icon name="doc" size={16} />
+            {step === 'sign' ? '전자 서명 요청 · 문서 2건' : '낭독 확인'}
+          </div>
           {step === 'sign' ? (
             <>
               <Doc title="취임 승낙서">
@@ -67,6 +72,12 @@ function Doc({ title, children }: { title: string; children: ReactNode }) {
     <section className={styles.doc}>
       <h2 className={styles.docTitle}>{title}</h2>
       <p className={styles.docBody}>{children}</p>
+      <p className={styles.issuer}>
+        주식회사 세움파트너스
+        <span className={styles.seal} aria-hidden="true">
+          인
+        </span>
+      </p>
     </section>
   )
 }

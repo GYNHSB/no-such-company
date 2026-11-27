@@ -9,7 +9,9 @@
 }
 .tabs {
   display: flex;
-  padding: 8px 8px 0;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 8px 0 0 10px;
   background: var(--web-chrome);
 }
 .tab {
@@ -17,10 +19,23 @@
   align-items: center;
   gap: 8px;
   width: 240px;
-  padding: 8px 12px;
+  height: 34px;
+  padding: 0 8px 0 12px;
   border-radius: var(--web-radius) var(--web-radius) 0 0;
   background: var(--web-chrome-tab);
   font-size: var(--web-text-meta);
+}
+.favicon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: var(--web-accent);
+  color: var(--web-surface);
+  font-size: 10px;
+  font-weight: 700;
 }
 .tabTitle {
   flex: 1;
@@ -29,13 +44,15 @@
   white-space: nowrap;
 }
 .close {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
   border: 0;
-  padding: 0 4px;
-  border-radius: 4px;
+  padding: 0;
+  border-radius: 999px;
   background: none;
   color: var(--web-muted);
-  font-size: var(--web-text-body);
-  line-height: 1;
   cursor: pointer;
 }
 .close:hover,
@@ -43,10 +60,27 @@
   background: var(--web-chrome-field);
   color: var(--web-ink);
 }
+.newTab {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-bottom: 3px;
+  color: var(--web-muted);
+}
+.windowButtons {
+  display: flex;
+  align-self: stretch;
+  align-items: flex-start;
+  gap: 28px;
+  margin: -8px 0 0 auto;
+  padding: 8px 18px 0;
+  color: var(--web-ink);
+}
 .bar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   padding: 6px 12px;
   border-bottom: 1px solid var(--web-line);
   background: var(--web-chrome-tab);
@@ -56,14 +90,15 @@
   gap: 2px;
 }
 .navButton {
-  width: 28px;
-  height: 28px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
   border: 0;
+  padding: 0;
   border-radius: 999px;
   background: none;
   color: var(--web-ink);
-  font: inherit;
-  font-size: var(--web-text-body);
   cursor: pointer;
 }
 .navButton:hover:not(:disabled),
@@ -76,11 +111,30 @@
 }
 .address {
   flex: 1;
-  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 14px;
   border-radius: 999px;
   background: var(--web-chrome-field);
   font-size: var(--web-text-meta);
   color: var(--web-muted);
+}
+.url {
+  flex: 1;
+  color: var(--web-ink);
+}
+.profile {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--web-thumb-3);
+}
+.menu {
+  display: grid;
+  place-items: center;
+  color: var(--web-ink);
 }
 .body {
   flex: 1;

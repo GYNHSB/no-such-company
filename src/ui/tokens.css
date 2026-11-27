@@ -77,6 +77,18 @@
   --web-text-title: 22px;
   --web-text-hero: 56px; /* 검색 사이트 첫 화면 이름 */
   --web-radius: 8px;
+  --web-accent-soft: #e6f0ed; /* 대표색 옅은 바탕 (선택된 칩, 배지) */
+  --web-thumb-1: #d9c9b6; /* 공고 카드 썸네일 색 면. 회사 사진 대신 쓴다 */
+  --web-thumb-2: #b8cbd6;
+  --web-thumb-3: #c9c2dc;
+  --web-thumb-4: #c4d6bf;
+  --web-thumb-5: #e2c3bd;
+  --web-thumb-6: #d6d2c4;
+  --web-thumb-ink: #2b2b2b; /* 썸네일 위 글자 */
+  --web-shadow: 0 2px 8px rgb(0 0 0 / 0.08);
+  --web-shadow-window: 0 20px 60px rgb(0 0 0 / 0.25); /* 바탕화면 위 프로그램 창 */
+  --web-hover-dark: rgb(0 0 0 / 0.12); /* 밝은 그림 위 버튼에 마우스를 올렸을 때 */
+  --web-scrim: rgb(0 0 0 / 0.55); /* 영상 위 이름표 바탕 */
 
   /* ── 상태 신호 (기기 밖, 게임 HUD) ── */
   --watch: #30d158; /* 웹캠 켜짐 */

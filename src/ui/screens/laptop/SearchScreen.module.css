@@ -1,10 +1,32 @@
+/* ── 첫 화면 ── */
+.homePage {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--web-surface);
+}
+.homeTop {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 24px;
+  font-size: var(--web-text-meta);
+}
+.login {
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: var(--web-accent);
+  color: var(--web-surface);
+  font-weight: 600;
+}
 .home {
+  flex: 1;
   display: grid;
   place-content: center;
   justify-items: center;
   gap: 28px;
-  height: 100%;
-  background: var(--web-surface);
+  padding-bottom: 40px;
 }
 .logoLarge {
   font-size: var(--web-text-hero);
@@ -12,28 +34,75 @@
   color: var(--web-accent);
   letter-spacing: -1px;
 }
+.shortcuts {
+  display: flex;
+  gap: 24px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.shortcut {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 64px;
+  font-size: 12px;
+  color: var(--web-muted);
+}
+.shortcutIcon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  background: var(--web-bg);
+  font-size: var(--web-text-body);
+  font-weight: 700;
+  color: var(--web-ink);
+}
+.footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-top: 1px solid var(--web-line);
+  background: var(--web-bg);
+  font-size: 12px;
+  color: var(--web-muted);
+}
+
+/* ── 검색창 ── */
 .homeForm,
 .barForm {
   display: flex;
+  align-items: center;
   border: 1px solid var(--web-line);
   border-radius: 999px;
   background: var(--web-surface);
   overflow: hidden;
+  box-shadow: var(--web-shadow);
 }
 .homeForm {
-  width: 560px;
+  width: 580px;
+  height: 50px;
 }
 .barForm {
-  width: 520px;
+  width: 600px;
+  height: 44px;
 }
 .homeForm:focus-within,
 .barForm:focus-within {
   border-color: var(--web-accent);
 }
+.lens {
+  display: flex;
+  padding-left: 18px;
+  color: var(--web-muted);
+}
 .input {
   flex: 1;
   min-width: 0;
-  padding: 12px 20px;
+  padding: 0 14px;
   border: 0;
   outline: none;
   background: none;
@@ -42,6 +111,7 @@
   font-size: var(--web-text-body);
 }
 .submit {
+  align-self: stretch;
   padding: 0 22px;
   border: 0;
   background: var(--web-accent);
@@ -54,15 +124,23 @@
   outline: 3px solid var(--web-line);
   outline-offset: -3px;
 }
+
+/* ── 결과 페이지 ── */
+.resultsPage {
+  min-height: 100%;
+  background: var(--web-surface);
+}
 .top {
+  border-bottom: 1px solid var(--web-line);
+}
+.topRow {
   display: flex;
   align-items: center;
   gap: 28px;
-  padding: 16px 48px;
-  border-bottom: 1px solid var(--web-line);
-  background: var(--web-surface);
+  padding: 18px 40px 10px;
 }
 .logo {
+  width: 100px;
   padding: 0;
   border: 0;
   background: none;
@@ -70,12 +148,31 @@
   font-size: var(--web-text-title);
   font-weight: 800;
   color: var(--web-accent);
+  text-align: left;
   cursor: pointer;
+}
+.verticals {
+  display: flex;
+  gap: 24px;
+  padding: 0 40px 0 168px;
+  font-size: var(--web-text-meta);
+}
+.vertical,
+.verticalOn {
+  padding: 10px 2px;
+  border-bottom: 3px solid transparent;
+  color: var(--web-muted);
+}
+.verticalOn {
+  border-bottom-color: var(--web-accent);
+  color: var(--web-accent);
+  font-weight: 700;
 }
 .results {
   display: grid;
-  gap: 12px;
-  padding: 24px 48px 24px 160px;
+  gap: 16px;
+  max-width: 640px;
+  padding: 20px 40px 40px 168px;
   font-size: var(--web-text-body);
 }
 .count {
@@ -83,10 +180,16 @@
   font-size: var(--web-text-meta);
   color: var(--web-muted);
 }
+.emptyBox {
+  padding: 24px 0;
+}
 .empty {
-  margin: 12px 0 0;
+  margin: 0 0 14px;
+  font-size: 17px;
 }
 .tips {
+  display: grid;
+  gap: 6px;
   margin: 0;
   padding-left: 1.2em;
   color: var(--web-muted);

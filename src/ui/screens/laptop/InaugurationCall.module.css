@@ -1,19 +1,23 @@
 .side {
   display: grid;
   gap: 14px;
-  padding: 18px;
+  min-height: 100%;
+  padding: 0 18px 18px;
+  background: var(--web-bg);
   font-size: var(--web-text-body);
 }
 .doc {
   display: grid;
-  gap: 8px;
-  padding: 14px 16px;
+  gap: 12px;
+  padding: 22px 24px 16px;
   border: 1px solid var(--web-line);
-  border-radius: var(--web-radius);
+  border-radius: 2px;
+  background: var(--web-surface);
+  box-shadow: var(--web-shadow);
 }
 .docTitle {
   margin: 0;
-  font-size: var(--web-text-body);
+  font-size: 18px;
   text-align: center;
   letter-spacing: 0.3em;
 }
@@ -67,4 +71,34 @@
 .readText {
   font-size: var(--web-text-title);
   line-height: 1.5;
+}
+.viewer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 -18px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--web-line);
+  background: var(--web-surface);
+  font-size: var(--web-text-meta);
+  font-weight: 700;
+}
+.issuer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--web-text-meta);
+}
+.seal {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--web-reject);
+  border-radius: 999px;
+  color: var(--web-reject);
+  font-size: 12px;
+  font-weight: 700;
 }
