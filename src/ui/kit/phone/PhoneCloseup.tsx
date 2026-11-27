@@ -7,6 +7,8 @@ export interface ScreenRect {
   top: number
   right: number
   bottom: number
+  /** 화면 모서리의 둥글기(이미지 픽셀). 없으면 기본 둥글기를 쓴다 */
+  radius?: number
 }
 
 interface Props {
@@ -30,6 +32,8 @@ const pct = (v: number, total: number) => `${(v / total) * 100}%`
  */
 export function PhoneCloseup({ handSrc, imageSize, screen, shaking, children }: Props) {
   const { width, height } = imageSize
+  const screenWidth = screen.right - screen.left
+  const screenHeight = screen.bottom - screen.top
   return (
     <div className={styles.stage}>
       <div
@@ -46,8 +50,12 @@ export function PhoneCloseup({ handSrc, imageSize, screen, shaking, children }: 
           style={{
             left: pct(screen.left, width),
             top: pct(screen.top, height),
-            width: pct(screen.right - screen.left, width),
-            height: pct(screen.bottom - screen.top, height),
+            width: pct(screenWidth, width),
+            height: pct(screenHeight, height),
+            borderRadius:
+              screen.radius === undefined
+                ? undefined
+                : `${pct(screen.radius, screenWidth)} / ${pct(screen.radius, screenHeight)}`,
           }}
         >
           {children}
