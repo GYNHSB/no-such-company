@@ -1,7 +1,8 @@
-import { Html, OrbitControls, useGLTF } from '@react-three/drei'
+import { Html, OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import { Suspense, useEffect, useState } from 'react'
 import { LAPTOP_SCREEN } from '@/game/world/anchors'
+import { Laptop } from '@/game/world/Laptop'
 import { Room } from '@/game/world/Room'
 import { InaugurationCall } from '@/ui/screens/laptop/InaugurationCall'
 import { InterviewAppInstall } from '@/ui/screens/laptop/InterviewAppInstall'
@@ -45,8 +46,7 @@ const SCREEN_H = 800
 // 노트북 화면 자리(가운데, 바라보는 방향, 너비)
 const SCREEN_CENTER = LAPTOP_SCREEN.center
 const SCREEN_FACING = LAPTOP_SCREEN.facing
-// UI를 화면 면보다 2mm 앞에 띄운다. anchors는 옛 노트북 기준이라 laptop.glb 화면과 1mm쯤 어긋나서,
-// 같은 자리에 두면 가장자리로 빛나는 면이 새어 나온다. 앞에 두면 살짝 크게 보여 가장자리를 덮는다.
+// UI를 화면 면보다 2mm 앞에 띄운다. 같은 자리에 두면 빛나는 면과 겹쳐 가장자리가 새어 나올 수 있다.
 const SCREEN_LIFT = 0.002
 const UI_POSITION = SCREEN_CENTER.map((v, i) => v + SCREEN_FACING[i] * SCREEN_LIFT) as [
   number,
@@ -172,15 +172,8 @@ function RoomLaptopTest() {
   )
 }
 
-const LAPTOP_URL = `${import.meta.env.BASE_URL}models/laptop.glb`
-// 옛 노트북은 숨기고 laptop.glb로 바꿔 보여 준다. Room이 매번 다시 만들지 않게 밖에 둔다
+// 옛 노트북은 숨기고 laptop.glb(Laptop)로 바꿔 보여 준다. Room이 매번 다시 만들지 않게 밖에 둔다
 const ROOM_HIDE = ['interact_laptop'] as const
-
-/** 새 노트북 모델(laptop.glb)을 room.glb의 interact_laptop 자리에 둔다. 화면 위치는 옛 모델과 같다 */
-function Laptop() {
-  const { scene } = useGLTF(LAPTOP_URL)
-  return <primitive object={scene} position={[-1.3, 0.74, 0.489]} />
-}
 
 // 2D로만 보는 노트북 테스트. 다시 보려면 SandboxPage에서 <RoomLaptopTest /> 대신 <LaptopTest />
 export function LaptopTest() {
