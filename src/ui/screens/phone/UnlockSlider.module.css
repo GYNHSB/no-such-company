@@ -1,0 +1,92 @@
+/* 크기는 PhoneScreen이 정한 --pt(화면 너비 390pt 기준)로 맞춘다 */
+
+/* 알림 카드와 같은 반투명 유리 줄. 눈에 잘 띄게 화면 너비를 다 쓴다 */
+.track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: calc(var(--pt) * 60);
+  padding: 0 calc(var(--pt) * 5);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--phone-notif-bg);
+  backdrop-filter: blur(24px) saturate(1.6);
+  box-shadow: inset 0 0 0 calc(var(--pt) * 0.6) var(--phone-notif-edge);
+  color: var(--phone-ink);
+  font: inherit;
+  cursor: pointer;
+  /* 밀 때 화면이 같이 끌리거나 글이 선택되지 않게 */
+  touch-action: none;
+  user-select: none;
+}
+
+/* 손잡이. 놓으면 제자리로, 누르면 끝으로 미끄러진다 */
+.knob {
+  z-index: 1;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: calc(var(--pt) * 50);
+  height: calc(var(--pt) * 50);
+  border-radius: 50%;
+  background: var(--phone-ink);
+  color: var(--phone-frame);
+  transition: transform 220ms ease-out;
+}
+
+/* 미는 동안에는 손을 바로 따라온다 */
+.dragging .knob {
+  transition: none;
+}
+
+.knob svg {
+  width: 48%;
+  height: 48%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 글은 줄 가운데에 둔다. 빛이 왼쪽에서 오른쪽으로 지나가며 미는 방향을 알려 준다 */
+.label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding-left: calc(var(--pt) * 50);
+  background: linear-gradient(
+      100deg,
+      var(--phone-muted) 35%,
+      var(--phone-ink) 50%,
+      var(--phone-muted) 65%
+    )
+    0 0 / 250% 100%;
+  background-clip: text;
+  color: transparent;
+  font-size: calc(var(--pt) * 19);
+  font-weight: 500;
+  animation: shine 2.6s linear infinite;
+}
+
+@keyframes shine {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .knob {
+    transition: none;
+  }
+  .label {
+    animation: none;
+    background: none;
+    color: var(--phone-muted);
+  }
+}

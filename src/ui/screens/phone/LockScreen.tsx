@@ -4,6 +4,7 @@ import { Notification } from '@/ui/kit/phone/Notification'
 import { PhoneScreen } from '@/ui/kit/phone/PhoneScreen'
 import { formatDate } from './clock'
 import styles from './LockScreen.module.css'
+import { UnlockSlider } from './UnlockSlider'
 
 interface Props {
   /** 지금 시각 "10:11". 큰 시계에 쓴다 */
@@ -16,6 +17,8 @@ interface Props {
   messages: Message[]
   /** 알림을 눌렀을 때. 어떤 앱을 열지는 받는 쪽이 정한다 */
   onOpen?: (message: Message) => void
+  /** 잠금을 풀었을 때(밀어서 잠금 해제, 아래 막대). 없으면 잠금 해제 줄을 그리지 않는다 */
+  onUnlock?: () => void
 }
 
 /** 알림 왼쪽에 붙는 앱 아이콘 */
@@ -37,12 +40,12 @@ const ago = (now: string, at: string) => {
  * 문자는 보낸 사람을, 그 밖의 알림은 보낸 곳을 제목 자리에 보여 준다.
  * 알림이 언제 도착하는지는 엔진이 정하고, 이 화면은 받은 목록을 그리고 누른 알림을 넘기기만 한다.
  */
-export function LockScreen({ time, carrier, date, messages, onOpen }: Props) {
+export function LockScreen({ time, carrier, date, messages, onOpen, onUnlock }: Props) {
   const newestFirst = messages.toReversed()
 
   return (
     <div className={styles.wallpaper}>
-      <PhoneScreen time={time} statusLabel={carrier}>
+      <PhoneScreen time={time} statusLabel={carrier} onHome={onUnlock}>
         <div className={styles.lock}>
           <div className={styles.clock}>
             {date && <p className={styles.date}>{formatDate(date)}</p>}
@@ -66,6 +69,11 @@ export function LockScreen({ time, carrier, date, messages, onOpen }: Props) {
               )
             })}
           </ul>
+          {onUnlock && (
+            <div className={styles.unlock}>
+              <UnlockSlider onUnlock={onUnlock} />
+            </div>
+          )}
         </div>
       </PhoneScreen>
     </div>
