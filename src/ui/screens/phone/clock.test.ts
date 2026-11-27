@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addMinutes } from './clock'
+import { addMinutes, daysAgo, formatDate, formatMonthDay } from './clock'
 
 describe('addMinutes', () => {
   it('분을 더한다', () => {
@@ -13,5 +13,26 @@ describe('addMinutes', () => {
 
   it('자정을 넘기면 00:00부터 다시 센다', () => {
     expect(addMinutes('23:59', 1)).toBe('00:00')
+  })
+})
+
+describe('daysAgo', () => {
+  it('같은 날이면 시각이 달라도 0이다', () => {
+    expect(daysAgo(new Date(2026, 10, 27, 23, 59), new Date(2026, 10, 27, 0, 1))).toBe(0)
+  })
+
+  it('자정을 넘기면 하루 전이다', () => {
+    expect(daysAgo(new Date(2026, 10, 27, 0, 1), new Date(2026, 10, 26, 23, 59))).toBe(1)
+  })
+
+  it('달이 바뀌어도 날 수를 센다', () => {
+    expect(daysAgo(new Date(2026, 11, 9), new Date(2026, 10, 23))).toBe(16)
+  })
+})
+
+describe('formatDate', () => {
+  it('월, 일, 요일을 보여 준다', () => {
+    expect(formatMonthDay(new Date(2026, 10, 27))).toBe('11월 27일')
+    expect(formatDate(new Date(2026, 10, 27))).toBe('11월 27일 (금)')
   })
 })

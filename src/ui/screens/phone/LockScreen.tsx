@@ -2,6 +2,7 @@ import type { Channel, Message } from '@/data/types'
 import { AppIcon, type AppIconKind } from '@/ui/kit/phone/AppIcon'
 import { Notification } from '@/ui/kit/phone/Notification'
 import { PhoneScreen } from '@/ui/kit/phone/PhoneScreen'
+import { formatDate } from './clock'
 import styles from './LockScreen.module.css'
 
 interface Props {
@@ -24,12 +25,6 @@ const toMinutes = (clock: string) => {
   const [hour = 0, minute = 0] = clock.split(':').map(Number)
   return hour * 60 + minute
 }
-
-const monthDay = new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric' })
-const weekday = new Intl.DateTimeFormat('ko-KR', { weekday: 'short' })
-
-/** "11월 27일 (금)" */
-const formatDate = (date: Date) => `${monthDay.format(date)} (${weekday.format(date)})`
 
 /** 알림 오른쪽 위에 보이는 "지금", "4분 전" */
 const ago = (now: string, at: string) => {
