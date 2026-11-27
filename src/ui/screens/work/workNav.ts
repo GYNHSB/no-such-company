@@ -1,7 +1,7 @@
 import type { WorkNavItem } from '@/ui/kit/work/WorkLayout'
 
 /** 팀장과의 대화 */
-export const DM_LEAD_ID = 'dm_park'
+export const DM_LEAD_ID = 'dm_kim'
 
 /** 받은 메일함 */
 export const MAIL_ID = 'mail'
@@ -13,6 +13,6 @@ export const WORK_NAV: WorkNavItem[] = [
   { id: 'work_share', label: '업무-공유', kind: 'channel' },
   { id: 'newcomer', label: '신규입사자', kind: 'channel' },
   { id: 'lunch', label: '점심-뭐먹지', kind: 'channel' },
-  { id: DM_LEAD_ID, label: '박재훈 팀장', kind: 'dm' },
+  { id: DM_LEAD_ID, label: '김아영 팀장', kind: 'dm' },
   { id: MAIL_ID, label: '받은 메일함', kind: 'mail' },
 ]

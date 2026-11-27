@@ -12,10 +12,10 @@ const REJECT_OPENING = '안녕하세요. 저희 회사에 관심을 가지고 �
 const MAILS: WorkMailItem[] = [
   {
     id: 'offer',
-    from: '오버레이 인사팀',
-    subject: '[오버레이] 최종 합격을 축하드립니다',
+    from: '모레온 인사팀',
+    subject: '[모레온] 최종 합격을 축하드립니다',
     time: '10:12',
-    body: '{name} 님, 최종 합격을 축하드립니다.\n입사 안내는 오버레이 워크로 드리겠습니다.',
+    body: '{name} 님, 최종 합격을 축하드립니다.\n입사 안내는 모레온 워크로 드리겠습니다.',
     unread: true,
   },
   ...['한빛데이터', '누리소프트', '마루커머스', '다온랩스', '세솔물류'].map((company, i) => ({
@@ -30,20 +30,20 @@ const MAILS: WorkMailItem[] = [
 const DM_MESSAGES: WorkChannelMessage[] = [
   {
     id: 'd1',
-    name: '박재훈 팀장',
+    name: '김아영 팀장',
     time: '오후 2:02',
     text: '{name} 씨 환영해요! 노트북 받으셨죠?',
   },
   {
     id: 'd2',
-    name: '박재훈 팀장',
+    name: '김아영 팀장',
     time: '오후 2:02',
     text: '입사 서류(신분증 사본, 등본, 통장 사본) 여기 올려주세요 :)',
     continued: true,
   },
   {
     id: 'd3',
-    name: '박재훈 팀장',
+    name: '김아영 팀장',
     time: '오후 2:20',
     text: '보안 정책상 본인 확인 영상도 필요해요. 정면 5초, 왼쪽 5초, 오른쪽 5초!',
   },
@@ -55,7 +55,7 @@ const CHOICES: Choice[] = [
 ]
 
 export function WorkPreview() {
-  const [selectedId, setSelectedId] = useState('dm_park')
+  const [selectedId, setSelectedId] = useState('dm_kim')
   const [mails, setMails] = useState(MAILS)
   const [openMailId, setOpenMailId] = useState<string | null>(null)
   const [messages, setMessages] = useState(DM_MESSAGES)
@@ -65,7 +65,7 @@ export function WorkPreview() {
   const items: WorkNavItem[] = [
     { id: 'notice', label: '공지', kind: 'channel', unread: 1 },
     { id: 'work', label: '업무', kind: 'channel' },
-    { id: 'dm_park', label: '박재훈 팀장', kind: 'dm', unread: answered ? 0 : 3 },
+    { id: 'dm_kim', label: '김아영 팀장', kind: 'dm', unread: answered ? 0 : 3 },
     { id: 'mail', label: '받은 메일함', kind: 'mail', unread: unreadMail },
   ]
 
@@ -89,9 +89,9 @@ export function WorkPreview() {
           }}
           onBack={() => setOpenMailId(null)}
         />
-      ) : selectedId === 'dm_park' ? (
+      ) : selectedId === 'dm_kim' ? (
         <WorkChannel
-          name="박재훈 팀장"
+          name="김아영 팀장"
           messages={messages}
           composer={
             <WorkComposer

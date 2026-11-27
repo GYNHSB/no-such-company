@@ -13,7 +13,7 @@ export interface MessengerDay {
 }
 
 interface Props {
-  /** 상단 이름 바 ('박재훈 팀장') */
+  /** 상단 이름 바 ('김아영 팀장') */
   name: string
   /** 1일차부터 오늘까지. 이전 날의 대화가 위에 이어져 보인다 */
   days: readonly MessengerDay[]
@@ -25,7 +25,7 @@ interface Props {
   onOpenTask?: (task: MessageTask, message: Message) => void
 }
 
-/** 오버레이 워크 메신저. 팀장과의 대화를 날짜 구분선과 함께 이어서 보여 준다 */
+/** 모레온 워크 메신저. 팀장과의 대화를 날짜 구분선과 함께 이어서 보여 준다 */
 export function WorkMessenger({ name, days, playerName, composer, onOpenTask }: Props) {
   const listRef = useRef<HTMLDivElement>(null)
   const count = days.reduce((sum, day) => sum + day.messages.length, 0)

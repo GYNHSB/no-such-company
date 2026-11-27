@@ -3,7 +3,7 @@ import { WorkLayout } from '@/ui/kit/work/WorkLayout'
 import { WORK_NAV } from './workNav'
 import styles from './WorkShell.module.css'
 
-const LOGO_URL = `${import.meta.env.BASE_URL}images/logo_overlay.svg`
+const LOGO_URL = `${import.meta.env.BASE_URL}images/logo_moraeon.svg`
 
 interface Props {
   /** 선택된 사이드바 항목 (workNav.ts의 id) */
@@ -14,12 +14,12 @@ interface Props {
   children: ReactNode
 }
 
-/** 오버레이 워크 전체 화면: 워크스페이스 띠 + 사이드바 + 본문 */
+/** 모레온 워크 전체 화면: 워크스페이스 띠 + 사이드바 + 본문 */
 export function WorkShell({ selectedId, onSelect, children }: Props) {
   return (
     <div className={styles.root}>
       <div className={styles.rail}>
-        <img className={styles.logo} src={LOGO_URL} alt="오버레이 워크스페이스" />
+        <img className={styles.logo} src={LOGO_URL} alt="모레온 워크스페이스" />
       </div>
       <div className={styles.main}>
         <WorkLayout items={WORK_NAV} selectedId={selectedId} onSelect={onSelect}>

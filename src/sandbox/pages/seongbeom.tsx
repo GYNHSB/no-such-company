@@ -35,7 +35,7 @@ export default function SandboxPage() {
   const [clicked, setClicked] = useState('')
   const [selectedId, setSelectedId] = useState(DM_LEAD_ID)
   const [scale, setScale] = useState(1)
-  // 'mail1': 1일차 개인 노트북의 메일함(브라우저 틀), 'work': 오버레이 워크(5일차 메일함 포함)
+  // 'mail1': 1일차 개인 노트북의 메일함(브라우저 틀), 'work': 모레온 워크(5일차 메일함 포함)
   const [view, setView] = useState<'work' | 'mail1'>('work')
   const [mailCount, setMailCount] = useState(0)
   const [read, setRead] = useState<string[]>([])
@@ -73,7 +73,7 @@ export default function SandboxPage() {
     >
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <button type="button" disabled={view === 'work'} onClick={() => setView('work')}>
-          오버레이 워크 (#37 · #38 5일차)
+          모레온 워크 (#37 · #38 5일차)
         </button>
         <button type="button" disabled={view === 'mail1'} onClick={() => setView('mail1')}>
           1일차 메일함 (#38)
@@ -134,7 +134,7 @@ export default function SandboxPage() {
                 <WorkMailbox mails={withUnread(DAY5_MAILS)} {...mailProps} />
               ) : selectedId === DM_LEAD_ID ? (
                 <WorkMessenger
-                  name="박재훈 팀장"
+                  name="김아영 팀장"
                   days={daysUpTo(count)}
                   playerName={playerName}
                   onOpenTask={(task, message) => setClicked(`${message.id} · ${task.label}`)}

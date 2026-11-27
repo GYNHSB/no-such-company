@@ -90,7 +90,7 @@ export const SAMPLE_APPLICATIONS: readonly Application[] = COMPANIES.map((compan
   appliedAt: WHEN[Math.min(WHEN.length - 1, Math.floor(i / 5))] as string,
 }))
 
-/** 채용 공고 탭. 오버레이는 넣지 않는다(주인공은 오버레이에 지원한 기억이 없다) */
+/** 채용 공고 탭. 모레온은 넣지 않는다(주인공은 모레온에 지원한 기억이 없다) */
 export const SAMPLE_POSTINGS: readonly Posting[] = [
   {
     id: 'p1',

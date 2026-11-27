@@ -23,7 +23,7 @@ export function fillName(text: string, name: string) {
 export const INTERVIEW_LINES: readonly TimedLine[] = [
   {
     at: 0,
-    text: '안녕하세요, {name} 님. 오버레이 박재훈입니다. 바쁘실 텐데 시간 내주셔서 감사해요.',
+    text: '안녕하세요, {name} 님. 모레온 김아영입니다. 바쁘실 텐데 시간 내주셔서 감사해요.',
   },
   {
     at: 6,

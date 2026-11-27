@@ -100,8 +100,8 @@ function RoomLaptopTest() {
                 />
               ) : screen === 'install' ? (
                 <InterviewAppInstall
-                  company="오버레이"
-                  host="박재훈"
+                  company="모레온"
+                  host="김아영"
                   onJoin={() => setScreen('interview')}
                 />
               ) : screen === 'interview' ? (
@@ -118,7 +118,7 @@ function RoomLaptopTest() {
               ) : screen === 'inauguration' ? (
                 <InaugurationCall playerName="테스트" step={signStep} signed={signed}>
                   <WorkMessage
-                    name="박재훈 팀장"
+                    name="김아영 팀장"
                     time="10:01"
                     text="테스트 대표님, 축하드려요! 화면에 띄운 취임 승낙서랑 인감 위임장에 전자 서명 부탁드릴게요 :)"
                   />
@@ -204,7 +204,7 @@ export function LaptopTest() {
   )
 }
 
-/** 회사 노트북 앱(오버레이 워크) 화면. 사이드바 + 대화 영역 */
+/** 회사 노트북 앱(모레온 워크) 화면. 사이드바 + 대화 영역 */
 function LaptopScreen() {
   return (
     <div
@@ -225,7 +225,7 @@ function LaptopScreen() {
           color: 'var(--work-sidebar-ink)',
         }}
       >
-        <div style={{ padding: '0 16px 16px', fontWeight: 700, fontSize: 18 }}>오버레이 워크</div>
+        <div style={{ padding: '0 16px 16px', fontWeight: 700, fontSize: 18 }}>모레온 워크</div>
         {['# 공지', '# 신입-온보딩', '# 인사팀'].map((ch, i) => (
           <div
             key={ch}

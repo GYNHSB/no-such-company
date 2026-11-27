@@ -11,7 +11,7 @@ interface Props {
   children: ReactNode
 }
 
-/** 오버레이 워크의 버튼 */
+/** 모레온 워크의 버튼 */
 export function WorkButton({ id, variant = 'primary', disabled, onClick, children }: Props) {
   return (
     <button

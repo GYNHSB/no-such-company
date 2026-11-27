@@ -16,7 +16,7 @@ export const REJECTION_MAILS: readonly Mail[] = SAMPLE_APPLICATIONS.map((applica
   body: `${REJECTION_OPENING} 이번 채용에서는 모시지 못하게 되었습니다.`,
 }))
 
-const HR = { from: '오버레이 인사팀', address: 'recruit@overlay.example' }
+const HR = { from: '모레온 인사팀', address: 'recruit@moraeon.example' }
 
 /** 1일차 장면 4·6: 도착하는 순서대로 */
 export const DAY1_MAILS: readonly Mail[] = [
