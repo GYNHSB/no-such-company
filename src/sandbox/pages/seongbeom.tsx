@@ -3,9 +3,11 @@ import type { Message } from '@/data/types'
 import { CHANNELS } from '@/ui/screens/work/channelScript'
 import { DAY1_MAILS, DAY5_MAILS, REJECTION_MAILS } from '@/ui/screens/work/mailScript'
 import { MESSENGER_DAYS } from '@/ui/screens/work/messengerScript'
+import { PROOFREAD_LABEL, PROOFREADS, fixTypo } from '@/ui/screens/work/proofread'
 import { WebMail } from '@/ui/screens/work/WebMail'
 import { WorkChannelView } from '@/ui/screens/work/WorkChannelView'
 import { WorkMessenger, type MessengerDay } from '@/ui/screens/work/WorkMessenger'
+import { WorkProofread } from '@/ui/screens/work/WorkProofread'
 import { WorkVideoCapture } from '@/ui/screens/work/WorkVideoCapture'
 import { ONBOARDING_FILES, ONBOARDING_FOLDER } from '@/ui/screens/work/onboardingFiles'
 import { WorkFileComposer } from '@/ui/screens/work/WorkFileComposer'
@@ -75,6 +77,10 @@ export default function SandboxPage() {
     body: '[본인확인_영상.mp4] 동영상 · 0:15',
   })
 
+  // 안내문 검수(#41): 검수를 마친 요청 메시지 id와, 카드를 눌러 지금 열어 둔 검수
+  const [proofreadDone, setProofreadDone] = useState<string[]>([])
+  const [proofreading, setProofreading] = useState<{ id: string; sentence: string } | null>(null)
+
   const withUnread = (mails: readonly Mail[]) =>
     mails.map((mail) => ({ ...mail, unread: !read.includes(mail.id) }))
   const mailProps = {
@@ -125,6 +131,8 @@ export default function SandboxPage() {
                 setSent([])
                 setVideoSentFor([])
                 setChoseReshoot(false)
+                setProofreadDone([])
+                setProofreading(null)
               }}
             >
               처음부터
@@ -186,7 +194,12 @@ export default function SandboxPage() {
                   days={arrived.map((day, index) => ({
                     ...day,
                     messages: [
-                      ...day.messages,
+                      // 검수를 마친 문장은 카드에도 고친 표기로 보인다
+                      ...day.messages.map((message) =>
+                        proofreadDone.includes(message.id)
+                          ? { ...message, body: fixTypo(message.body, PROOFREADS[message.id]) }
+                          : message,
+                      ),
                       ...(index === 0 ? sentMessages : []),
                       ...day.messages
                         .filter((message) => videoSentFor.includes(message.id))
@@ -194,9 +207,30 @@ export default function SandboxPage() {
                     ],
                   }))}
                   playerName={playerName}
-                  onOpenTask={(task, message) => setClicked(`${message.id} · ${task.label}`)}
+                  isTaskDone={(task, message) =>
+                    task.label === PROOFREAD_LABEL && proofreadDone.includes(message.id)
+                  }
+                  onOpenTask={(task, message) => {
+                    setClicked(`${message.id} · ${task.label}`)
+                    const canProofread =
+                      task.label === PROOFREAD_LABEL &&
+                      message.id in PROOFREADS &&
+                      !proofreadDone.includes(message.id)
+                    if (canProofread) setProofreading({ id: message.id, sentence: task.content })
+                  }}
                   composer={
-                    wantsVideo ? (
+                    proofreading ? (
+                      <WorkProofread
+                        key={proofreading.id}
+                        sentence={proofreading.sentence}
+                        proofread={PROOFREADS[proofreading.id]}
+                        onDone={() => {
+                          setProofreadDone((ids) => [...ids, proofreading.id])
+                          setProofreading(null)
+                          setClicked(`검수 완료 · ${proofreading.id}`)
+                        }}
+                      />
+                    ) : wantsVideo ? (
                       <WorkVideoCapture
                         onSend={() => {
                           setVideoSentFor((ids) => [...ids, lastId])

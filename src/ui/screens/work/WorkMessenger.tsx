@@ -3,6 +3,7 @@ import type { DayInfo, Message } from '@/data/types'
 // shortcut: 대화 영역의 틀(이름 바, 목록)은 kit WorkChannel의 스타일을 빌려 쓴다. WorkChannel에 날짜 구분선과 첨부 자리가 생기면 WorkChannel로 바꾼다.
 import channel from '@/ui/kit/work/WorkChannel.module.css'
 import { WorkMessage } from '@/ui/kit/work/WorkMessage'
+import { Icon } from '@/ui/screens/laptop/icons'
 import { splitTasks, type MessageTask } from './messageTasks'
 import styles from './WorkMessenger.module.css'
 
@@ -23,10 +24,12 @@ interface Props {
   composer?: ReactNode
   /** 업무 자료 카드를 눌렀을 때. 버튼 id는 `btn_work_task_{message.id}_{순번}` */
   onOpenTask?: (task: MessageTask, message: Message) => void
+  /** 끝낸 업무 자료인지. 끝낸 카드에는 "완료" 라벨이 붙는다 */
+  isTaskDone?: (task: MessageTask, message: Message) => boolean
 }
 
 /** 모레온 워크 메신저. 팀장과의 대화를 날짜 구분선과 함께 이어서 보여 준다 */
-export function WorkMessenger({ name, days, playerName, composer, onOpenTask }: Props) {
+export function WorkMessenger({ name, days, playerName, composer, onOpenTask, isTaskDone }: Props) {
   const listRef = useRef<HTMLDivElement>(null)
   const count = days.reduce((sum, day) => sum + day.messages.length, 0)
 
@@ -64,7 +67,15 @@ export function WorkMessenger({ name, days, playerName, composer, onOpenTask }: 
                             className={styles.task}
                             onClick={() => onOpenTask?.(task, message)}
                           >
-                            <span className={styles.taskLabel}>{task.label}</span>
+                            <span className={styles.taskLabel}>
+                              {task.label}
+                              {isTaskDone?.(task, message) && (
+                                <span className={styles.taskDone}>
+                                  <Icon name="check" size={12} />
+                                  완료
+                                </span>
+                              )}
+                            </span>
                             <span className={styles.taskContent}>{task.content}</span>
                           </button>
                         ))}
