@@ -41,6 +41,14 @@ const SCREEN_H = 800
 // 노트북 화면 자리(가운데, 바라보는 방향, 너비)
 const SCREEN_CENTER = LAPTOP_SCREEN.center
 const SCREEN_FACING = LAPTOP_SCREEN.facing
+// UI를 화면 면보다 2mm 앞에 띄운다. anchors는 옛 노트북 기준이라 laptop.glb 화면과 1mm쯤 어긋나서,
+// 같은 자리에 두면 가장자리로 빛나는 면이 새어 나온다. 앞에 두면 살짝 크게 보여 가장자리를 덮는다.
+const SCREEN_LIFT = 0.002
+const UI_POSITION = SCREEN_CENTER.map((v, i) => v + SCREEN_FACING[i] * SCREEN_LIFT) as [
+  number,
+  number,
+  number,
+]
 const SCREEN_WIDTH_M = LAPTOP_SCREEN.width
 // 화면을 뒤로 젖힌 각도. +Z를 보던 판을 X축으로 돌려 FACING 방향을 보게 한다
 const SCREEN_TILT = -Math.asin(SCREEN_FACING[1])
@@ -72,7 +80,7 @@ function RoomLaptopTest() {
           <Laptop />
           <Html
             transform
-            position={SCREEN_CENTER}
+            position={UI_POSITION}
             rotation={[SCREEN_TILT, 0, 0]}
             distanceFactor={SCREEN_DISTANCE_FACTOR}
           >
