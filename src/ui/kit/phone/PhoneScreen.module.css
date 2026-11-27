@@ -95,3 +95,40 @@
   border-radius: var(--radius-pill);
   background: var(--phone-ink);
 }
+
+/* 막대는 얇아서 누르기 어렵다. 막대 위쪽까지 누를 수 있게 감싸되, 자리는 더 차지하지 않는다 */
+.homeButton {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-self: stretch;
+  margin-top: calc(var(--pt) * -8);
+  padding: calc(var(--pt) * 8) 0 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.homeButton .home {
+  transition:
+    transform 150ms ease-out,
+    box-shadow 150ms ease-out;
+}
+
+/* 마우스를 올리거나 키보드로 고르면 막대가 커지고 빛난다 */
+.homeButton:hover .home,
+.homeButton:focus-visible .home {
+  transform: scale(1.12, 1.4);
+  box-shadow: 0 0 calc(var(--pt) * 10) var(--phone-ink);
+}
+
+.homeButton:focus-visible {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .homeButton .home {
+    transition: none;
+  }
+}

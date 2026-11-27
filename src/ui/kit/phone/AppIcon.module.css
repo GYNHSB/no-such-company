@@ -15,6 +15,12 @@
   background: var(--phone-orange);
 }
 
+/* 흰 종이에 주황 줄 */
+.notes {
+  background: var(--phone-ink);
+  color: var(--phone-orange);
+}
+
 .glyph {
   width: 64%;
   height: 64%;

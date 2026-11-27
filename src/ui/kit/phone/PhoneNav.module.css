@@ -1,0 +1,58 @@
+/* 크기는 PhoneScreen이 정한 --pt(화면 너비 390pt 기준)로 맞춘다 */
+.nav {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 왼쪽 뒤로 가기, 가운데 내용, 오른쪽 빈자리. 양옆 너비가 같아야 가운데가 화면 가운데에 온다 */
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  min-height: calc(var(--pt) * 44);
+}
+
+.back {
+  display: inline-flex;
+  grid-column: 1;
+  justify-self: start;
+  align-items: center;
+  gap: calc(var(--pt) * 5);
+  padding: calc(var(--pt) * 8) calc(var(--pt) * 8) calc(var(--pt) * 8) 0;
+  border: 0;
+  background: none;
+  color: var(--phone-accent, var(--phone-blue));
+  font: inherit;
+  font-size: calc(var(--pt) * 17);
+}
+
+button.back {
+  cursor: pointer;
+}
+
+.chevron {
+  width: calc(var(--pt) * 11);
+  height: calc(var(--pt) * 19);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.center {
+  display: flex;
+  grid-column: 2;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--pt) * 4);
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  padding-bottom: calc(var(--pt) * 8);
+  font-size: calc(var(--pt) * 34);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}

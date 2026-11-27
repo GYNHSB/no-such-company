@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Message } from '@/data/types'
 import { Bubble } from '@/ui/kit/phone/Bubble'
+import { PhoneNav } from '@/ui/kit/phone/PhoneNav'
 import { PhoneScreen } from '@/ui/kit/phone/PhoneScreen'
 import { daysAgo, formatDate, formatMonthDay } from './clock'
 import styles from './MessagesApp.module.css'
@@ -24,6 +25,8 @@ interface Props {
   onRead: (ids: string[]) => void
   /** 처음부터 열어 둘 대화의 보낸 사람. 잠금 화면 알림을 눌러 들어올 때 쓴다 */
   defaultThread?: string
+  /** 대화 목록의 "홈"이나 아래 막대를 눌렀을 때. 홈 화면으로 돌아간다 */
+  onHome?: () => void
 }
 
 interface Thread {
@@ -78,7 +81,15 @@ function Avatar() {
  * 휴대폰 문자 앱. 대화 목록에서 대화를 누르면 대화방이 열린다.
  * 받은 문자와 읽음 여부는 밖에서 받는다. 화면은 어느 대화를 열었는지만 기억한다.
  */
-export function MessagesApp({ time, today, messages, readIds, onRead, defaultThread }: Props) {
+export function MessagesApp({
+  time,
+  today,
+  messages,
+  readIds,
+  onRead,
+  defaultThread,
+  onHome,
+}: Props) {
   const [open, setOpen] = useState(defaultThread ?? null)
   const endRef = useRef<HTMLDivElement>(null)
 
@@ -104,7 +115,8 @@ export function MessagesApp({ time, today, messages, readIds, onRead, defaultThr
 
   if (!thread) {
     return (
-      <PhoneScreen time={time} title="메시지">
+      <PhoneScreen time={time} onHome={onHome}>
+        <PhoneNav title="메시지" backLabel={onHome && '홈'} onBack={onHome} />
         {threads.length === 0 ? (
           <p className={styles.empty}>메시지 없음</p>
         ) : (
@@ -136,20 +148,14 @@ export function MessagesApp({ time, today, messages, readIds, onRead, defaultThr
   }
 
   return (
-    <PhoneScreen time={time}>
+    <PhoneScreen time={time} onHome={onHome}>
       <div className={styles.thread}>
-        <header className={styles.threadHead}>
-          <button
-            type="button"
-            className={styles.back}
-            onClick={() => setOpen(null)}
-            aria-label="대화 목록으로"
-          >
-            ‹
-          </button>
-          <Avatar />
-          <h1 className={styles.threadName}>{thread.from}</h1>
-        </header>
+        <div className={styles.threadHead}>
+          <PhoneNav backAriaLabel="대화 목록으로" onBack={() => setOpen(null)}>
+            <Avatar />
+            <h1 className={styles.threadName}>{thread.from}</h1>
+          </PhoneNav>
+        </div>
         <ol className={styles.bubbles}>
           {thread.messages.map((message, index) => {
             const next = thread.messages[index + 1]

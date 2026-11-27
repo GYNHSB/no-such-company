@@ -46,6 +46,11 @@
   overflow-wrap: break-word;
 }
 
+/* 밀어서 잠금 해제 줄. 알림이 있든 없든 화면 맨 아래에 있고, 알림은 그 위로 쌓인다 */
+.unlock {
+  padding-bottom: calc(var(--pt) * 6);
+}
+
 .item {
   animation: arrive 0.35s ease-out;
 }

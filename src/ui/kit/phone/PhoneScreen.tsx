@@ -10,6 +10,8 @@ interface Props {
   title?: string
   /** 제목 왼쪽 뒤로 가기 */
   onBack?: () => void
+  /** 아래 막대를 눌렀을 때. 있으면 막대가 홈 화면으로 가는 단추가 된다 */
+  onHome?: () => void
   children: ReactNode
 }
 
@@ -17,7 +19,7 @@ interface Props {
  * 아이폰 다크 모드 화면 틀. PhoneCloseup의 화면 영역 안에 넣는다.
  * 크기는 화면 영역 너비를 390pt로 보고 비례해서 맞춘다(--pt).
  */
-export function PhoneScreen({ time, statusLabel, title, onBack, children }: Props) {
+export function PhoneScreen({ time, statusLabel, title, onBack, onHome, children }: Props) {
   return (
     <div className={styles.root}>
       <div className={styles.status} aria-hidden="true">
@@ -38,7 +40,18 @@ export function PhoneScreen({ time, statusLabel, title, onBack, children }: Prop
         </header>
       )}
       <div className={styles.body}>{children}</div>
-      <div className={styles.home} aria-hidden="true" />
+      {onHome ? (
+        <button
+          type="button"
+          className={styles.homeButton}
+          onClick={onHome}
+          aria-label="홈 화면으로"
+        >
+          <span className={styles.home} />
+        </button>
+      ) : (
+        <div className={styles.home} aria-hidden="true" />
+      )}
     </div>
   )
 }

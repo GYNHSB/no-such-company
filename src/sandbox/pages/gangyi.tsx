@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import type { DayInfo, Message } from '@/data/types'
+import type { BlankSentence, DayInfo, EvidenceCard, Message } from '@/data/types'
+import { useGameStore } from '@/stores/gameStore'
 import {
   dateOfDay,
   lockNotifications,
@@ -9,13 +10,15 @@ import {
 } from '@/stores/phoneStore'
 import { PhoneCloseup } from '@/ui/kit/phone/PhoneCloseup'
 import { useFlowingClock } from '@/ui/screens/phone/clock'
+import { type HomeApp, HomeScreen } from '@/ui/screens/phone/HomeScreen'
 import { LockScreen } from '@/ui/screens/phone/LockScreen'
 import { MessagesApp } from '@/ui/screens/phone/MessagesApp'
+import { NotesApp } from '@/ui/screens/phone/NotesApp'
 import styles from './gangyi.module.css'
 
 /**
  * 강이의 테스트 페이지. 개발 서버에서 `?sandbox=gangyi` 주소로 연다.
- * 휴대폰 화면(#35)을 하나씩 띄워 본다. 지금은 잠금 화면 알림(#49)과 문자 앱(#50).
+ * 휴대폰 화면(#35)을 하나씩 띄워 본다. 지금은 잠금 화면 알림(#49), 홈 화면(#101), 문자 앱(#50), 메모 앱(#62).
  * 받은 메시지와 읽음은 phoneStore가 들고 있고, 이 페이지의 버튼이 사건 실행 코드 대신 메시지를 도착시킨다.
  */
 
@@ -112,7 +115,36 @@ const APP_NAMES: Partial<Record<Message['channel'], string>> = { sms: '문자 �
 
 const VIEWS: { id: PhoneApp; label: string }[] = [
   { id: 'lock', label: '잠금 화면 (#49)' },
+  { id: 'home', label: '홈 화면 (#101)' },
   { id: 'messages', label: '문자 앱 (#50)' },
+  { id: 'notes', label: '메모 앱 (#62)' },
+]
+
+/** 메모 앱 견본. 대본 2일차의 증거와 빈칸 문장이다 */
+const NOTE_CARDS: EvidenceCard[] = [
+  {
+    id: 'checked_notice',
+    title: '검수한 투자 안내문',
+    detail: '원금 100% 보장, 매월 8% 확정 수익',
+  },
+  {
+    id: 'registered_mail',
+    title: '등기 우편',
+    detail: '상호: 주식회사 세움파트너스. 대표이사: {name}',
+  },
+  {
+    id: 'account_alert',
+    title: '계좌 개설 알림',
+    detail: '{name} 님 명의의 입출금 계좌가 개설되었습니다.',
+  },
+]
+const NOTE_SENTENCES: BlankSentence[] = [
+  {
+    id: 'd2_ceo',
+    day: 2,
+    text: '세움파트너스의 대표로 등기된 사람은 [0]이다',
+    answers: ['registered_mail'],
+  },
 ]
 
 // 손 이미지(협성 님 테스트 페이지와 같은 파일)와 그 안의 화면 자리. 이미지의 검은 화면 영역을 픽셀로 잰 값이다
@@ -137,7 +169,8 @@ const startScene = (id: string) => {
 
 export default function SandboxPage() {
   const [sceneId, setSceneId] = useState(SCENES[0].id)
-  const [name, setName] = useState('홍길동')
+  // 맞춰 본 문장의 결과. 실제 게임에서는 엔진이 판정해서 넘긴다
+  const [noteStatus, setNoteStatus] = useState<Record<string, 'solved' | 'wrong'>>({})
   const [opened, setOpened] = useState('')
   const [fast, setFast] = useState(false)
 
@@ -150,17 +183,34 @@ export default function SandboxPage() {
   const markRead = usePhoneStore((s) => s.markRead)
   const openApp = usePhoneStore((s) => s.openApp)
 
-  useEffect(() => startScene(SCENES[0].id), [])
+  // 이름은 시작 화면에서 입력해 gameStore에 들어 있는 값을 쓴다. 이 페이지는 시작 화면을 거치지 않아 견본 이름을 넣는다
+  const name = useGameStore((s) => s.playerName)
+  const setName = (playerName: string) => useGameStore.setState({ playerName })
+
+  useEffect(() => {
+    startScene(SCENES[0].id)
+    if (!useGameStore.getState().playerName) useGameStore.setState({ playerName: '홍길동' })
+  }, [])
 
   const scene = SCENES.find((s) => s.id === sceneId) ?? SCENES[0]
   const today = dateOfDay(weekOne, scene.info)
   // 이 장면의 메시지 가운데 지금까지 도착한 수
   const arrived = scene.messages.filter((m) => received.some((r) => r.message.id === m.id)).length
   // 이름 바꾸기는 화면에 넘길 때 한다. 스토어에는 대본 그대로({name}) 들어 있다
-  const withName = <T extends Message>(m: T): T => ({
-    ...m,
-    body: m.body.replaceAll('{name}', name),
-  })
+  const fill = (text: string) => text.replaceAll('{name}', name)
+  const texts = messagesOf(received, weekOne, 'sms')
+  const goHome = () => openApp('home')
+  // 홈 화면의 앱. 화면이 있는 앱만 놓는다
+  const homeApps: HomeApp<PhoneApp>[] = [{ id: 'notes', label: '메모', icon: 'notes' }]
+  const dockApps: HomeApp<PhoneApp>[] = [
+    {
+      id: 'messages',
+      label: '메시지',
+      icon: 'message',
+      badge: texts.filter((m) => !readIds.includes(m.id)).length,
+    },
+  ]
+  const withName = <T extends Message>(m: T): T => ({ ...m, body: fill(m.body) })
   // 마지막으로 도착한 알림의 시각(대본)에서 시작해 실제 시간만큼 흐른다
   const time = useFlowingClock(
     (scene.messages[arrived - 1] ?? scene.messages[0]).time,
@@ -170,6 +220,7 @@ export default function SandboxPage() {
   const pickScene = (id: string) => {
     setSceneId(id)
     setOpened('')
+    setNoteStatus({})
     startScene(id)
   }
 
@@ -191,19 +242,38 @@ export default function SandboxPage() {
               setOpened(`${APP_NAMES[m.channel] ?? m.channel} 열기 (${m.from} ${m.time})`)
               if (m.channel === 'sms') openApp('messages', m.from)
             }}
+            onUnlock={goHome}
+          />
+        ) : app === 'home' ? (
+          <HomeScreen time={time} apps={homeApps} dock={dockApps} onOpen={(id) => openApp(id)} />
+        ) : app === 'notes' ? (
+          <NotesApp
+            time={time}
+            cards={NOTE_CARDS.map((c) => ({ ...c, detail: fill(c.detail) }))}
+            sentences={NOTE_SENTENCES}
+            status={noteStatus}
+            onSubmit={(sentenceId, cardIds) => {
+              // 엔진 대신 정답을 견줘 본다
+              const answers = NOTE_SENTENCES.find((s) => s.id === sentenceId)?.answers ?? []
+              const solved = answers.every((id, i) => id === cardIds[i])
+              setNoteStatus((prev) => ({ ...prev, [sentenceId]: solved ? 'solved' : 'wrong' }))
+              setOpened(`맞춰 보기 (${cardIds.join(', ')})`)
+            }}
+            onHome={goHome}
           />
         ) : (
           <MessagesApp
             key={`${scene.id}-${thread ?? ''}`}
             time={time}
             today={today}
-            messages={messagesOf(received, weekOne, 'sms').map(withName)}
+            messages={texts.map(withName)}
             readIds={readIds}
             onRead={(ids) => {
               markRead(ids)
               setOpened(`문자 읽음 (${ids.join(', ')})`)
             }}
             defaultThread={thread ?? undefined}
+            onHome={goHome}
           />
         )}
       </PhoneCloseup>

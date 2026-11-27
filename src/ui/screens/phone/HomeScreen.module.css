@@ -1,0 +1,83 @@
+/* 배경 화면. PhoneScreen의 검은 배경을 비우고 그 뒤에 깐다(잠금 화면과 같다) */
+.wallpaper {
+  --phone-bg: transparent;
+  position: absolute;
+  inset: 0;
+  background: var(--phone-wallpaper);
+}
+
+/* 크기는 PhoneScreen이 정한 --pt(화면 너비 390pt 기준)로 맞춘다 */
+.home {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* 한 줄에 네 개 */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: calc(var(--pt) * 22) 0;
+  margin: 0;
+  padding: calc(var(--pt) * 24) calc(var(--pt) * 6) 0;
+  list-style: none;
+}
+
+.grid li,
+.dock li {
+  display: flex;
+  justify-content: center;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--pt) * 6);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--phone-ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.icon {
+  position: relative;
+  width: calc(var(--pt) * 60);
+  height: calc(var(--pt) * 60);
+}
+
+.label {
+  font-size: calc(var(--pt) * 12);
+}
+
+/* 읽지 않은 수 */
+.badge {
+  position: absolute;
+  top: calc(var(--pt) * -6);
+  right: calc(var(--pt) * -6);
+  min-width: calc(var(--pt) * 22);
+  height: calc(var(--pt) * 22);
+  padding: 0 calc(var(--pt) * 6);
+  border-radius: var(--radius-pill);
+  background: var(--phone-red);
+  font-size: calc(var(--pt) * 13);
+  font-weight: 600;
+  line-height: calc(var(--pt) * 22);
+  text-align: center;
+}
+
+/* 아래 받침대. 알림 카드와 같은 반투명 유리 */
+.dock {
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  margin: auto calc(var(--pt) * -4) calc(var(--pt) * 4);
+  padding: calc(var(--pt) * 14) calc(var(--pt) * 6);
+  border-radius: calc(var(--pt) * 34);
+  background: var(--phone-notif-bg);
+  backdrop-filter: blur(24px) saturate(1.6);
+  box-shadow: inset 0 0 0 calc(var(--pt) * 0.6) var(--phone-notif-edge);
+  list-style: none;
+}

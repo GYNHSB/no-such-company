@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react'
 import type { BlankSentence as Sentence, EvidenceCard as Card } from '@/data/types'
+import { PhoneNav } from '@/ui/kit/phone/PhoneNav'
 import { PhoneScreen } from '@/ui/kit/phone/PhoneScreen'
-import type { SentenceStatus } from './Notebook'
+import type { SentenceStatus } from '@/ui/screens/common/Notebook'
 import styles from './NotesApp.module.css'
 
 type Page = 'list' | 'evidence' | 'sentences'
 
 interface Props {
-  /** 상태 표시줄 시각 "23:12" */
+  /** 지금 시각 "23:12". 상태 표시줄과 메모 목록의 시각에 쓴다 */
   time: string
   /** 지금까지 모은 증거 카드 */
   cards: Card[]
@@ -17,6 +18,8 @@ interface Props {
   status: Record<string, SentenceStatus | undefined>
   /** "맞춰 보기"를 눌렀을 때. 빈칸 순서대로 놓은 카드 id. 정답 판정은 엔진이 한다. */
   onSubmit: (sentenceId: string, cardIds: string[]) => void
+  /** 메모 목록의 "홈"이나 아래 막대를 눌렀을 때. 홈 화면으로 돌아간다 */
+  onHome?: () => void
 }
 
 /**
@@ -25,7 +28,7 @@ interface Props {
  * 빈칸을 누르면 화면 아래에서 증거를 고르는 줄이 올라오고, 증거를 누르면 그 빈칸에 들어간다. 채운 빈칸을 다시 누르면 뺀다.
  * PhoneCloseup의 화면 영역(또는 container-type: inline-size인 칸) 안에 넣는다.
  */
-export function NotesApp({ time, cards, sentences, status, onSubmit }: Props) {
+export function NotesApp({ time, cards, sentences, status, onSubmit, onHome }: Props) {
   const [page, setPage] = useState<Page>('list')
   const byId = useMemo(() => Object.fromEntries(cards.map((c) => [c.id, c])), [cards])
   const [values, setValues] = useState<Record<string, (string | null)[]>>({})
@@ -49,14 +52,12 @@ export function NotesApp({ time, cards, sentences, status, onSubmit }: Props) {
 
   if (page === 'list') {
     return (
-      <PhoneScreen time={time}>
+      <PhoneScreen time={time} onHome={onHome}>
         <div className={styles.screen}>
-          <nav className={styles.nav}>
-            <span className={styles.navBack} aria-hidden="true">
-              ‹ 폴더
-            </span>
-          </nav>
-          <h1 className={styles.largeTitle}>메모</h1>
+          <div className={styles.top}>
+            {/* 홈으로 돌아갈 곳이 없으면 아이폰 메모 앱처럼 "폴더"를 꾸밈으로 둔다 */}
+            <PhoneNav backLabel={onHome ? '홈' : '폴더'} onBack={onHome} title="메모" />
+          </div>
           <div className={styles.search} aria-hidden="true">
             검색
           </div>
@@ -66,7 +67,7 @@ export function NotesApp({ time, cards, sentences, status, onSubmit }: Props) {
               <button type="button" className={styles.row} onClick={() => setPage('sentences')}>
                 <span className={styles.rowTitle}>맞춰 볼 문장</span>
                 <span className={styles.rowMeta}>
-                  <span>오후 11:12</span>
+                  <span>{time}</span>
                   <span className={styles.preview}>
                     {sentences.length === 0
                       ? '아직 없음'
@@ -79,7 +80,7 @@ export function NotesApp({ time, cards, sentences, status, onSubmit }: Props) {
               <button type="button" className={styles.row} onClick={() => setPage('evidence')}>
                 <span className={styles.rowTitle}>모은 증거</span>
                 <span className={styles.rowMeta}>
-                  <span>오후 11:08</span>
+                  <span>{time}</span>
                   <span className={styles.preview}>
                     {cards.length === 0 ? '아직 없음' : cards.map((c) => c.title).join(', ')}
                   </span>
@@ -98,20 +99,17 @@ export function NotesApp({ time, cards, sentences, status, onSubmit }: Props) {
   }
 
   return (
-    <PhoneScreen time={time}>
+    <PhoneScreen time={time} onHome={onHome}>
       <div className={styles.screen}>
-        <nav className={styles.nav}>
-          <button
-            type="button"
-            className={styles.navBack}
-            onClick={() => {
+        <div className={styles.top}>
+          <PhoneNav
+            backLabel="메모"
+            onBack={() => {
               setActive(null)
               setPage('list')
             }}
-          >
-            ‹ 메모
-          </button>
-        </nav>
+          />
+        </div>
 
         <article className={styles.note}>
           {page === 'evidence' ? (
