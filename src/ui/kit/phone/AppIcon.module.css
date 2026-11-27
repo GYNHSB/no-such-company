@@ -38,6 +38,12 @@
   background: var(--phone-red);
 }
 
+/* 가상 익명 게시판. 대표 색 바탕에 흰 말풍선 */
+.blabla {
+  background: var(--blabla-brand);
+  color: var(--blabla-bg);
+}
+
 .glyph {
   width: 64%;
   height: 64%;

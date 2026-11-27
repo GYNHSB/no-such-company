@@ -11,6 +11,7 @@ import {
 import { PhoneCloseup } from '@/ui/kit/phone/PhoneCloseup'
 import { INTERVIEW_LINES } from '@/ui/screens/laptop/videoScript'
 import { type BankAccount, BankApp, type BankCard } from '@/ui/screens/phone/BankApp'
+import { BlablaApp, type BlablaPost } from '@/ui/screens/phone/BlablaApp'
 import { CallApp, type Contact } from '@/ui/screens/phone/CallApp'
 import { useFlowingClock } from '@/ui/screens/phone/clock'
 import { type HomeApp, HomeScreen } from '@/ui/screens/phone/HomeScreen'
@@ -23,7 +24,7 @@ import styles from './gangyi.module.css'
 
 /**
  * 강이의 테스트 페이지. 개발 서버에서 `?sandbox=gangyi` 주소로 연다.
- * 휴대폰 화면(#35)을 하나씩 띄워 본다. 지금은 잠금 화면 알림(#49), 홈 화면(#101), 문자 앱(#50), 은행 앱(#51), 사진 앱(#52), SNS(#53), 전화 앱(#56), 메모 앱(#62).
+ * 휴대폰 화면(#35)을 하나씩 띄워 본다. 지금은 잠금 화면 알림(#49), 홈 화면(#101), 문자 앱(#50), 은행 앱(#51), 사진 앱(#52), SNS(#53), 블라블라(#54), 전화 앱(#56), 메모 앱(#62).
  * 받은 메시지와 읽음은 phoneStore가 들고 있고, 이 페이지의 버튼이 사건 실행 코드 대신 메시지를 도착시킨다.
  */
 
@@ -222,6 +223,93 @@ const CALL_HISTORY: {
 /** 신고처 번호. 엔딩 화면의 안내와 같은 번호(경찰 112, 금융감독원 1332)만 연결된다 */
 const REPORT_NUMBERS = ['112', '1332']
 
+/** 대본의 직장인 익명 게시판 이름 */
+const BLABLA = '블라블라'
+
+/** 내가 다니는 회사. 대본: "모레온 게시판에는 글이 하나도 없다." */
+const MY_COMPANY = '모레온'
+
+/**
+ * 블라블라 게시글. 아래 두 글(4일차 장면 4)은 제목, 회사, 올린 때, 본문이 대본 그대로다.
+ * 위의 "실시간 인기 글" 네 개는 앱이 비어 보이지 않게 임의로 넣은 것이고, 줄거리와 상관없다.
+ * 임의로 넣은 글은 회사 이름을 짓지 않고 업종으로만 적었다. 조회, 좋아요, 댓글 수도 임의 값이다.
+ */
+const BLABLA_POSTS: BlablaPost[] = [
+  {
+    id: 'filler_lunch',
+    topic: '회사생활',
+    title: '출근하니까 점심값이 제일 무섭다',
+    company: '금융권',
+    ago: '12분 전',
+    body: '재택 끝나고 다시 나오는데 김치찌개가 만 이천 원이에요. 도시락 싸는 분들 어떻게 하세요?',
+    views: 1284,
+    likes: 46,
+    comments: 31,
+    hot: true,
+  },
+  {
+    id: 'filler_raise',
+    topic: '연봉',
+    title: '연봉 협상 시즌인데 다들 몇 프로 부르세요',
+    company: 'IT 스타트업',
+    ago: '1시간 전',
+    body: '작년엔 동결이었고 올해는 말이라도 꺼내 보려고요. 기준을 어떻게 잡아야 할지 모르겠네요.',
+    views: 3912,
+    likes: 88,
+    comments: 104,
+    hot: true,
+  },
+  {
+    id: 'filler_meeting',
+    topic: '자유',
+    title: '월요일 아침 회의만 없어도 살 것 같다',
+    company: '제조 대기업',
+    ago: '3시간 전',
+    body: '주말에 쉬다 와서 바로 한 시간 회의. 저만 힘든가요.',
+    views: 760,
+    likes: 23,
+    comments: 12,
+    hot: true,
+  },
+  {
+    id: 'filler_move',
+    topic: '취업·이직',
+    title: '3년 차 이직, 지금이 맞을까요',
+    company: '유통',
+    ago: '어제',
+    body: '일은 익숙해졌는데 배우는 게 없는 느낌이에요. 비슷한 고민 해 보신 분 계신가요.',
+    views: 2105,
+    likes: 37,
+    comments: 45,
+    hot: true,
+  },
+  {
+    id: 'blabla_hanbit',
+    topic: '취업·이직',
+    title: '꿈의 회사 붙었습니다',
+    company: '주식회사 한빛웍스',
+    ago: '2주 전',
+    body: '"남들이 안 보는 걸 보시더라고요." 이 한마디에 바로 입사 서류 냈네요.',
+    views: 214,
+    likes: 7,
+    comments: 2,
+  },
+  {
+    id: 'blabla_daon',
+    topic: '취업·이직',
+    title: '재택 풀타임 합격했어요',
+    company: '주식회사 다온링크',
+    ago: '3주 전',
+    body: '면접관이 제 포트폴리오 보고 "남들이 안 보는 걸 보시더라고요"래요. 6년 만에 처음 듣는 말이라 울컥했어요.',
+    views: 389,
+    likes: 12,
+    comments: 3,
+  },
+]
+
+/** 검색창 아래에 미리 보여 줄 검색어. 내 회사 이름과, 면접에서 들은 칭찬이다 */
+const BLABLA_SUGGESTIONS = [MY_COMPANY, '남들이 안 보는 걸 보시더라고요']
+
 /** 누른 알림이 여는 앱 */
 const APP_NAMES: Partial<Record<Message['channel'], string>> = { sms: '문자 앱', bank: '은행 앱' }
 
@@ -232,6 +320,7 @@ const VIEWS: { id: PhoneApp; label: string }[] = [
   { id: 'bank', label: '은행 앱 (#51)' },
   { id: 'photos', label: '사진 앱 (#52)' },
   { id: 'sns', label: 'SNS (#53)' },
+  { id: 'blabla', label: '블라블라 (#54)' },
   { id: 'phone', label: '전화 앱 (#56)' },
   { id: 'notes', label: '메모 앱 (#62)' },
 ]
@@ -347,6 +436,7 @@ export default function SandboxPage() {
   const homeApps: HomeApp<PhoneApp>[] = [
     { id: 'photos', label: '사진', icon: 'photos' },
     { id: 'sns', label: SNS, icon: 'sns' },
+    { id: 'blabla', label: BLABLA, icon: 'blabla' },
     { id: 'notes', label: '메모', icon: 'notes' },
     {
       id: 'bank',
@@ -469,6 +559,18 @@ export default function SandboxPage() {
               setConnected(false)
               setOpened(`전화 끊기 (${number})`)
             }}
+            onHome={goHome}
+          />
+        ) : app === 'blabla' ? (
+          <BlablaApp
+            key={scene.id}
+            time={time}
+            app={BLABLA}
+            myCompany={MY_COMPANY}
+            posts={BLABLA_POSTS}
+            suggestions={BLABLA_SUGGESTIONS}
+            onSearch={(query) => setOpened(`블라블라 검색 (${query})`)}
+            onRead={(id) => setOpened(`블라블라 글 읽음 (${id})`)}
             onHome={goHome}
           />
         ) : app === 'notes' ? (

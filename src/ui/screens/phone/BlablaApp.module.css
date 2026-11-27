@@ -1,0 +1,432 @@
+/* 이 앱은 휴대폰 기본 앱이 아니라서 밝은 화면에 앱의 색(--blabla-*)을 쓴다.
+   PhoneScreen과 PhoneNav가 쓰는 휴대폰 색을 이 안에서만 앱 색으로 바꾼다.
+   실제 서비스의 고유 색은 쓰지 않는다. */
+.theme {
+  --phone-bg: var(--blabla-bg);
+  --phone-ink: var(--blabla-ink);
+  --phone-muted: var(--blabla-muted);
+  --phone-faint: var(--blabla-faint);
+  --phone-line: var(--blabla-line);
+  --phone-accent: var(--blabla-ink);
+  position: absolute;
+  inset: 0;
+}
+
+/* 크기는 PhoneScreen이 정한 --pt(화면 너비 390pt 기준)로 맞춘다 */
+.blabla {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: calc(var(--pt) * 16);
+  padding-bottom: calc(var(--pt) * 20);
+}
+
+.glyph,
+.small,
+.navIcon,
+.searchGlyph,
+.emptyGlyph {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.glyph {
+  width: calc(var(--pt) * 24);
+  height: calc(var(--pt) * 24);
+}
+
+.small {
+  width: calc(var(--pt) * 14);
+  height: calc(var(--pt) * 14);
+}
+
+.navIcon {
+  width: calc(var(--pt) * 24);
+  height: calc(var(--pt) * 24);
+  color: var(--blabla-ink);
+}
+
+/* 화면 낭독기에만 읽히는 글 */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* 찾는 말이 든 자리 */
+.blabla mark {
+  border-radius: calc(var(--pt) * 3);
+  background: var(--blabla-brand-tint);
+  color: var(--blabla-brand);
+  font-weight: 700;
+}
+
+/* 위쪽 줄 가운데의 앱 이름 */
+.wordmark {
+  margin: 0;
+  color: var(--blabla-brand);
+  font-size: calc(var(--pt) * 21);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+/* ── 검색창 ── */
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 8);
+  height: calc(var(--pt) * 44);
+  padding: 0 calc(var(--pt) * 14);
+  border-radius: calc(var(--pt) * 12);
+  background: var(--blabla-surface);
+}
+
+.searchGlyph {
+  flex: none;
+  width: calc(var(--pt) * 20);
+  height: calc(var(--pt) * 20);
+  color: var(--blabla-muted);
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--blabla-ink);
+  font: inherit;
+  font-size: calc(var(--pt) * 16);
+}
+
+.searchInput::placeholder {
+  color: var(--blabla-faint);
+}
+
+.search:focus-within {
+  box-shadow: inset 0 0 0 calc(var(--pt) * 1.5) var(--blabla-brand);
+}
+
+/* 미리 보여 주는 검색어 */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--pt) * 8);
+  margin: calc(var(--pt) * -6) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--pt) * 5);
+  padding: calc(var(--pt) * 7) calc(var(--pt) * 12);
+  border: calc(var(--pt) * 1) solid var(--blabla-line);
+  border-radius: var(--radius-pill);
+  background: var(--blabla-bg);
+  color: var(--blabla-ink);
+  font: inherit;
+  font-size: calc(var(--pt) * 14);
+  text-align: left;
+  cursor: pointer;
+}
+
+.chip svg {
+  color: var(--blabla-faint);
+}
+
+/* ── 묶음 제목 ── */
+
+.heading {
+  margin: 0 0 calc(var(--pt) * 6);
+  font-size: calc(var(--pt) * 18);
+  font-weight: 800;
+}
+
+.heading span {
+  color: var(--blabla-brand);
+}
+
+/* ── 회사 ── */
+
+/* 회사 이름 첫 글자를 넣은 네모 */
+.logo {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: calc(var(--pt) * 36);
+  height: calc(var(--pt) * 36);
+  border-radius: calc(var(--pt) * 9);
+  background: var(--blabla-brand-tint);
+  color: var(--blabla-brand);
+  font-size: calc(var(--pt) * 16);
+  font-weight: 800;
+}
+
+.logoBig {
+  width: calc(var(--pt) * 56);
+  height: calc(var(--pt) * 56);
+  border-radius: calc(var(--pt) * 14);
+  font-size: calc(var(--pt) * 24);
+}
+
+.companyRow {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 12);
+  width: 100%;
+  padding: calc(var(--pt) * 10) 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.companyName {
+  flex: 1;
+  min-width: 0;
+  font-size: calc(var(--pt) * 16);
+  font-weight: 700;
+}
+
+/* 첫 화면의 내 회사 카드 */
+.mine {
+  padding: calc(var(--pt) * 4) calc(var(--pt) * 14);
+  border: calc(var(--pt) * 1) solid var(--blabla-line);
+  border-radius: calc(var(--pt) * 14);
+}
+
+.boardCount {
+  flex: none;
+  margin: 0;
+  font-size: calc(var(--pt) * 14);
+  color: var(--blabla-muted);
+}
+
+.boardHead {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 14);
+  padding-bottom: calc(var(--pt) * 16);
+  border-bottom: calc(var(--pt) * 8) solid var(--blabla-surface);
+  margin: 0 calc(var(--pt) * -16);
+  padding-right: calc(var(--pt) * 16);
+  padding-left: calc(var(--pt) * 16);
+}
+
+.boardName {
+  margin: 0 0 calc(var(--pt) * 2);
+  font-size: calc(var(--pt) * 22);
+  font-weight: 800;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--pt) * 10);
+  margin: calc(var(--pt) * 48) 0;
+  color: var(--blabla-muted);
+  text-align: center;
+}
+
+.emptyGlyph {
+  width: calc(var(--pt) * 40);
+  height: calc(var(--pt) * 40);
+  color: var(--blabla-faint);
+}
+
+/* ── 글 목록 ── */
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pt) * 4);
+  width: 100%;
+  padding: calc(var(--pt) * 14) 0;
+  border: 0;
+  border-bottom: calc(var(--pt) * 1) solid var(--blabla-line);
+  background: none;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* 글이 올라온 토픽 */
+.topic {
+  margin: 0;
+  color: var(--blabla-brand);
+  font-size: calc(var(--pt) * 12);
+  font-weight: 700;
+}
+
+.rowTitle {
+  font-size: calc(var(--pt) * 16);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+/* 본문은 두 줄까지만 미리 보인다 */
+.preview {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: calc(var(--pt) * 14);
+  line-height: 1.45;
+  color: var(--blabla-muted);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+/* 아랫줄: 회사와 올린 때, 조회·좋아요·댓글 수 */
+.foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: calc(var(--pt) * 8);
+  margin-top: calc(var(--pt) * 4);
+  font-size: calc(var(--pt) * 12);
+  color: var(--blabla-muted);
+}
+
+.who {
+  display: flex;
+  gap: calc(var(--pt) * 6);
+  min-width: 0;
+}
+
+.company {
+  color: var(--blabla-ink);
+  font-weight: 700;
+}
+
+.counts {
+  display: flex;
+  flex: none;
+  gap: calc(var(--pt) * 10);
+  color: var(--blabla-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.counts > span {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--pt) * 3);
+}
+
+/* ── 글 본문 ── */
+
+.post {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pt) * 8);
+}
+
+.postTitle {
+  margin: 0;
+  font-size: calc(var(--pt) * 22);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+/* 글쓴이: 회사 네모, 회사 이름, 가린 별명과 올린 때 */
+.byline {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 10);
+  margin: calc(var(--pt) * 4) 0;
+}
+
+.bylineText {
+  display: flex;
+  flex-direction: column;
+  font-size: calc(var(--pt) * 14);
+}
+
+.nick {
+  font-size: calc(var(--pt) * 12);
+  color: var(--blabla-muted);
+}
+
+.body {
+  margin: calc(var(--pt) * 6) 0 calc(var(--pt) * 10);
+  font-size: calc(var(--pt) * 17);
+  line-height: 1.65;
+}
+
+.postFoot {
+  padding: calc(var(--pt) * 12) 0;
+  border-top: calc(var(--pt) * 1) solid var(--blabla-line);
+  border-bottom: calc(var(--pt) * 1) solid var(--blabla-line);
+  font-size: calc(var(--pt) * 13);
+}
+
+.postFoot .counts {
+  gap: calc(var(--pt) * 16);
+  color: var(--blabla-muted);
+}
+
+/* 모양만 있는 댓글 입력란 */
+.reply {
+  margin: calc(var(--pt) * 6) 0 0;
+  padding: calc(var(--pt) * 11) calc(var(--pt) * 14);
+  border-radius: calc(var(--pt) * 12);
+  background: var(--blabla-surface);
+  color: var(--blabla-faint);
+  font-size: calc(var(--pt) * 15);
+}
+
+/* ── 아래 탭(꾸밈) ── */
+
+/* 화면 아래에 붙어 있다. PhoneScreen 본문의 좌우 여백까지 덮는다 */
+.tabs {
+  position: sticky;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin: 0 calc(var(--pt) * -16);
+  /* 아래쪽을 넉넉히 띄워 홈 막대의 누르는 자리와 겹쳐 보이지 않게 한다 */
+  padding: calc(var(--pt) * 8) calc(var(--pt) * 8) calc(var(--pt) * 14);
+  border-top: calc(var(--pt) * 1) solid var(--blabla-line);
+  background: var(--blabla-bg);
+  color: var(--blabla-faint);
+  font-size: calc(var(--pt) * 10);
+  font-weight: 600;
+}
+
+.tabs span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--pt) * 2);
+}
+
+.tabs .tabOn {
+  color: var(--blabla-ink);
+}
