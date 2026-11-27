@@ -1,0 +1,158 @@
+/* 휴대폰 브라우저 안의 웹 페이지. 색은 웹 화면 색(--web-*)을 쓰고,
+   크기는 PhoneScreen이 정한 --pt(화면 너비 390pt 기준)로 맞춘다. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pt) * 12);
+  padding: calc(var(--pt) * 8) 0 calc(var(--pt) * 20);
+}
+
+/* 프로그램 이름 */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 6);
+  color: var(--web-accent);
+  font-size: calc(var(--pt) * 15);
+  font-weight: 800;
+}
+
+.shield {
+  width: calc(var(--pt) * 20);
+  height: calc(var(--pt) * 20);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.title {
+  margin: calc(var(--pt) * 6) 0 0;
+  font-size: calc(var(--pt) * 26);
+  font-weight: 800;
+}
+
+/* 초록 점과 함께 보이는 상태 */
+.status {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 8);
+  margin: 0;
+  padding: calc(var(--pt) * 10) calc(var(--pt) * 14);
+  border-radius: calc(var(--pt) * 10);
+  background: var(--web-accent-soft);
+  color: var(--web-accent);
+  font-size: calc(var(--pt) * 14);
+  font-weight: 700;
+}
+
+.status i {
+  flex: none;
+  width: calc(var(--pt) * 8);
+  height: calc(var(--pt) * 8);
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* 관리자 계정, 등록일 */
+.card {
+  margin: 0;
+  padding: 0 calc(var(--pt) * 16);
+  border-radius: calc(var(--pt) * 14);
+  background: var(--web-surface);
+  box-shadow:
+    var(--web-shadow),
+    inset 0 0 0 calc(var(--pt) * 1) var(--web-line);
+}
+
+.card div {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pt) * 2);
+  padding: calc(var(--pt) * 13) 0;
+}
+
+.card div + div {
+  border-top: calc(var(--pt) * 1) solid var(--web-line);
+}
+
+.card dt {
+  font-size: calc(var(--pt) * 13);
+  color: var(--web-muted);
+}
+
+.card dd {
+  margin: 0;
+  font-size: calc(var(--pt) * 17);
+  font-weight: 600;
+}
+
+/* 관리자 계정 주소. 글자를 또박또박 견줘 볼 수 있게 한다 */
+.admin {
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.heading {
+  margin: calc(var(--pt) * 6) 0 calc(var(--pt) * 8);
+  font-size: calc(var(--pt) * 15);
+  font-weight: 800;
+}
+
+.devices,
+.permissions {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0 calc(var(--pt) * 16);
+  border-radius: calc(var(--pt) * 14);
+  background: var(--web-surface);
+  box-shadow:
+    var(--web-shadow),
+    inset 0 0 0 calc(var(--pt) * 1) var(--web-line);
+  list-style: none;
+  font-size: calc(var(--pt) * 15);
+}
+
+.devices li,
+.permissions li {
+  padding: calc(var(--pt) * 11) 0;
+}
+
+.devices li + li,
+.permissions li + li {
+  border-top: calc(var(--pt) * 1) solid var(--web-line);
+}
+
+/* 기기 그림, 이름, 오른쪽 끝에 상태 */
+.devices li {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 10);
+  font-weight: 600;
+}
+
+.devices svg {
+  flex: none;
+  width: calc(var(--pt) * 24);
+  height: calc(var(--pt) * 24);
+  fill: none;
+  stroke: var(--web-muted);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.devices span {
+  margin-left: auto;
+  color: var(--web-accent);
+  font-size: calc(var(--pt) * 13);
+  font-weight: 700;
+}
+
+.note {
+  margin: 0;
+  font-size: calc(var(--pt) * 13);
+  line-height: 1.5;
+  color: var(--web-muted);
+}
