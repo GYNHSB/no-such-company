@@ -6,8 +6,8 @@
   padding: calc(var(--pt) * 12) calc(var(--pt) * 14);
   border: 0;
   border-radius: calc(var(--pt) * 20);
-  background: rgb(44 44 46 / 0.82);
-  backdrop-filter: blur(20px);
+  background: var(--phone-notif-bg);
+  backdrop-filter: blur(24px) saturate(1.6);
   color: var(--phone-ink);
   text-align: left;
   font: inherit;
