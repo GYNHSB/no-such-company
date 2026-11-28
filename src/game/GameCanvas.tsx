@@ -43,6 +43,8 @@ const USABLE = [...Object.keys(VIEWS), ...Object.keys(SWITCHES)]
 const PHONE_SLAB = ['interact_phone']
 /** room.glb에서 그리지 않는 물건. 휴대폰은 DeskPhone이, 노트북은 Laptop(laptop.glb)이 대신 그린다 */
 const ROOM_HIDE = [...PHONE_SLAB, 'interact_laptop']
+/** 의자에 앉아 있는 동안 고르지 않는 물건. 앉은 채로 침대에 눕는 것은 어색해서 뺀다 */
+const SEATED_IGNORE = ['chair', 'bed']
 /** 이름이 interact_*가 아니지만 누를 수 있는 물건. room.glb에서 interact_*로 이름을 바꾸면 여기서 지운다. */
 const NAMED = ['bed', 'chair', 'desk_lamp', 'light_switch']
 /** room.glb 밖에서 코드로 만든 누를 수 있는 물체 */
@@ -86,9 +88,9 @@ export default function GameCanvas({ onLoad }: GameCanvasProps) {
   useViewKeys()
   /** 방을 둘러보는 중인지(걷거나, 앉거나, 누워서) */
   const looking = view === 'room' || view === 'seat' || view === 'bed'
-  // 집은 휴대폰과 앉아 있는 의자는 고를 수 없다
+  // 집은 휴대폰은 고를 수 없다. 앉아 있을 때는 책상 위의 것만 고르고, 앉아 있는 의자와 침대는 고르지 않는다
   const ignore = useMemo(
-    () => [...(hasPhone ? PHONE_SLAB : []), ...(seated ? ['chair'] : [])],
+    () => [...(hasPhone ? PHONE_SLAB : []), ...(seated ? SEATED_IGNORE : [])],
     [hasPhone, seated],
   )
 
