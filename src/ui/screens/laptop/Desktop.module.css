@@ -1,0 +1,50 @@
+/* 노트북의 바탕화면. 열린 창이 없을 때 보인다. 실제 운영체제의 배경을 쓰지 않고 가상 사이트의 색으로 칠한다.
+   아이콘 그림은 휴대폰의 앱 아이콘(AppIcon)을 같이 쓴다. 그 그림이 쓰는 휴대폰 글자색을 여기서 정해 준다 */
+.desktop {
+  --phone-ink: var(--web-surface);
+  width: 100%;
+  height: 100%;
+  padding: 24px;
+  box-sizing: border-box;
+  background: linear-gradient(160deg, var(--web-accent), var(--web-ink));
+  font-family: var(--web-font);
+}
+
+.icons {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(auto-fill, 104px);
+  justify-content: start;
+  gap: 8px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 바탕화면의 바로 가기 하나. 그림 아래에 이름 */
+.shortcut {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  width: 96px;
+  padding: 10px 4px;
+  border: 1px solid transparent;
+  border-radius: var(--web-radius);
+  background: none;
+  color: var(--web-surface);
+  font: inherit;
+  font-size: var(--web-text-meta);
+  cursor: pointer;
+}
+
+.shortcut:hover,
+.shortcut:focus-visible {
+  border-color: color-mix(in srgb, var(--web-surface) 40%, transparent);
+  background: color-mix(in srgb, var(--web-surface) 16%, transparent);
+}
+
+.icon {
+  width: 52px;
+  height: 52px;
+}

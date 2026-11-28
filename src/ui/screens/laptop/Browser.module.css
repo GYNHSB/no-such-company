@@ -25,6 +25,31 @@
   background: var(--web-chrome-tab);
   font-size: var(--web-text-meta);
 }
+/* 앞에 있지 않은 탭. 탭 줄 바탕에 묻히게 흐리게 한다 */
+.behind {
+  padding-left: 0;
+  background: none;
+  color: var(--web-muted);
+}
+.behind:hover {
+  background: var(--web-chrome-field);
+}
+/* 앞에 있지 않은 탭에서 아이콘과 제목을 감싼 단추. 누르면 그 탭이 앞으로 온다 */
+.tabOpen {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 100%;
+  padding: 0 0 0 12px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
 .favicon {
   display: grid;
   place-items: center;
@@ -67,6 +92,19 @@
   height: 28px;
   margin-bottom: 3px;
   color: var(--web-muted);
+}
+/* 탭이 여럿일 때 눌리는 새 탭 단추 */
+.newTabButton {
+  border: 0;
+  padding: 0;
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+}
+.newTabButton:hover,
+.newTabButton:focus-visible {
+  background: var(--web-chrome-field);
+  color: var(--web-ink);
 }
 .windowButtons {
   display: flex;

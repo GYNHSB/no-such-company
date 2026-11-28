@@ -7,9 +7,21 @@ export type Screen = 'title' | 'world'
 /** 방 안에서 무엇을 보고 있는지. room: 방을 걸어 다님, seat: 의자에 앉아 둘러봄, laptop: 의자에 앉아 노트북을 봄, phone: 휴대폰을 손에 쥠, bed: 침대에 누움 */
 export type View = 'room' | 'seat' | 'laptop' | 'phone' | 'bed'
 
-/** 노트북에 떠 있는 화면(src/ui/screens/laptop). off: 아무 앱도 없는 빈 화면 */
+/**
+ * 노트북에 떠 있는 화면(src/ui/screens/laptop). off: 열린 창이 없는 바탕화면.
+ * jobsite, mail, search는 브라우저의 사이트이고, browser는 브라우저 창에서 사이트가 아닌 탭(새 탭)이 앞에 있을 때다.
+ */
 export type LaptopScreen =
-  'off' | 'jobsite' | 'mail' | 'install' | 'interview' | 'work' | 'search' | 'inauguration' | 'wipe'
+  | 'off'
+  | 'browser'
+  | 'jobsite'
+  | 'mail'
+  | 'install'
+  | 'interview'
+  | 'work'
+  | 'search'
+  | 'inauguration'
+  | 'wipe'
 
 interface GameState {
   screen: Screen

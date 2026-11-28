@@ -19,6 +19,9 @@ export function meaning(name: string): string {
   if (name === 'interact_laptop') return '노트북 앞에 앉기'
   if (name === 'interact_phone') return '휴대폰 보기'
   if (name.startsWith('interact_')) return '방 안의 물건 누르기'
+  if (name.startsWith('laptop_tab:')) return '노트북 브라우저에서 그 사이트의 탭을 앞으로 가져오기'
+  if (name === 'laptop_leave') return '노트북에서 눈을 떼기(Esc나 화면 밖 클릭)'
+  if (name === 'btn_desktop_internet') return '노트북 바탕화면의 인터넷 아이콘 누르기'
   if (name.startsWith('btn_')) return '화면의 버튼 누르기'
   if (name.startsWith('phone_read:')) return '휴대폰에서 그 문자(알림) 읽기'
   if (name.startsWith('phone_notification:')) return '잠금 화면에서 그 알림 누르기'
@@ -57,8 +60,10 @@ export function triggerText(trigger: Trigger): string {
         : `사건 ${trigger.eventId}에 바로 이어서`
     case 'interact':
       return (
-        `${trigger.objectId} (${meaning(trigger.objectId)})` +
-        (trigger.after ? ` · 사건 ${trigger.after} 뒤에만` : '')
+        [trigger.objectId]
+          .flat()
+          .map((objectId) => `${objectId} (${meaning(objectId)})`)
+          .join(' 또는 ') + (trigger.after ? ` · 사건 ${trigger.after} 뒤에만` : '')
       )
     case 'evidenceCollected':
       return `증거 ${trigger.cardId}을(를) 얻으면`

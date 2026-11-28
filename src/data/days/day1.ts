@@ -2,6 +2,9 @@
 // 구조(id, trigger, effects)만 지키면 문장은 다듬어도 된다.
 // 메시지 id는 화면 쪽 견본과 같다: 메일 mailScript.ts, 메신저 messengerScript.ts. 화면은 이 id로 제목과 버튼을 찾는다.
 // 누르는 것(objectId): interact_laptop(노트북 앞에 앉기), interact_phone(휴대폰 보기), 그 밖은 화면 버튼 id.
+// laptop_tab:사이트는 브라우저에서 그 사이트의 탭을 앞으로 가져왔을 때, laptop_leave는 노트북에서 눈을 뗐을 때 온다(laptopSignal).
+// objectId를 배열로 적으면 그 가운데 하나만 와도 사건이 일어난다.
+import { laptopSignal } from '@/engine/laptopSignal'
 import type { DayScript, Message } from '../types'
 
 const HR = '모레온 인사팀'
@@ -63,6 +66,9 @@ export const day1: DayScript = {
           ],
         },
         { type: 'goal', text: '책상 위 노트북을 확인하세요.' },
+        // 브라우저에 탭 두 개가 떠 있다. 취업 사이트, 메일함 순서로 열고 취업 사이트를 앞에 둔다
+        { type: 'laptop', screen: 'jobsite' },
+        { type: 'laptop', screen: 'mail' },
         { type: 'laptop', screen: 'jobsite' },
         // 주인공이 원래 쓰던 계좌. 은행 앱에 처음부터 보인다. 계좌 번호와 잔액은 대본에 없어 임의로 넣었다
         {
@@ -76,12 +82,13 @@ export const day1: DayScript = {
     {
       id: 'd1_jobsite',
       trigger: { type: 'interact', objectId: 'interact_laptop', after: 'd1_wake' },
-      note: '취업 사이트 탭을 닫으면 메일함으로 넘어간다',
+      note: '메일함 탭을 누르거나 취업 사이트 탭을 닫으면 메일함으로 넘어간다',
       effects: [{ type: 'monologue', lines: ['서류 탈락. 서류 탈락. 서류 탈락.'] }],
     },
     {
       id: 'd1_rejections',
-      trigger: { type: 'interact', objectId: 'btn_jobsite_close', after: 'd1_jobsite' },
+      // 메일함 탭을 앞으로 가져오면 일어난다. 탭을 눌렀든, 취업 사이트 탭을 닫아서 드러났든 같다
+      trigger: { type: 'interact', objectId: laptopSignal.tab('mail'), after: 'd1_jobsite' },
       note: '불합격 메일 53통은 화면에서 목록으로만 보여 준다',
       effects: [
         { type: 'laptop', screen: 'mail' },
@@ -100,7 +107,12 @@ export const day1: DayScript = {
     },
     {
       id: 'd1_close_mail',
-      trigger: { type: 'interact', objectId: 'btn_mail_close', after: 'd1_rejections' },
+      // 메일함을 확인한 뒤 메일함 탭을 닫거나 노트북에서 눈을 떼면 일어난다
+      trigger: {
+        type: 'interact',
+        objectId: ['btn_mail_close', laptopSignal.leave()],
+        after: 'd1_rejections',
+      },
       effects: [{ type: 'laptop', screen: 'off' }],
     },
 
