@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useGameStore, type View } from '@/stores/gameStore'
 import { useMonologueStore } from '@/stores/monologueStore'
-import { useStoryStore } from '@/stores/storyStore'
+import { goalOf, useStoryStore } from '@/stores/storyStore'
 import { ChoiceMenu } from './common/ChoiceMenu'
 import { DateCard } from './common/DateCard'
 import { DayBadge } from './common/DayBadge'
@@ -60,6 +60,8 @@ interface StoryLayerProps {
 
 export function StoryLayer({ phoneKeyLabel, pickKeyLabel }: StoryLayerProps) {
   const story = useStoryStore((s) => s.story)
+  // 하루가 끝났고 다음 날이 있으면 침대에 누우라는 말이 덧붙는다
+  const goal = useStoryStore(goalOf)
   const pick = useStoryStore((s) => s.pick)
   const dateCardDone = useStoryStore((s) => s.dateCardDone)
   const view = useGameStore((s) => s.view)
@@ -167,7 +169,7 @@ export function StoryLayer({ phoneKeyLabel, pickKeyLabel }: StoryLayerProps) {
       </div>
       <DayBadge text={opening ? null : `${story.day}일차`} />
       <HeartRate />
-      <GuideBanner text={story.goal} />
+      <GuideBanner text={goal} />
       <Monologue line={line} onDone={next} place={view === 'phone' ? 'top' : 'bottom'} />
       {story.choice && (
         <div className={styles.interactive}>
