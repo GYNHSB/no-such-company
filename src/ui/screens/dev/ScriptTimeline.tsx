@@ -86,6 +86,7 @@ export function ScriptTimeline({ story, days, today }: Props) {
                   <li key={i}>{effectText(effect, cards)}</li>
                 ))}
               </ul>
+              {event.hint && <p className={styles.note}>힌트: {event.hint}</p>}
               {event.note && <p className={styles.note}>메모: {event.note}</p>}
             </li>
           )

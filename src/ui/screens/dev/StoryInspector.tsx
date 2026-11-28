@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import type { DayScript } from '@/data/types'
 import { balanceOf, entriesOf } from '@/engine/bank'
+import { hintOf } from '@/engine/hint'
 import { unlockedIn, type PhoneFeature } from '@/engine/phoneUnlock'
 import { sentenceResult, type StoryState } from '@/engine/story'
 import { useGameStore, type View } from '@/stores/gameStore'
@@ -243,6 +244,13 @@ export default function StoryInspector() {
                     ? `예. 침대에 누우면 ${nextDay.info.day}일차로 넘어가요`
                     : '예. 다음 날 대본이 없어 여기서 멈춰요'
                   : '아니오'}
+              </Row>
+              <Row label="힌트">
+                {hintOf(story, script) ?? <span className={styles.none}>지금은 없음</span>}
+                <br />
+                <span className={styles.hint}>
+                  사건이 40초 동안 실행되지 않으면 이 글이 오른쪽 위 안내 자리에 알림으로 와요.
+                </span>
               </Row>
               <Row label="화면 위 안내">
                 {story.goal ?? <span className={styles.none}>없음</span>}
