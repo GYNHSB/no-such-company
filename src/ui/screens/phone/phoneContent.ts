@@ -18,8 +18,12 @@ import type { SnsPost } from './SnsApp'
 export const HAND_URL = `${import.meta.env.BASE_URL}images/hand_phone_day.webp`
 export const IMAGE_SIZE = { width: 1239, height: 1269 }
 export const SCREEN = { left: 418, top: 149, right: 818, bottom: 1000, radius: 41 }
-/** 손 이미지를 아래로 내리는 정도. 이미지 아래쪽에서 소매가 양옆으로 잘려 보여서 화면 밖으로 내보낸다 */
-export const HAND_SINK = 0.14
+/**
+ * 손 이미지를 아래로 내리는 정도. 소매는 보이게 두고, 소매가 이미지 옆 선에 잘린 맨 아래쪽만 화면 밖으로 내보낸다.
+ * 잘린 곳은 왼쪽이 아래 2.7%(1269px 가운데 위에서 1235px부터), 오른쪽이 아래 4.7%(1209px부터)다.
+ * 숨 쉬는 움직임(0.4%)까지 쳐서 조금 더 내린다.
+ */
+export const HAND_SINK = 0.055
 
 /** 잠금 화면 왼쪽 위에 보이는 가상 통신망 이름(도담텔레콤의 줄임말). 실존 통신사 이름은 쓰지 않는다 */
 export const CARRIER = 'DT'
