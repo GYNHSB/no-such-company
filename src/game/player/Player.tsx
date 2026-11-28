@@ -1,13 +1,14 @@
-import { PointerLockControls } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Ecctrl, type EcctrlHandle } from 'ecctrl'
 import { useEffect, useRef } from 'react'
 import { Vector3, type Group, type Quaternion } from 'three'
 import { footstep } from '@/game/audio/sound'
 import { PlayerInput } from '@/game/input/PlayerInput'
-import { BED_EYE, EYE, START } from '@/game/world/anchors'
+import { BED_EYE, EYE, LAPTOP_SCREEN, SEAT_EYE, START } from '@/game/world/anchors'
 import { surfaceAt } from '@/game/world/zones'
 import { useGameStore } from '@/stores/gameStore'
+import { CursorLook } from './CursorLook'
+import { DragLook } from './DragLook'
 import { createBob, stepBob, type BobOffset } from './headBob'
 
 /** 걷는 속도(m/초) */
@@ -35,6 +36,11 @@ const LYING_TILT = 0.15
 
 /** 컴퓨터에 "동작 줄이기"가 켜져 있으면 시점을 흔들지 않는다(멀미 방지) */
 const MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1
+/**
+ * 커서 쪽으로 고개를 기울여 둘러볼지. 마우스로 쓰는 기기에서만 그렇게 하고,
+ * 터치 기기와 "동작 줄이기"를 켠 컴퓨터에서는 화면을 끌어서 둘러본다.
+ */
+const LEAN = MOTION === 1 && !window.matchMedia('(pointer: coarse)').matches
 
 // 매 프레임 새로 만들지 않도록 재사용한다
 const base = new Vector3()
@@ -42,22 +48,29 @@ const last = new Vector3()
 const forward = new Vector3()
 const right = new Vector3()
 
+/** 쉬는 자세. bed: 침대에 누움, seat: 의자에 앉음. 걷지 못하고 그 자리에서 고개만 돌린다 */
+export type Rest = 'bed' | 'seat'
+
 interface PlayerProps {
-  /** 방을 걸어 다니는 중인지. false면 멈추고, 시점과 커서 잠금을 놓아 준다. */
+  /** 방을 걸어 다니는 중인지. false면 멈춘다. */
   active: boolean
-  /** 침대에 누워 있는지. 걷지 못하고, 천장을 기준으로 고개만 돌린다. */
-  lying: boolean
-  /** 클릭하면 커서를 잠그는 영역의 CSS 선택자. 버튼을 누를 때는 잠기지 않게 3D 화면으로만 한정한다. */
-  lockSelector: string
+  /** 눕거나 앉아 있으면 그 자세. 앉은 채로 노트북이나 휴대폰을 보는 동안에도 seat이다. */
+  rest: Rest | null
+  /** 둘러볼 수 있는지(걷는 중이거나, 눕거나 앉아서 방을 보는 중). false면 끌어도 시점이 돌지 않는다. */
+  looking: boolean
 }
 
 /**
- * 1인칭으로 걷는 몸. W A S D(또는 방향키)로 걷고, 화면을 클릭하면 커서가 잠겨 마우스로 둘러본다.
+ * 1인칭으로 걷는 몸. W S(또는 위아래 방향키)로 걷고, A D(또는 좌우 방향키)로 몸을 돌린다.
+ * 커서는 잠그지 않는다. 커서가 있는 쪽으로 고개를 살짝 기울여 둘러본다(CursorLook).
+ * 터치 기기와 "동작 줄이기"를 켠 컴퓨터에서는 화면을 누른 채 끌어서 둘러본다(DragLook).
+ * 침대에 눕거나 의자에 앉으면 눈이 그 자리로 가고, 일어나면 몸이 서 있던 자리로 돌아온다.
  * 이동과 충돌은 ecctrl(rapier)이 맡고, 카메라는 몸의 눈높이를 따라간다.
  * 가만히 있으면 숨에 맞춰 살짝 들썩이고, 걸으면 걸음마다 흔들리며 작은 발소리가 난다.
  * Physics와 KeyboardControls 안에 둔다.
  */
-export function Player({ active, lying, lockSelector }: PlayerProps) {
+export function Player({ active, rest, looking }: PlayerProps) {
+  const lying = rest === 'bed'
   const player = useRef<EcctrlHandle>(null)
   const head = useRef<Group>(null)
   const camera = useThree((state) => state.camera)
@@ -71,31 +84,37 @@ export function Player({ active, lying, lockSelector }: PlayerProps) {
     camera.lookAt(...START.target)
   }, [camera])
 
-  // 다른 것을 보러 가면 화면 위 버튼을 누를 수 있게 잠근 커서를 돌려준다. 누워 있을 때는 계속 둘러본다.
+  // 누우면 베개에 머리를 대고 천장을 보고, 앉으면 책상 위 노트북 쪽을 본다.
+  // 일어나면 눕거나 앉기 전에 보던 쪽을 다시 본다.
   useEffect(() => {
-    if (!active && !lying) document.exitPointerLock()
-  }, [active, lying])
-
-  // 누우면 베개에 머리를 대고 천장을 본다. 일어나면 눕기 전에 보던 쪽을 다시 본다.
-  useEffect(() => {
-    if (!lying) return
+    if (!rest) return
     const standing: Quaternion = camera.quaternion.clone()
-    camera.position.set(...BED_EYE)
-    // 발이 +z 쪽이라 그쪽을 보는 방향(y = 180도)에서 고개를 든다. 화면 위쪽이 머리 쪽이 된다.
-    camera.rotation.set(LYING_LOOK - LYING_TILT, Math.PI, 0, 'YXZ')
+    if (rest === 'bed') {
+      camera.position.set(...BED_EYE)
+      // 발이 +z 쪽이라 그쪽을 보는 방향(y = 180도)에서 고개를 든다. 화면 위쪽이 머리 쪽이 된다.
+      camera.rotation.set(LYING_LOOK - LYING_TILT, Math.PI, 0, 'YXZ')
+    } else {
+      camera.position.set(...SEAT_EYE)
+      camera.lookAt(...LAPTOP_SCREEN.center)
+    }
     return () => {
       camera.quaternion.copy(standing)
     }
-  }, [camera, lying])
+  }, [camera, rest])
 
   useFrame(({ camera }, delta) => {
     const dt = Math.min(delta, 0.1)
     const tension = useGameStore.getState().suspicion / 100
     const out = offset.current
 
-    if (lying) {
-      stepBob(bob.current, out, 0, dt, SPEED, tension)
-      camera.position.set(BED_EYE[0], BED_EYE[1] + out.y * LYING_BREATH * MOTION, BED_EYE[2])
+    if (rest) {
+      // 눕거나 앉은 자리에서 숨에 맞춰 살짝 오르내린다. 앉은 채로 노트북이나 휴대폰을 보는 동안에는 시점을 건드리지 않는다
+      if (looking) {
+        const eye = rest === 'bed' ? BED_EYE : SEAT_EYE
+        const breath = rest === 'bed' ? LYING_BREATH : 1
+        stepBob(bob.current, out, 0, dt, SPEED, tension)
+        camera.position.set(eye[0], eye[1] + out.y * breath * MOTION, eye[2])
+      }
       tracking.current = false
       return
     }
@@ -144,13 +163,17 @@ export function Player({ active, lying, lockSelector }: PlayerProps) {
       >
         <group ref={head} position={[0, EYE - CENTER, 0]} />
       </Ecctrl>
-      <PlayerInput target={player} active={active} />
-      <PointerLockControls
-        enabled={active || lying}
-        selector={lockSelector}
-        // 각도는 바로 위(천장)에서 잰다. 누우면 90도까지(수평선 위쪽만), 서 있을 때는 기본값(바로 아래까지)
-        maxPolarAngle={lying ? LYING_LOOK : Math.PI}
+      <PlayerInput
+        target={player}
+        active={active}
+        turning={active || (rest === 'seat' && looking)}
       />
+      {/* 눕거나 앉아 있을 때도 계속 둘러본다. 각도는 바로 위(천장)에서 잰다. 누우면 90도까지(수평선 위쪽만), 그 밖에는 바로 아래까지 */}
+      {LEAN ? (
+        <CursorLook enabled={looking} pose={rest} maxPolarAngle={lying ? LYING_LOOK : Math.PI} />
+      ) : (
+        <DragLook enabled={looking} maxPolarAngle={lying ? LYING_LOOK : Math.PI} />
+      )}
     </>
   )
 }
