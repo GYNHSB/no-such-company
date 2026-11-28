@@ -30,6 +30,7 @@ const MORNING = '09:58'
  */
 export function PhoneView() {
   const name = useGameStore((s) => s.playerName)
+  const closeView = useGameStore((s) => s.closeView)
   const script = useStoryStore((s) => s.script)
   const story = useStoryStore((s) => s.story)
   const send = useStoryStore((s) => s.send)
@@ -60,6 +61,8 @@ export function PhoneView() {
       screen={SCREEN}
       sink={HAND_SINK}
       backdrop="blur"
+      // 뒤 배경을 클릭하면 Esc처럼 휴대폰을 내려놓는다(손이나 휴대폰을 누른 것은 아니다)
+      onOutside={closeView}
     >
       <PhoneDevice
         time={time}
