@@ -4,6 +4,7 @@ import { balanceOf, entriesOf } from '@/engine/bank'
 import { unlockedIn, type PhoneFeature } from '@/engine/phoneUnlock'
 import { sentenceResult, type StoryState } from '@/engine/story'
 import { useGameStore, type View } from '@/stores/gameStore'
+import { isBrowserSite, useLaptopStore } from '@/stores/laptopStore'
 import { useMonologueStore } from '@/stores/monologueStore'
 import { usePhoneStore } from '@/stores/phoneStore'
 import { useStoryLog } from '@/stores/storyLog'
@@ -45,7 +46,10 @@ function waiting(story: StoryState, script: DayScript) {
     const t = event.trigger
     if (t.type === 'interact') {
       if (t.after && !story.fired.includes(t.after)) continue
-      list.push({ id: event.id, need: t.objectId, hint: meaning(t.objectId) })
+      // 여러 개를 적은 사건은 그 가운데 하나만 와도 된다. 하나씩 따로 보여 준다
+      for (const objectId of [t.objectId].flat()) {
+        list.push({ id: event.id, need: objectId, hint: meaning(objectId) })
+      }
     } else if (t.type === 'afterEvent') {
       if (!story.fired.includes(t.eventId)) continue
       list.push({ id: event.id, need: `${t.delaySec ?? 0}초 뒤 저절로`, hint: '기다리면 일어난다' })
@@ -131,6 +135,7 @@ export default function StoryInspector() {
   const entries = useStoryLog((s) => s.entries)
   const game = useGameStore()
   const phone = usePhoneStore()
+  const laptop = useLaptopStore()
   const lines = useMonologueStore((s) => s.queue)
 
   useEffect(() => {
@@ -340,6 +345,24 @@ export default function StoryInspector() {
               </Row>
               <Row label="노트북에 뜬 화면">{game.laptopScreen}</Row>
               <Row label="입력한 이름">{game.playerName || '없음'}</Row>
+            </dl>
+          </Section>
+
+          <Section
+            title="노트북 브라우저"
+            about="열린 탭은 플레이어가 조작하는 화면 상태예요(laptopStore). 즐겨찾기는 대본이 띄운 적 있는 사이트예요(엔진)."
+          >
+            <dl>
+              <Row label="열린 탭">
+                <List
+                  items={laptop.tabs.map((tab) =>
+                    tab === laptop.active ? `${tab} (앞에 있음)` : tab,
+                  )}
+                />
+              </Row>
+              <Row label="즐겨찾기">
+                <List items={[...new Set(story.laptopLog)].filter(isBrowserSite)} />
+              </Row>
             </dl>
           </Section>
 
