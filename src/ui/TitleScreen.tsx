@@ -107,11 +107,13 @@ export function TitleScreen() {
               </button>
             </form>
             <ul className={styles.controls} aria-label="조작 안내">
-              <li>화면을 클릭하면 마우스로 둘러볼 수 있어요.</li>
+              <li>마우스를 움직이면 그쪽을 둘러봐요.</li>
               <li>
-                <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd>로 걸어요.
+                <kbd>W</kbd> <kbd>S</kbd>로 걷고 <kbd>A</kbd> <kbd>D</kbd>로 몸을 돌려요.
               </li>
-              <li>가운데 점을 물건에 맞추고 클릭하면 살펴볼 수 있어요.</li>
+              <li>
+                물건 가까이에서 커서를 올리고 클릭하거나 <kbd>E</kbd>를 누르면 살펴볼 수 있어요.
+              </li>
             </ul>
           </div>
         )}
