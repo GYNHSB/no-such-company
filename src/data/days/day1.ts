@@ -64,6 +64,11 @@ export const day1: DayScript = {
         },
         { type: 'goal', text: '책상 위 노트북을 확인하세요.' },
         { type: 'laptop', screen: 'jobsite' },
+        // 주인공이 원래 쓰던 계좌. 은행 앱에 처음부터 보인다. 계좌 번호와 잔액은 대본에 없어 임의로 넣었다
+        {
+          type: 'bankOpen',
+          account: { id: 'mine', label: '입출금통장', number: '412-208-173904', opening: 847_200 },
+        },
       ],
     },
 

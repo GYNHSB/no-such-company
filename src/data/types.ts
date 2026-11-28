@@ -33,6 +33,24 @@ export interface Message {
   vanishAfterSec?: number // 몇 초 뒤 사라지는 메시지(캡처 대상)
 }
 
+/** 은행 계좌 하나. 대본의 bankOpen 효과로 주인공 명의의 계좌가 생긴다 */
+export interface LedgerAccount {
+  id: string // 대본과 코드에서 이 계좌를 가리키는 이름
+  label: string // 화면에 보이는 계좌 이름 "입출금통장"
+  number?: string // 계좌 번호 "412-208-173904"
+  opening?: number // 생길 때 들어 있는 돈(원). 없으면 0
+}
+
+/** 은행 거래 한 건. 대본의 bankEntry 효과로 생긴다 */
+export interface LedgerEntry {
+  id: string
+  accountId: string // 어느 계좌의 거래인지 (LedgerAccount의 id)
+  amount: number // 원. 들어오면 양수, 나가면 음수
+  counterparty: string // 상대 이름 "세움파트너스"
+  memo?: string // 거래에 남은 말
+  time: string // 화면에 보이는 시각 "11:27"
+}
+
 /** 메모장의 증거 카드. 빈칸에 끌어다 놓는다 */
 export interface EvidenceCard {
   id: string
@@ -69,6 +87,10 @@ export type Effect =
   | { type: 'monologue'; lines: string[] } // 화면 아래 혼잣말 창에 한 줄씩. '{name}'은 이름으로 바뀐다
   | { type: 'dateCard'; text: string } // "그날 오후"처럼 시간이 건너뛸 때 뜨는 카드
   | { type: 'laptop'; screen: string } // 노트북에 띄울 화면(gameStore의 LaptopScreen). 'off'면 끈다
+  // 주인공 명의의 계좌가 생긴다. notice가 있으면 그 은행 알림도 함께 온다. time은 생긴 시각
+  | { type: 'bankOpen'; account: LedgerAccount; time?: string; notice?: Message }
+  // 계좌에 거래가 한 건 생긴다. notice가 없으면 알림 없이 은행 앱의 거래 내역에만 남는다
+  | { type: 'bankEntry'; entry: LedgerEntry; notice?: Message }
 
 /** 사건이 언제 일어나는지 */
 export type Trigger =
@@ -78,6 +100,8 @@ export type Trigger =
   | { type: 'interact'; objectId: string; after?: string }
   | { type: 'evidenceCollected'; cardId: string }
   | { type: 'sentenceSolved'; sentenceId: string }
+  // 그 계좌의 잔액이 atMost 이하이고 atLeast 이상이 되면 일어난다. 둘 중 하나만 적어도 된다
+  | { type: 'balance'; accountId: string; atMost?: number; atLeast?: number }
 
 export interface GameEvent {
   id: string
