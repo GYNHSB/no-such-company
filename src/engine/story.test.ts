@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { SUSPICION } from '@/data/rules'
+import { BLANK_MAX_WRONG_IN_A_ROW, SUSPICION } from '@/data/rules'
 import { day1 } from '@/data/days/day1'
 import type { DayScript } from '@/data/types'
 import {
@@ -8,8 +8,10 @@ import {
   endScene,
   newStory,
   runLater,
+  sentenceResult,
   signal,
   startDay,
+  submitSentence,
   type Step,
 } from './story'
 
@@ -158,5 +160,88 @@ describe('엔진 규칙', () => {
     expect(d2.fired).toEqual(['ask', 'right_after'])
     expect(d2.suspicion).toBe(42)
     expect(d2.evidence).toEqual(d1.evidence)
+  })
+})
+
+describe('빈칸 문장 판정', () => {
+  /** 4일차의 빈칸 문장 둘. 첫 문장을 맞추면 혼잣말이 나온다 */
+  const script: DayScript = {
+    info: { day: 4, week: 6, weekday: '화', title: '추리' },
+    evidence: [
+      { id: 'my_sns', title: '내 SNS 게시물', detail: '' },
+      { id: 'blabla_posts', title: '블라블라 게시글', detail: '' },
+    ],
+    sentences: [
+      {
+        id: 's_sns',
+        day: 4,
+        text: '면접에서 칭찬받은 내용은 포트폴리오가 아니라 [0]에 있었다',
+        answers: ['my_sns'],
+      },
+      {
+        id: 's_later',
+        day: 5,
+        text: '같은 칭찬을 들은 사람이 [0]에 여럿 있다',
+        answers: ['blabla_posts'],
+      },
+    ],
+    events: [
+      {
+        id: 'd4_solved',
+        trigger: { type: 'sentenceSolved', sentenceId: 's_sns' },
+        effects: [{ type: 'monologue', lines: ['내 SNS를 본 거다.'] }],
+      },
+    ],
+  }
+  const holding = { ...newStory(4), evidence: ['my_sns', 'blabla_posts'] }
+
+  it('정답 카드를 놓으면 맞춘 문장이 되고 sentenceSolved 사건이 일어난다', () => {
+    const { state } = submitSentence(holding, script, 's_sns', ['my_sns'])
+    expect(sentenceResult(state, 's_sns')).toBe('solved')
+    expect(state.fired).toContain('d4_solved')
+    expect(state.said).toEqual(['내 SNS를 본 거다.'])
+  })
+
+  it('틀리면 wrong이고, 연달아 정해진 횟수만큼 틀리면 그날은 잠긴다', () => {
+    let state = holding
+    for (let i = 1; i < BLANK_MAX_WRONG_IN_A_ROW; i++) {
+      state = submitSentence(state, script, 's_sns', ['blabla_posts']).state
+      expect(sentenceResult(state, 's_sns')).toBe('wrong')
+    }
+    state = submitSentence(state, script, 's_sns', ['blabla_posts']).state
+    expect(sentenceResult(state, 's_sns')).toBe('locked')
+    // 잠긴 뒤에는 정답을 놓아도 받지 않는다
+    state = submitSentence(state, script, 's_sns', ['my_sns']).state
+    expect(sentenceResult(state, 's_sns')).toBe('locked')
+    expect(state.fired).not.toContain('d4_solved')
+  })
+
+  it('날이 바뀌면 잠긴 문장이 풀리고, 맞춘 문장은 그대로다', () => {
+    let state = submitSentence(holding, script, 's_sns', ['blabla_posts']).state
+    state = submitSentence(state, script, 's_sns', ['blabla_posts']).state
+    expect(sentenceResult(state, 's_sns')).toBe('locked')
+    const next = startDay(state, { ...script, info: { ...script.info, day: 5 } }).state
+    expect(sentenceResult(next, 's_sns')).toBeUndefined()
+    const solved = submitSentence(next, script, 's_sns', ['my_sns']).state
+    const after = startDay(solved, { ...script, info: { ...script.info, day: 5 } }).state
+    expect(sentenceResult(after, 's_sns')).toBe('solved')
+  })
+
+  it('틀렸다가 맞추면 틀린 횟수가 지워진다', () => {
+    let state = submitSentence(holding, script, 's_sns', ['blabla_posts']).state
+    state = submitSentence(state, script, 's_sns', ['my_sns']).state
+    expect(sentenceResult(state, 's_sns')).toBe('solved')
+    expect(state.wrong).toEqual({})
+  })
+
+  it('가지고 있지 않은 카드, 아직 열리지 않은 문장, 이미 맞춘 문장은 받지 않는다', () => {
+    const empty = newStory(4)
+    expect(sentenceResult(submitSentence(empty, script, 's_sns', ['my_sns']).state, 's_sns')).toBe(
+      'wrong',
+    )
+    expect(submitSentence(holding, script, 's_later', ['blabla_posts']).state).toBe(holding)
+    expect(submitSentence(holding, script, 'no_such', ['my_sns']).state).toBe(holding)
+    const solved = submitSentence(holding, script, 's_sns', ['my_sns']).state
+    expect(submitSentence(solved, script, 's_sns', ['blabla_posts']).state).toBe(solved)
   })
 })

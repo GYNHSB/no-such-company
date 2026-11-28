@@ -1,4 +1,4 @@
-import { SUSPICION } from '@/data/rules'
+import { BLANK_MAX_WRONG_IN_A_ROW, SUSPICION } from '@/data/rules'
 import type { Choice, DayNumber, DayScript, Effect, Message, Trigger } from '@/data/types'
 
 /** 대본을 진행하면서 쌓이는 상태. 화면은 이 값을 보고 그린다 */
@@ -26,7 +26,14 @@ export interface StoryState {
   dateCard: string | null
   /** 지금까지 띄우라고 한 혼잣말 줄. 화면은 새로 늘어난 줄만 창에 넘긴다 */
   said: string[]
+  /** 맞춘 빈칸 문장 id. 날이 바뀌어도 이어진다 */
+  solved: string[]
+  /** 문장마다 연달아 틀린 횟수. 맞추면 지우고, 날이 바뀌면 모두 지운다 */
+  wrong: Record<string, number>
 }
+
+/** 빈칸 문장 하나의 판정 결과. solved: 맞음, wrong: 틀림, locked: 연달아 틀려 오늘은 더 못 맞춤. 없으면 아직 맞춰 보지 않았다 */
+export type SentenceResult = 'solved' | 'wrong' | 'locked'
 
 /** 엔진에 알리는 일. Trigger에서 afterEvent를 뺀 것 */
 export type Signal = Exclude<Trigger, { type: 'afterEvent' }>
@@ -57,10 +64,12 @@ export function newStory(day: DayNumber = 1): StoryState {
     laptop: null,
     dateCard: null,
     said: [],
+    solved: [],
+    wrong: {},
   }
 }
 
-/** 하루를 시작한다. 경계심, 증거, 기록, 메시지는 이어지고 그날의 사건 기록, 목표, 장면, 날짜 카드는 비운다 */
+/** 하루를 시작한다. 경계심, 증거, 기록, 메시지, 맞춘 문장은 이어지고 그날의 사건 기록, 목표, 장면, 날짜 카드, 틀린 횟수는 비운다 */
 export function startDay(prev: StoryState, script: DayScript): Step {
   const state: StoryState = {
     ...structuredClone(prev),
@@ -70,6 +79,7 @@ export function startDay(prev: StoryState, script: DayScript): Step {
     scene: null,
     choice: null,
     dateCard: null,
+    wrong: {},
   }
   return run(state, (s, later) => emit(s, script, { type: 'dayStart' }, later))
 }
@@ -90,6 +100,45 @@ export function choose(prev: StoryState, script: DayScript, choiceId: string): S
   if (!picked) return { state: prev, later: [] }
   const state = { ...structuredClone(prev), choice: null }
   return run(state, (s, later) => applyEffects(s, script, picked.effects, later))
+}
+
+/**
+ * 빈칸 문장에 증거 카드를 놓고 "맞춰 보기"를 눌렀을 때. cardIds는 빈칸 순서대로 놓은 카드 id다.
+ * 맞으면 맞춘 문장으로 적고 sentenceSolved 신호를 낸다. 틀리면 연달아 틀린 횟수를 올린다.
+ * 이미 맞췄거나, 오늘 더 못 맞추거나, 아직 열리지 않은 문장이면 아무것도 하지 않는다.
+ */
+export function submitSentence(
+  prev: StoryState,
+  script: DayScript,
+  sentenceId: string,
+  cardIds: string[],
+): Step {
+  const sentence = script.sentences.find((s) => s.id === sentenceId)
+  if (!sentence || sentence.day > prev.day || sentenceResult(prev, sentenceId) === 'solved')
+    return { state: prev, later: [] }
+  if (sentenceResult(prev, sentenceId) === 'locked') return { state: prev, later: [] }
+
+  // 가지고 있는 카드를 정답 순서대로 놓아야 맞다
+  const right =
+    cardIds.length === sentence.answers.length &&
+    sentence.answers.every((answer, i) => cardIds[i] === answer && prev.evidence.includes(answer))
+  return run(structuredClone(prev), (s, later) => {
+    if (!right) {
+      s.wrong[sentenceId] = (s.wrong[sentenceId] ?? 0) + 1
+      return
+    }
+    delete s.wrong[sentenceId]
+    s.solved.push(sentenceId)
+    emit(s, script, { type: 'sentenceSolved', sentenceId }, later)
+  })
+}
+
+/** 빈칸 문장 하나의 판정 결과. 화면은 이 값으로 맞음, 틀림, 잠김을 보여 준다 */
+export function sentenceResult(state: StoryState, sentenceId: string): SentenceResult | undefined {
+  if (state.solved.includes(sentenceId)) return 'solved'
+  const wrong = state.wrong[sentenceId] ?? 0
+  if (wrong >= BLANK_MAX_WRONG_IN_A_ROW) return 'locked'
+  return wrong > 0 ? 'wrong' : undefined
 }
 
 /** 특수 장면 화면이 끝났을 때 */
