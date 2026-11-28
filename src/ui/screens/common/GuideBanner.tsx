@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import styles from './GuideBanner.module.css'
 
-/** 알림이 내려와 머무는 시간(ms). 이 시간이 지나면 위로 올라가고 작은 종 손잡이만 남는다. */
+/** 알림이 들어와 머무는 시간(ms). 이 시간이 지나면 오른쪽으로 빠지고 작은 종 손잡이만 남는다. */
 const HOLD_MS = 6000
 /** 안내를 다시 여는 키. code는 KeyboardEvent.code, label은 화면에 보이는 이름 */
 const GUIDE_KEY = { code: 'KeyG', label: 'G' }
@@ -16,9 +16,9 @@ interface Props {
 }
 
 /**
- * 휴대폰 알림 모양의 안내 문구. 화면 위에서 슥 내려왔다가 잠시 뒤 위로 올라간다.
- * 올라간 뒤에는 화면 위 가운데에 작은 종 손잡이가 남고, 그걸 누르거나 G를 누르면 다시 내려온다.
- * 문구가 바뀌면 새 알림이 내려온다. 언제 어떤 문구를 띄울지는 엔진이 정한다(사건의 goal).
+ * 맥북 알림 모양의 안내 문구. 화면 오른쪽 위로 슥 밀려 들어왔다가 잠시 뒤 오른쪽으로 빠진다.
+ * 빠진 뒤에는 오른쪽 위에 작은 종 손잡이가 남고, 그걸 누르거나 G를 누르면 다시 들어온다.
+ * 문구가 바뀌면 새 알림이 들어온다. 언제 어떤 문구를 띄울지는 엔진이 정한다(사건의 goal).
  */
 export function GuideBanner({ text, holdMs = HOLD_MS }: Props) {
   // 문구가 바뀔 때마다 처음(open)부터 다시 보여 준다

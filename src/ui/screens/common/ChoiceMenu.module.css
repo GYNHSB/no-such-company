@@ -7,7 +7,8 @@
   display: grid;
   align-items: end;
   justify-items: center;
-  padding: 0 24px 96px;
+  /* 혼잣말 칸(아래에서 96px)과 같은 사건에서 함께 뜰 수 있어서 그 위에 둔다 */
+  padding: 0 24px 176px;
   background: color-mix(in srgb, var(--game-bg) 40%, transparent);
   animation: fade 240ms ease-out both;
 }

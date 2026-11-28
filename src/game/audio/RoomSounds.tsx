@@ -10,25 +10,16 @@ import {
 } from '@/game/world/anchors'
 import { inWebcamView } from '@/game/world/zones'
 import { useGameStore } from '@/stores/gameStore'
-import {
-  audio,
-  buzz,
-  creak,
-  heartbeat,
-  mailDrop,
-  nearness,
-  noiseBuffer,
-  switchClick,
-  tick,
-} from './sound'
+import { pulse } from '@/stores/pulse'
+import { audio, buzz, heartbeat, mailDrop, nearness, noiseBuffer, switchClick, tick } from './sound'
 
 /** 계속 나는 소리의 크기(가까이 갔을 때) */
 const FRIDGE = 0.06
 const OUTSIDE_DAY = 0.05
 const OUTSIDE_NIGHT = 0.025
-/** 노트북 팬은 바로 앞에 앉아도 거의 안 들릴 만큼만 */
-const FAN = 0.008
-const HEART = 0.5
+/** 노트북 팬은 바로 앞에 앉아도 거의 안 들릴 만큼만(0.008은 앉으면 지지직거려서 줄였다) */
+const FAN = 0.003
+const HEART = 0.3
 
 const distance = (a: { x: number; y: number; z: number }, [x, y, z]: Vec3) =>
   Math.hypot(a.x - x, a.y - y, a.z - z)
@@ -95,7 +86,8 @@ function startLoops() {
 /**
  * 방의 소리. 냉장고 웅웅거림, 바깥 소리, 노트북 팬은 계속 나고 가까이 갈수록 커진다.
  * 웹캠이 켜진 채 웹캠 시야에 들어가면 심장 소리가 들린다(경계심이 높을수록 빠르다).
- * 휴대폰 알림, 우편물, 웹캠 켜짐, 의자에 앉고 일어나기는 그 순간에 한 번 소리를 낸다.
+ * 박동마다 pulse에 심박수와 시각을 적어, 화면 왼쪽 위 심박수 표시(HeartRate)가 함께 뛰게 한다.
+ * 휴대폰 알림, 우편물, 웹캠 켜짐은 그 순간에 한 번 소리를 낸다.
  * Canvas 안에 둔다.
  */
 export function RoomSounds() {
@@ -124,9 +116,6 @@ export function RoomSounds() {
         }
         if (state.mailAt !== prev.mailAt) mailDrop(nearness(distance(here, SOUND_AT.mail), 2))
         if (state.webcamOn && !prev.webcamOn) tick(nearness(distance(here, WEBCAM.position), 1))
-        if ((state.view === 'laptop') !== (prev.view === 'laptop')) {
-          creak(nearness(distance(here, SOUND_AT.chair), 1.5))
-        }
         if (state.ceilingLight !== prev.ceilingLight) {
           switchClick(nearness(distance(here, LIGHT_SWITCH.center), 1))
         }
@@ -168,12 +157,17 @@ export function RoomSounds() {
     h.level += ((watched ? 1 : 0) - h.level) * Math.min(1, delta * 1.5)
     if (h.level < 0.02) {
       h.next = 0
+      pulse.bpm = null
       return
     }
     if (h.next < now) h.next = now + 0.05
     if (now >= h.next - 0.1) {
+      const bpm = 70 + 50 * (suspicion / 100)
       heartbeat(h.next, HEART * h.level)
-      h.next += 60 / (70 + 50 * (suspicion / 100))
+      // shortcut: 화면 표시는 소리보다 최대 0.1초 먼저 뛴다. 어긋나 보이면 (h.next - now)만큼 늦춘다.
+      pulse.bpm = Math.round(bpm)
+      pulse.beatAt = performance.now()
+      h.next += 60 / bpm
     }
   })
 

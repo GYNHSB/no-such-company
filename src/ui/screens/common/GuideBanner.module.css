@@ -1,14 +1,13 @@
-/* 아이폰 다크 모드 알림 모양. 색, 글꼴, 글자 크기, 둥글기는 --phone-* 토큰을 쓴다.
-   알림은 위에서 내려왔다가(enter) 위로 올라가고(leave), 그 자리에 작은 종 손잡이(handle)가 남는다.
+/* 맥북 알림처럼 화면 오른쪽 위에 뜨는 다크 모드 알림. 색, 글꼴, 글자 크기, 둥글기는 --phone-* 토큰을 쓴다.
+   알림은 오른쪽 바깥에서 밀려 들어왔다가(enter) 오른쪽으로 빠지고(leave), 그 자리에 작은 종 손잡이(handle)가 남는다.
    shortcut: 게임 화면용 간격 토큰이 아직 없어 여백과 크기만 숫자로 둔다. 토큰이 생기면 바꾼다. */
 .slot {
   position: absolute;
   top: 12px;
-  left: 50%;
+  right: 12px;
   display: grid;
-  justify-items: center;
-  width: min(420px, calc(100% - 32px));
-  transform: translateX(-50%);
+  justify-items: end;
+  width: min(360px, calc(100% - 24px));
   pointer-events: none;
 }
 
@@ -26,8 +25,8 @@
   color: var(--phone-ink);
   font-family: var(--phone-font);
   word-break: keep-all;
-  /* 아이폰 알림처럼 빠르게 내려와 살짝 눌러앉는다 */
-  animation: enter 560ms cubic-bezier(0.2, 0.9, 0.25, 1.04) both;
+  /* 맥 알림처럼 오른쪽에서 빠르게 밀려 들어와 멈춘다 */
+  animation: enter 480ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
 }
 
 .leaving {
@@ -98,21 +97,21 @@
 @keyframes enter {
   from {
     opacity: 0;
-    transform: translateY(calc(-100% - 24px));
+    transform: translateX(calc(100% + 24px));
   }
 }
 
 @keyframes leave {
   to {
     opacity: 0;
-    transform: translateY(calc(-100% - 24px));
+    transform: translateX(calc(100% + 24px));
   }
 }
 
 @keyframes drop-in {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateX(8px);
   }
 }
 
