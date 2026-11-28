@@ -324,6 +324,7 @@ export const day1: DayScript = {
           ],
         },
         { type: 'goal', text: '1일차가 끝났습니다.' },
+        { type: 'dayEnd' },
       ],
     },
   ],
