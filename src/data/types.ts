@@ -87,6 +87,8 @@ export type Effect =
   | { type: 'monologue'; lines: string[] } // 화면 아래 혼잣말 창에 한 줄씩. '{name}'은 이름으로 바뀐다
   | { type: 'dateCard'; text: string } // "그날 오후"처럼 시간이 건너뛸 때 뜨는 카드
   | { type: 'laptop'; screen: string } // 노트북에 띄울 화면(gameStore의 LaptopScreen). 'off'면 끈다
+  // 그날의 마지막 사건에 넣는다. 하루가 끝났다고 적어 두고, 플레이어가 침대에 누우면 다음 날이 시작된다
+  | { type: 'dayEnd' }
   // 주인공 명의의 계좌가 생긴다. notice가 있으면 그 은행 알림도 함께 온다. time은 생긴 시각
   | { type: 'bankOpen'; account: LedgerAccount; time?: string; notice?: Message }
   // 계좌에 거래가 한 건 생긴다. notice가 없으면 알림 없이 은행 앱의 거래 내역에만 남는다
