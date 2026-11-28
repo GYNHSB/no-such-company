@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { day1 } from '@/data/days/day1'
 import type { DayScript } from '@/data/types'
+import { checkTransfer, type TransferCheck, type TransferRequest } from '@/engine/bank'
 import {
   choose,
   closeDateCard,
@@ -9,6 +10,7 @@ import {
   signal,
   startDay,
   submitSentence,
+  transfer,
   type Signal,
   type Step,
   type StoryState,
@@ -33,6 +35,11 @@ interface StoryStore {
   pick: (choiceId: string) => void
   /** 메모 앱에서 빈칸 문장을 맞춰 봤을 때. cardIds는 빈칸 순서대로 놓은 카드 id. 판정은 엔진이 한다 */
   submit: (sentenceId: string, cardIds: string[]) => void
+  /**
+   * 은행 앱에서 송금했을 때. 보낼 수 있는지는 엔진이 확인하고, 그 결과를 돌려준다.
+   * ok가 아니면 아무것도 바뀌지 않는다. 화면은 돌려받은 값으로 안내를 보여 준다
+   */
+  transfer: (request: TransferRequest) => TransferCheck
   /** 날짜 카드가 끝났을 때 */
   dateCardDone: () => void
 }
@@ -126,6 +133,13 @@ export const useStoryStore = create<StoryStore>()((set, get) => {
       const before = get().story
       apply(submitSentence(before, get().script, sentenceId, cardIds))
       note(`빈칸 맞춰 보기 ${sentenceId} ← ${cardIds.join(', ')}`, before)
+    },
+    transfer: (request) => {
+      const before = get().story
+      const check = checkTransfer(before.bank, request)
+      apply(transfer(before, get().script, request))
+      note(`송금 ${request.to} ${request.amount}원 (${check})`, before)
+      return check
     },
     dateCardDone: () => {
       const { story, script } = get()
