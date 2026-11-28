@@ -47,7 +47,14 @@ export function PhoneCloseup({
   const screenWidth = screen.right - screen.left
   const screenHeight = screen.bottom - screen.top
   return (
-    <div className={`${styles.stage} ${backdrop === 'blur' ? styles.seeThrough : ''}`}>
+    <div
+      className={[
+        styles.stage,
+        backdrop === 'blur' ? styles.seeThrough : '',
+        // 아래로 내릴 때는 이미지를 화면 바닥에 붙여서, 창이 좁고 길어도 내린 만큼이 꼭 화면 밖으로 나가게 한다
+        sink > 0 ? styles.sunk : '',
+      ].join(' ')}
+    >
       <div
         className={`${styles.sway} ${shaking ? styles.shaking : ''}`}
         style={{

@@ -13,6 +13,12 @@
   backdrop-filter: blur(10px);
 }
 
+/* 손 이미지를 아래로 내릴 때(sink): 화면 가운데가 아니라 바닥에 붙인 뒤 내린다.
+   창이 좁고 길어서 이미지 아래에 빈 곳이 생겨도 잘린 소매가 화면 안에 남지 않는다 */
+.sunk {
+  align-items: end;
+}
+
 /* 손 이미지의 비율을 유지한 채 화면에 꽉 차게 */
 .sway {
   position: relative;

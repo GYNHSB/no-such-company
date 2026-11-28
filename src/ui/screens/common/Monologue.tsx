@@ -3,7 +3,7 @@ import type { MonologueLine } from '@/stores/monologueStore'
 import styles from './Monologue.module.css'
 
 /**
- * 주인공의 독백을 화면 아래 반투명 창에 한 줄씩 보여 준다.
+ * 주인공의 독백을 화면 아래 반투명 창에 한 줄씩 보여 준다. 휴대폰을 든 손이 아래를 가릴 때는 위에 둔다(place).
  * 스페이스를 누르거나 창을 누르면 줄을 끝까지 보여 주고, 다 보였으면 다음 줄로 넘긴다.
  *
  * 쓰는 법:
@@ -28,14 +28,18 @@ interface MonologueProps {
   line: MonologueLine | null
   /** 줄이 다 보이고 사라진 뒤 부른다. 다음 줄로 넘길 때 쓴다. */
   onDone: () => void
+  /** 창을 둘 곳. 기본은 화면 아래(bottom)이고, top이면 화면 위에 둔다 */
+  place?: 'bottom' | 'top'
 }
 
-export function Monologue({ line, onDone }: MonologueProps) {
+export function Monologue({ line, onDone, place = 'bottom' }: MonologueProps) {
   // 줄이 바뀔 때마다 새로 그려서 글자가 처음부터 다시 나오게 한다
-  return line === null ? null : <Typed key={line.id} line={line.text} onDone={onDone} />
+  return line === null ? null : (
+    <Typed key={line.id} line={line.text} onDone={onDone} top={place === 'top'} />
+  )
 }
 
-function Typed({ line, onDone }: { line: string; onDone: () => void }) {
+function Typed({ line, onDone, top }: { line: string; onDone: () => void; top: boolean }) {
   const [shown, setShown] = useState(0)
   const [leaving, setLeaving] = useState(false)
   const chars = Array.from(line) // 이모지 같은 글자가 반쪽으로 잘리지 않게 글자 단위로 나눈다
@@ -76,7 +80,7 @@ function Typed({ line, onDone }: { line: string; onDone: () => void }) {
   return (
     <div
       role="status"
-      className={styles.box}
+      className={top ? `${styles.box} ${styles.top}` : styles.box}
       style={{ opacity: leaving ? 0 : 1 }}
       onClick={(e) => {
         e.stopPropagation()

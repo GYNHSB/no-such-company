@@ -32,6 +32,12 @@ export const LAPTOP_SCREEN: { center: Vec3; facing: Vec3; width: number; height:
  */
 export const BED_EYE: Vec3 = [-0.7, 0.7, -1.88]
 
+/**
+ * 의자에 앉았을 때 눈 자리. 의자(room.glb의 chair)는 (-1.3, 0, 1.16)에 있고 앉는 면이 0.45m쯤이다.
+ * 책상 쪽(-z)을 보고 앉으므로 머리는 의자 가운데보다 조금 앞에 둔다.
+ */
+export const SEAT_EYE: Vec3 = [-1.3, 1.15, 1.08]
+
 /** 현관 타일 바닥의 범위(room.glb의 entry). 이 안에서는 발소리가 딱딱해진다. */
 export const ENTRY_TILE = { minX: 0.8, maxX: 1.9, minZ: -2.3, maxZ: -1.6 }
 

@@ -12,3 +12,96 @@
   inset: 0;
   pointer-events: auto;
 }
+
+/* 소지품 칸과 돌아가기 단추를 감싼다. 이 안의 단추만 누를 수 있다 */
+.hud {
+  pointer-events: auto;
+}
+
+/* 방으로 돌아가는 단추. 소지품 칸과 같은 자리(오른쪽 아래)에 같은 모양으로 둔다.
+   shortcut: 게임 화면용 간격 토큰이 아직 없어 크기와 여백만 숫자로 둔다. 토큰이 생기면 바꾼다. */
+.leave {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid color-mix(in srgb, var(--game-ink) 10%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--game-bg) 78%, transparent);
+  color: var(--game-ink);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+/* 소지품 칸이 같이 보일 때(앉아 있을 때)는 그 위에 둔다 */
+.above {
+  bottom: 96px;
+}
+
+.leave:hover {
+  background: color-mix(in srgb, var(--game-bg) 92%, transparent);
+}
+
+.leave kbd,
+.aim kbd,
+.hint kbd {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--game-ink) 14%, transparent);
+  font: inherit;
+  font-size: 12px;
+}
+
+/* 고를 수 있는 물건으로 할 수 있는 일. 커서 오른쪽 아래에 뜬다(화면 오른쪽, 아래쪽 끝에서는 안쪽으로 밀린다).
+   커서가 없으면 화면 가운데 조금 아래에 뜬다 */
+.aim {
+  position: absolute;
+  top: calc(50% + 24px);
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--game-bg) 78%, transparent);
+  color: var(--game-ink);
+  font-size: 15px;
+  white-space: nowrap;
+  translate: -50% 0;
+}
+
+.layer[data-cursor] .aim {
+  top: min(calc(var(--cursor-y) + 22px), calc(100% - 48px));
+  left: min(calc(var(--cursor-x) + 18px), calc(100% - 200px));
+  translate: none;
+}
+
+/* 조작 안내. 처음 걷거나 돌기 전까지만 화면 아래 가운데에 보인다 */
+.hint {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--game-bg) 78%, transparent);
+  color: var(--game-ink);
+  font-size: 13px;
+  white-space: nowrap;
+  translate: -50% 0;
+}
+
+.hint span {
+  margin-left: 8px;
+  padding-left: 14px;
+  border-left: 1px solid color-mix(in srgb, var(--game-ink) 20%, transparent);
+}

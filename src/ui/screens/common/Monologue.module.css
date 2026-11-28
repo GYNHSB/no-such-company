@@ -22,6 +22,12 @@
   transition: opacity 400ms;
 }
 
+/* 화면 위에 둘 때. 안내 종 손잡이(위쪽 12px부터 28px 높이) 바로 아래에 온다 */
+.top {
+  top: 52px;
+  bottom: auto;
+}
+
 .srOnly {
   position: absolute;
   width: 1px;

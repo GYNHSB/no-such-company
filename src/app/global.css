@@ -42,6 +42,15 @@ body {
   touch-action: none;
 }
 
+/* 3D 화면의 커서: 고를 수 있는 물건 위에서는 손가락, 끌어서 둘러보는 동안에는 쥔 손 */
+.game-canvas canvas[data-hover] {
+  cursor: pointer;
+}
+
+.game-canvas canvas[data-drag] {
+  cursor: grabbing;
+}
+
 /* 개발 모드 성능 패널(drei StatsGl) */
 .dev-stats {
   position: fixed;

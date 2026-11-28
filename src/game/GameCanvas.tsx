@@ -1,9 +1,9 @@
 import { KeyboardControls, PerformanceMonitor, StatsGl } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { RoomSounds } from '@/game/audio/RoomSounds'
-import { keyboardMap } from '@/game/input/controls'
+import { keyboardMap, PHONE_KEY, PICK_KEY } from '@/game/input/controls'
 import { useViewKeys } from '@/game/input/useViewKeys'
 import { InteractionRay } from '@/game/interaction/InteractionRay'
 import { LaptopView } from '@/game/player/LaptopView'
@@ -22,14 +22,12 @@ import { StoryLayer } from '@/ui/screens/StoryLayer'
 // 해상도 배율 상한. 고해상도 화면에서 3배 이상으로 렌더링하지 않도록 2로 제한한다.
 const MAX_DPR = Math.min(2, window.devicePixelRatio)
 
-/** 클릭하면 커서를 잠그는 영역. 화면 위에 겹친 버튼을 누를 때는 잠기지 않게 3D 화면으로만 한정한다. */
-const LOCK_SELECTOR = '.game-canvas'
-
 /** 누르면 보는 것이 바뀌는 물건(room.glb의 interact_* 이름) */
 const VIEWS: Record<string, View> = {
   interact_laptop: 'laptop',
   interact_phone: 'phone',
   bed: 'bed',
+  chair: 'seat',
 }
 
 /** 누르면 켜고 끄는 물건 */
@@ -38,12 +36,17 @@ const SWITCHES: Record<string, () => void> = {
   light_switch: () => useGameStore.getState().toggleCeilingLight(),
 }
 
+/** 고르면 할 일이 있는 물건. 우편물이나 공유기처럼 아직 쓰임이 없는 물건은 고르지 않는다 */
+const USABLE = [...Object.keys(VIEWS), ...Object.keys(SWITCHES)]
+
 /** 책상 위 휴대폰 자리의 납작한 상자. 화면에는 DeskPhone이 대신 그리고, 집은 뒤에는 가리킬 수도 없다. */
 const PHONE_SLAB = ['interact_phone']
 /** room.glb에서 그리지 않는 물건. 휴대폰은 DeskPhone이, 노트북은 Laptop(laptop.glb)이 대신 그린다 */
 const ROOM_HIDE = [...PHONE_SLAB, 'interact_laptop']
+/** 의자에 앉아 있는 동안 고르지 않는 물건. 앉은 채로 침대에 눕는 것은 어색해서 뺀다 */
+const SEATED_IGNORE = ['chair', 'bed']
 /** 이름이 interact_*가 아니지만 누를 수 있는 물건. room.glb에서 interact_*로 이름을 바꾸면 여기서 지운다. */
-const NAMED = ['bed', 'desk_lamp', 'light_switch']
+const NAMED = ['bed', 'chair', 'desk_lamp', 'light_switch']
 /** room.glb 밖에서 코드로 만든 누를 수 있는 물체 */
 const EXTRA = [LIGHT_SWITCH_BOX]
 
@@ -65,8 +68,10 @@ interface GameCanvasProps {
 }
 
 /**
- * 원룸 3D 화면. 1인칭으로 걸어 다니고, 노트북을 누르면 의자에 앉아 화면을 가득 채워 보고,
- * 책상 위 휴대폰을 누르면 집고, 침대를 누르면 눕는다. 스탠드와 현관 옆 스위치를 누르면 불을 켜고 끈다.
+ * 원룸 3D 화면. 1인칭으로 걸어 다니며 둘러보고, 가까이에서 보고 있는 물건을 고르기 키나 클릭으로 고른다.
+ * 노트북을 고르면 의자에 앉아 화면을 가득 채워 보고,
+ * 책상 위 휴대폰을 고르면 집고, 침대를 고르면 눕고, 의자를 고르면 앉는다. 스탠드와 현관 옆 스위치를 고르면 불을 켜고 끈다.
+ * 앉은 채로도 둘러보며 노트북과 휴대폰을 고를 수 있다.
  * 무엇을 보고 있는지는 gameStore의 view에 있다.
  * App에서 lazy import되므로 default export를 쓴다.
  */
@@ -75,11 +80,19 @@ export default function GameCanvas({ onLoad }: GameCanvasProps) {
   const [dpr, setDpr] = useState(Math.min(1.5, MAX_DPR))
   const view = useGameStore((s) => s.view)
   const hasPhone = useGameStore((s) => s.hasPhone)
+  const seated = useGameStore((s) => s.seated)
   const aimAt = useGameStore((s) => s.aimAt)
   const night = useGameStore((s) => s.night)
   const ceilingLight = useGameStore((s) => s.ceilingLight)
   const deskLamp = useGameStore((s) => s.deskLamp)
   useViewKeys()
+  /** 방을 둘러보는 중인지(걷거나, 앉거나, 누워서) */
+  const looking = view === 'room' || view === 'seat' || view === 'bed'
+  // 집은 휴대폰은 고를 수 없다. 앉아 있을 때는 책상 위의 것만 고르고, 앉아 있는 의자와 침대는 고르지 않는다
+  const ignore = useMemo(
+    () => [...(hasPhone ? PHONE_SLAB : []), ...(seated ? SEATED_IGNORE : [])],
+    [hasPhone, seated],
+  )
 
   return (
     <div className="game-canvas">
@@ -106,15 +119,16 @@ export default function GameCanvas({ onLoad }: GameCanvasProps) {
               <primitive object={LIGHT_SWITCH_BOX} />
               <Player
                 active={view === 'room'}
-                lying={view === 'bed'}
-                lockSelector={LOCK_SELECTOR}
+                rest={view === 'bed' ? 'bed' : seated ? 'seat' : null}
+                looking={looking}
               />
               <LaptopView seated={view === 'laptop'} />
               <LaptopDisplay visible={view === 'laptop'} />
               <InteractionRay
-                enabled={view === 'room'}
-                ignore={hasPhone ? PHONE_SLAB : undefined}
+                enabled={view === 'room' || view === 'seat'}
+                ignore={ignore}
                 named={NAMED}
+                usable={USABLE}
                 extra={EXTRA}
                 onAim={aimAt}
                 onPick={pick}
@@ -127,7 +141,7 @@ export default function GameCanvas({ onLoad }: GameCanvasProps) {
         {/* 개발 모드에서만 FPS·CPU·GPU 표시 (프로덕션 번들에서는 제거됨) */}
         {import.meta.env.DEV && <StatsGl className="dev-stats" />}
       </Canvas>
-      <StoryLayer />
+      <StoryLayer phoneKeyLabel={PHONE_KEY.label} pickKeyLabel={PICK_KEY.label} />
       {import.meta.env.DEV && view === 'laptop' && <LaptopScreenPicker />}
     </div>
   )
