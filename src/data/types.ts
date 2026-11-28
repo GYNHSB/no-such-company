@@ -111,6 +111,8 @@ export interface GameEvent {
   trigger: Trigger
   effects: Effect[]
   note?: string // 작성자 메모. 게임에 안 보임
+  // 이 사건을 기다리는 동안 진행이 한동안 없으면 보여 줄 힌트. 플레이어가 무엇을 하면 되는지 적는다. 없으면 힌트가 없다
+  hint?: string
 }
 
 export interface DayScript {
