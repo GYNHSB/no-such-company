@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type { TransferCheck } from '@/engine/bank'
 import { AppIcon } from '@/ui/kit/phone/AppIcon'
 import { PhoneNav } from '@/ui/kit/phone/PhoneNav'
 import { PhoneScreen } from '@/ui/kit/phone/PhoneScreen'
@@ -17,6 +18,32 @@ export interface BankAccount {
   balance?: number
   /** 계좌가 만들어진 때. 모르면 비운다 */
   opened?: { date: Date; time: string }
+  /** 이 계좌의 거래. 일어난 순서대로. 없으면 거래 내역이 비어 보인다 */
+  entries?: BankEntry[]
+}
+
+/** 계좌의 거래 한 건 */
+export interface BankEntry {
+  id: string
+  /** 원. 들어온 돈은 양수, 나간 돈은 음수 */
+  amount: number
+  /** 상대 이름 */
+  counterparty: string
+  /** 거래에 남은 말 */
+  memo?: string
+  date: Date
+  /** "14:02" */
+  time: string
+}
+
+/** 은행 앱에서 요청하는 송금 */
+export interface BankTransfer {
+  /** 돈이 나가는 계좌의 id */
+  from: string
+  /** 받는 분. 플레이어가 적은 글 그대로 */
+  to: string
+  amount: number
+  memo?: string
 }
 
 /** 내 카드 하나 */
@@ -49,19 +76,41 @@ interface Props {
   readIds: readonly string[]
   /** 알림 화면에서 알림이 보였을 때. 받는 쪽이 readIds에 더해서 다시 넘긴다 */
   onRead: (ids: string[]) => void
+  /** 계좌를 눌러 거래 내역이 보였을 때 */
+  onSeeAccount?: (accountId: string) => void
+  /**
+   * "보내기"를 눌렀을 때. 보낼 수 있는지는 받는 쪽(엔진)이 확인해서 돌려준다. ok면 보낸 것이다.
+   * 주지 않으면 보내기 단추를 그리지 않는다.
+   */
+  onTransfer?: (transfer: BankTransfer) => TransferCheck
   /** 왼쪽 위 "홈"이나 아래 막대를 눌렀을 때. 홈 화면으로 돌아간다 */
   onHome?: () => void
 }
 
 type Tab = 'accounts' | 'notices'
+/** 계좌 하나를 연 화면. history: 거래 내역, send: 보내기, sent: 보낸 뒤 */
+type Open =
+  | { page: 'history'; id: string }
+  | { page: 'send'; id: string }
+  | { page: 'sent'; id: string; to: string; amount: number }
 
 const won = (amount: number) => `${amount.toLocaleString('ko-KR')}원`
+
+/** 보낼 수 없을 때 보여 주는 말 */
+const REFUSED: Record<Exclude<TransferCheck, 'ok'>, string> = {
+  no_account: '계좌를 찾을 수 없어요.',
+  no_recipient: '받는 분을 적어 주세요.',
+  bad_amount: '보낼 금액을 적어 주세요.',
+  not_enough: '잔액이 부족해요.',
+}
 
 /**
  * 휴대폰 은행 앱. 요즘 은행 앱의 구조를 따른다(첫 화면에 계좌와 카드, 알림은 오른쪽 위 종과 아래 탭으로 따로).
  * 휴대폰 기본 앱이 아니라서 다크 모드를 따르지 않고, 가상 은행의 색(--bank-*)을 쓰는 밝은 화면이다.
  * 실제 은행 앱의 이름, 로고, 고유 색은 쓰지 않는다.
- * 계좌가 몇 개인지, 언제 만들어졌는지, 잔액이 얼마인지는 받은 값을 그리기만 한다.
+ * 계좌를 누르면 그 계좌의 거래 내역이 열리고, 거기서 돈을 보낼 수 있다.
+ * 계좌가 몇 개인지, 언제 만들어졌는지, 잔액과 거래가 무엇인지는 받은 값을 그리기만 한다.
+ * 보낼 수 있는지도 여기서 정하지 않고 onTransfer가 돌려준 값을 따른다.
  */
 export function BankApp({
   time,
@@ -73,9 +122,39 @@ export function BankApp({
   notices,
   readIds,
   onRead,
+  onSeeAccount,
+  onTransfer,
   onHome,
 }: Props) {
   const [tab, setTab] = useState<Tab>('accounts')
+  const [open, setOpen] = useState<Open | null>(null)
+  const [to, setTo] = useState('')
+  const [amount, setAmount] = useState('')
+  const [memo, setMemo] = useState('')
+  const [refused, setRefused] = useState<string | null>(null)
+  const opened = open ? accounts.find((account) => account.id === open.id) : undefined
+
+  const showHistory = (id: string) => {
+    setOpen({ page: 'history', id })
+    onSeeAccount?.(id)
+  }
+  const startSend = (id: string) => {
+    setTo('')
+    setAmount('')
+    setMemo('')
+    setRefused(null)
+    setOpen({ page: 'send', id })
+  }
+  const send = (id: string) => {
+    const value = Number(amount)
+    const check = onTransfer?.({ from: id, to, amount: value, memo: memo.trim() || undefined })
+    if (check === 'ok') setOpen({ page: 'sent', id, to: to.trim(), amount: value })
+    else if (check) setRefused(REFUSED[check])
+  }
+  const pickTab = (next: Tab) => {
+    setOpen(null)
+    setTab(next)
+  }
   const newestFirst = notices.toReversed()
   const unreadKey = notices
     .filter((n) => !readIds.includes(n.id))
@@ -94,7 +173,28 @@ export function BankApp({
       <PhoneScreen time={time} onHome={onHome}>
         <div className={styles.bank}>
           <div className={styles.page}>
-            {tab === 'accounts' ? (
+            {open && opened ? (
+              <AccountPage
+                account={opened}
+                open={open}
+                today={today}
+                to={to}
+                amount={amount}
+                memo={memo}
+                refused={refused}
+                canSend={onTransfer !== undefined}
+                onTo={setTo}
+                onAmount={(text) => setAmount(text.replace(/\D/g, '').slice(0, 12))}
+                onMemo={setMemo}
+                onBack={() =>
+                  open.page === 'history'
+                    ? setOpen(null)
+                    : setOpen({ page: 'history', id: open.id })
+                }
+                onStartSend={() => startSend(open.id)}
+                onSend={() => send(open.id)}
+              />
+            ) : tab === 'accounts' ? (
               <>
                 <PhoneNav
                   title={bank}
@@ -124,35 +224,47 @@ export function BankApp({
                       const isNew = account.opened && daysAgo(today, account.opened.date) <= 0
                       return (
                         <li key={account.id} className={styles.account}>
-                          <span className={styles.accountIcon}>
-                            <AppIcon kind="bank" />
-                          </span>
-                          <span className={styles.accountText}>
-                            <span className={styles.accountLabel}>
-                              {account.label}
-                              {isNew && <span className={styles.tag}>새 계좌</span>}
+                          <button
+                            type="button"
+                            className={styles.accountOpen}
+                            onClick={() => showHistory(account.id)}
+                            aria-label={`${account.label} ${account.number ?? ''} 거래 내역 보기`}
+                          >
+                            <span className={styles.accountIcon}>
+                              <AppIcon kind="bank" />
                             </span>
-                            <span className={styles.balance}>
-                              {account.balance === undefined ? (
-                                <span className={styles.hidden}>잔액 숨김</span>
-                              ) : (
-                                won(account.balance)
+                            <span className={styles.accountText}>
+                              <span className={styles.accountLabel}>
+                                {account.label}
+                                {isNew && <span className={styles.tag}>새 계좌</span>}
+                              </span>
+                              <span className={styles.balance}>
+                                {account.balance === undefined ? (
+                                  <span className={styles.hidden}>잔액 숨김</span>
+                                ) : (
+                                  won(account.balance)
+                                )}
+                              </span>
+                              {account.number && (
+                                <span className={styles.accountMeta}>{account.number}</span>
+                              )}
+                              {account.opened && (
+                                <span className={styles.accountMeta}>
+                                  {formatDayTime(today, account.opened.date, account.opened.time)}{' '}
+                                  개설
+                                </span>
                               )}
                             </span>
-                            {account.number && (
-                              <span className={styles.accountMeta}>{account.number}</span>
-                            )}
-                            {account.opened && (
-                              <span className={styles.accountMeta}>
-                                {formatDayTime(today, account.opened.date, account.opened.time)}{' '}
-                                개설
-                              </span>
-                            )}
-                          </span>
-                          {/* 이체는 할 수 없다. 단추는 모양만 있다 */}
-                          <span className={styles.transfer} aria-hidden="true">
-                            이체
-                          </span>
+                          </button>
+                          {onTransfer && (
+                            <button
+                              type="button"
+                              className={styles.transfer}
+                              onClick={() => startSend(account.id)}
+                            >
+                              보내기
+                            </button>
+                          )}
                         </li>
                       )
                     })}
@@ -191,9 +303,6 @@ export function BankApp({
                 {/* 은행 앱에 흔히 있는 메뉴. 모양만 있고 눌리지 않는다 */}
                 <ul className={`${styles.card} ${styles.menu}`} aria-hidden="true">
                   <li>
-                    이체 내역 <span>›</span>
-                  </li>
-                  <li>
                     고객센터 <span>›</span>
                   </li>
                 </ul>
@@ -229,7 +338,7 @@ export function BankApp({
               type="button"
               className={styles.tab}
               aria-current={tab === 'accounts' ? 'page' : undefined}
-              onClick={() => setTab('accounts')}
+              onClick={() => pickTab('accounts')}
             >
               <HomeIcon />내 계좌
             </button>
@@ -237,7 +346,7 @@ export function BankApp({
               type="button"
               className={styles.tab}
               aria-current={tab === 'notices' ? 'page' : undefined}
-              onClick={() => setTab('notices')}
+              onClick={() => pickTab('notices')}
             >
               <span className={styles.bell}>
                 <BellIcon />
@@ -249,6 +358,163 @@ export function BankApp({
         </div>
       </PhoneScreen>
     </div>
+  )
+}
+
+interface AccountPageProps {
+  account: BankAccount
+  open: Open
+  today: Date
+  to: string
+  amount: string
+  memo: string
+  refused: string | null
+  canSend: boolean
+  onTo: (text: string) => void
+  onAmount: (text: string) => void
+  onMemo: (text: string) => void
+  onBack: () => void
+  onStartSend: () => void
+  onSend: () => void
+}
+
+/** 계좌 하나를 연 화면: 거래 내역, 보내기, 보낸 뒤 */
+function AccountPage({
+  account,
+  open,
+  today,
+  to,
+  amount,
+  memo,
+  refused,
+  canSend,
+  onTo,
+  onAmount,
+  onMemo,
+  onBack,
+  onStartSend,
+  onSend,
+}: AccountPageProps) {
+  const balance =
+    account.balance === undefined ? (
+      <span className={styles.hidden}>잔액 숨김</span>
+    ) : (
+      won(account.balance)
+    )
+
+  if (open.page === 'sent') {
+    return (
+      <>
+        <PhoneNav title="보내기" backLabel="계좌" onBack={onBack} />
+        <section className={`${styles.card} ${styles.done}`}>
+          <p className={styles.doneText}>
+            <strong>{open.to}</strong> 님에게
+            <br />
+            <strong>{won(open.amount)}</strong>을 보냈어요
+          </p>
+          <p className={styles.accountMeta}>남은 잔액 {balance}</p>
+          <button type="button" className={styles.primary} onClick={onBack}>
+            확인
+          </button>
+        </section>
+      </>
+    )
+  }
+
+  if (open.page === 'send') {
+    return (
+      <>
+        <PhoneNav title="보내기" backLabel="계좌" onBack={onBack} />
+        <form
+          className={`${styles.card} ${styles.form}`}
+          onSubmit={(e) => {
+            e.preventDefault()
+            onSend()
+          }}
+        >
+          <p className={styles.from}>
+            <span>
+              {account.label} {account.number}
+            </span>
+            <span>보낼 수 있는 돈 {balance}</span>
+          </p>
+          <label className={styles.field}>
+            받는 분
+            <input
+              value={to}
+              onChange={(e) => onTo(e.target.value)}
+              placeholder="이름 또는 계좌 번호"
+              autoComplete="off"
+            />
+          </label>
+          <label className={styles.field}>
+            보낼 금액
+            <input
+              value={amount === '' ? '' : Number(amount).toLocaleString('ko-KR')}
+              onChange={(e) => onAmount(e.target.value)}
+              placeholder="0"
+              inputMode="numeric"
+              autoComplete="off"
+            />
+          </label>
+          <label className={styles.field}>
+            받는 분에게 표시 (선택)
+            <input value={memo} onChange={(e) => onMemo(e.target.value)} autoComplete="off" />
+          </label>
+          {refused && (
+            <p className={styles.refused} role="alert">
+              {refused}
+            </p>
+          )}
+          <button type="submit" className={styles.primary}>
+            보내기
+          </button>
+        </form>
+      </>
+    )
+  }
+
+  const newestFirst = (account.entries ?? []).toReversed()
+  return (
+    <>
+      <PhoneNav title={account.label} backLabel="내 계좌" onBack={onBack} />
+      <section className={`${styles.card} ${styles.summary}`}>
+        {account.number && <span className={styles.accountMeta}>{account.number}</span>}
+        <strong className={styles.total}>{balance}</strong>
+        {canSend && (
+          <button type="button" className={styles.primary} onClick={onStartSend}>
+            보내기
+          </button>
+        )}
+      </section>
+      <section className={styles.card} aria-labelledby="bank-history">
+        <h2 id="bank-history" className={styles.cardHead}>
+          <span>거래 내역</span>
+          <span className={styles.count}>{newestFirst.length}건</span>
+        </h2>
+        {newestFirst.length === 0 ? (
+          <p className={styles.noEntries}>거래 내역이 없어요</p>
+        ) : (
+          <ul className={styles.entries}>
+            {newestFirst.map((entry) => (
+              <li key={entry.id} className={styles.entry}>
+                <span className={styles.accountText}>
+                  <span className={styles.entryName}>{entry.counterparty}</span>
+                  <span className={styles.accountMeta}>
+                    {formatDayTime(today, entry.date, entry.time)}
+                    {entry.memo ? ` · ${entry.memo}` : ''}
+                  </span>
+                </span>
+                <strong className={entry.amount > 0 ? styles.incoming : styles.outgoing}>
+                  {entry.amount > 0 ? '+' : '-'}
+                  {won(Math.abs(entry.amount))}
+                </strong>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </>
   )
 }
 

@@ -122,15 +122,164 @@
   font-weight: 700;
 }
 
-/* 모양만 있는 이체 단추 */
+/* 계좌 줄에서 아이콘과 글을 감싼 단추. 누르면 그 계좌의 거래 내역이 열린다 */
+.accountOpen {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: calc(var(--pt) * 14);
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* 계좌 줄 오른쪽의 보내기 단추 */
 .transfer {
   flex: none;
   padding: calc(var(--pt) * 7) calc(var(--pt) * 13);
+  border: 0;
   border-radius: calc(var(--pt) * 10);
   background: var(--bank-surface-2);
   color: var(--bank-muted);
+  font: inherit;
   font-size: calc(var(--pt) * 14);
   font-weight: 600;
+  cursor: pointer;
+}
+
+/* ── 계좌 하나를 연 화면: 거래 내역, 보내기 ── */
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pt) * 4);
+  padding-bottom: calc(var(--pt) * 20);
+}
+
+.total {
+  font-size: calc(var(--pt) * 30);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* 대표 색으로 채운 큰 단추(보내기, 확인) */
+.primary {
+  margin-top: calc(var(--pt) * 12);
+  padding: calc(var(--pt) * 14);
+  border: 0;
+  border-radius: calc(var(--pt) * 14);
+  background: var(--bank-brand);
+  color: var(--bank-surface);
+  font: inherit;
+  font-size: calc(var(--pt) * 16);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.entries {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entry {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pt) * 12);
+  padding: calc(var(--pt) * 13) 0;
+  border-top: 1px solid var(--bank-line);
+  font-variant-numeric: tabular-nums;
+}
+
+.entryName {
+  font-size: calc(var(--pt) * 16);
+  font-weight: 600;
+}
+
+/* 들어온 돈은 대표 색, 나간 돈은 글자색 */
+.incoming,
+.outgoing {
+  flex: none;
+  font-size: calc(var(--pt) * 16);
+}
+
+.incoming {
+  color: var(--bank-brand);
+}
+
+.noEntries {
+  margin: calc(var(--pt) * 24) 0;
+  color: var(--bank-muted);
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pt) * 14);
+  padding-bottom: calc(var(--pt) * 20);
+}
+
+/* 어느 계좌에서 보내는지와 보낼 수 있는 돈 */
+.from {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pt) * 2);
+  margin: 0;
+  color: var(--bank-muted);
+  font-size: calc(var(--pt) * 13);
+  font-variant-numeric: tabular-nums;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pt) * 6);
+  color: var(--bank-muted);
+  font-size: calc(var(--pt) * 13);
+  font-weight: 600;
+}
+
+.field input {
+  padding: calc(var(--pt) * 12) calc(var(--pt) * 14);
+  border: 1px solid var(--bank-line);
+  border-radius: calc(var(--pt) * 12);
+  background: var(--bank-bg);
+  color: var(--bank-ink);
+  font: inherit;
+  font-size: calc(var(--pt) * 17);
+  font-weight: 600;
+}
+
+.field input:focus {
+  outline: 2px solid var(--bank-brand);
+  outline-offset: -1px;
+}
+
+.refused {
+  margin: 0;
+  color: var(--bank-alert);
+  font-size: calc(var(--pt) * 14);
+  font-weight: 600;
+}
+
+.done {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pt) * 6);
+  padding: calc(var(--pt) * 40) calc(var(--pt) * 20) calc(var(--pt) * 20);
+  text-align: center;
+}
+
+.doneText {
+  margin: 0;
+  font-size: calc(var(--pt) * 20);
+  line-height: 1.5;
 }
 
 /* 모양만 있는 "계좌 추가" 줄 */

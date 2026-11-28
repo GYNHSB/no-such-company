@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { day1 } from '@/data/days/day1'
 import type { BlankSentence, DayInfo, EvidenceCard, Message } from '@/data/types'
+import type { TransferCheck, TransferRequest } from '@/engine/bank'
 import type { PhoneEvent } from '@/engine/phoneSignal'
 import type { PhoneFeature } from '@/engine/phoneUnlock'
 import {
@@ -12,7 +13,7 @@ import {
 } from '@/stores/phoneStore'
 import type { SentenceStatus } from '@/ui/screens/common/Notebook'
 import { INVITE_SENDER_ADDRESS } from '@/ui/screens/work/mailScript'
-import { BankApp } from './BankApp'
+import { BankApp, type BankAccount } from './BankApp'
 import { BlablaApp } from './BlablaApp'
 import { BrowserApp } from './BrowserApp'
 import { CallApp } from './CallApp'
@@ -21,7 +22,6 @@ import { LockScreen } from './LockScreen'
 import { MessagesApp } from './MessagesApp'
 import { NotesApp } from './NotesApp'
 import {
-  accountsFrom,
   BANK,
   BLABLA,
   BLABLA_POSTS,
@@ -59,6 +59,13 @@ interface Props {
     status: Record<string, SentenceStatus | undefined>
     onSubmit: (sentenceId: string, cardIds: string[]) => void
   }
+  /** 은행 앱에 보일 내 명의의 계좌와 거래. 본편에서는 엔진의 장부에서 만든다(accountsOf) */
+  accounts: BankAccount[]
+  /**
+   * 은행 앱에서 송금했을 때. 보낼 수 있는지는 받는 쪽(엔진)이 확인해서 돌려준다.
+   * 주지 않으면 은행 앱에 보내기 단추가 없다.
+   */
+  onTransfer?: (request: TransferRequest) => TransferCheck
   /**
    * 줄거리가 진행되면서 휴대폰에 생긴 것. 블라블라 앱과 원격 관리 페이지는 여기에 있을 때만 보인다.
    * 본편에서는 엔진의 기록에서 읽어 넘긴다(unlockedIn).
@@ -75,7 +82,17 @@ const ANSWER_MS = 2000
  * 어느 화면이 떠 있는지, 받은 메시지, 읽음, 통화 기록은 phoneStore에 있고, 앱에 들어가는 내용은 phoneContent에 있다.
  * PhoneCloseup(손 이미지) 안에 넣어 쓴다. 본편(PhoneView)과 테스트 페이지가 함께 쓴다.
  */
-export function PhoneDevice({ time, info, name, videos, notes, unlocked, onEvent }: Props) {
+export function PhoneDevice({
+  time,
+  info,
+  name,
+  videos,
+  notes,
+  accounts,
+  onTransfer,
+  unlocked,
+  onEvent,
+}: Props) {
   const received = usePhoneStore((s) => s.received)
   const readIds = usePhoneStore((s) => s.readIds)
   const calls = usePhoneStore((s) => s.calls)
@@ -160,7 +177,10 @@ export function PhoneDevice({ time, info, name, videos, notes, unlocked, onEvent
           today={today}
           bank={BANK}
           owner={name}
-          accounts={accountsFrom(notices)}
+          accounts={accounts}
+          onSeeAccount={(id) => onEvent?.({ type: 'seeAccount', id })}
+          // 보낸 시각은 휴대폰의 지금 시각이다
+          onTransfer={onTransfer && ((request) => onTransfer({ ...request, time }))}
           cards={CARDS}
           notices={notices.map(withName)}
           readIds={readIds}

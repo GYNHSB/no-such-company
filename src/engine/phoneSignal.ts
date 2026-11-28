@@ -22,6 +22,8 @@ export type PhoneEvent =
   | { type: 'readPost'; id: string }
   /** 원격 관리 프로그램의 기기 정보 페이지가 보였다 */
   | { type: 'seeRemoteAdmin' }
+  /** 은행 앱에서 그 계좌의 거래 내역이 보였다 */
+  | { type: 'seeAccount'; id: string }
 
 /**
  * 휴대폰에서 한 일의 신호 이름. 대본에서는 interact 트리거의 objectId로 쓴다.
@@ -53,6 +55,13 @@ export const phoneSignal = {
   readPost: (postId: string) => `phone_post:${postId}`,
   /** 원격 관리 프로그램의 기기 정보 페이지가 보였다 */
   remoteAdmin: () => 'phone_remote_admin',
+  /** 은행 앱에서 그 계좌의 거래 내역이 보였다 */
+  seeAccount: (accountId: string) => `phone_bank_account:${accountId}`,
+  /**
+   * 은행 앱에서 그 사람에게 송금했다. 받는 사람은 플레이어가 적은 글 그대로이고,
+   * 앞뒤 빈칸은 떼고 사이의 빈칸은 하나로 줄여서 견준다. 이 신호는 화면이 아니라 엔진이 송금을 적으면서 낸다
+   */
+  transfer: (to: string) => `phone_transfer:${to.trim().replace(/\s+/g, ' ')}`,
 }
 
 /** 휴대폰에서 한 일을 신호 이름으로 바꾼다. 문자 여러 통을 한 번에 읽으면 이름도 여러 개다 */
@@ -80,5 +89,7 @@ export function phoneSignalsOf(event: PhoneEvent): string[] {
       return [phoneSignal.readPost(event.id)]
     case 'seeRemoteAdmin':
       return [phoneSignal.remoteAdmin()]
+    case 'seeAccount':
+      return [phoneSignal.seeAccount(event.id)]
   }
 }

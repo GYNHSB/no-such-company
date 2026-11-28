@@ -1,16 +1,20 @@
 import { useEffect, useState } from 'react'
 import type { BlankSentence, DayInfo, EvidenceCard, Message } from '@/data/types'
-import { phoneSignalsOf } from '@/engine/phoneSignal'
+import { checkTransfer, type RecordedEntry } from '@/engine/bank'
+import { phoneSignal, phoneSignalsOf } from '@/engine/phoneSignal'
 import type { PhoneFeature } from '@/engine/phoneUnlock'
 import { useGameStore } from '@/stores/gameStore'
 import { dateOfDay, type PhoneApp, usePhoneStore } from '@/stores/phoneStore'
+import { newStory, transfer } from '@/engine/story'
 import { PhoneCloseup } from '@/ui/kit/phone/PhoneCloseup'
+import { accountsOf } from '@/ui/screens/phone/bankView'
 import { useFlowingClock } from '@/ui/screens/phone/clock'
 import {
   HAND_SINK,
   HAND_URL,
   IMAGE_SIZE,
   interviewRecording,
+  sampleBank,
   SCREEN,
   seedCalls,
 } from '@/ui/screens/phone/phoneContent'
@@ -224,6 +228,8 @@ const describe = (event: PhoneEvent): string => {
       return `블라블라 글 읽음 (${event.id})`
     case 'seeRemoteAdmin':
       return '원격 관리 정보 봄'
+    case 'seeAccount':
+      return `은행 거래 내역 봄 (${event.id})`
   }
 }
 
@@ -233,6 +239,8 @@ export default function SandboxPage() {
   const [noteStatus, setNoteStatus] = useState<Record<string, 'solved' | 'wrong'>>({})
   const [opened, setOpened] = useState('')
   const [fast, setFast] = useState(false)
+  // 이 페이지에서 플레이어가 보낸 송금. 실제 게임에서는 엔진의 장부에 쌓인다
+  const [sent, setSent] = useState<RecordedEntry[]>([])
 
   const received = usePhoneStore((s) => s.received)
   const app = usePhoneStore((s) => s.app)
@@ -262,8 +270,13 @@ export default function SandboxPage() {
     setSceneId(id)
     setOpened('')
     setNoteStatus({})
+    setSent([])
     startScene(id)
   }
+
+  // 엔진 대신 만든 은행 장부 견본에 이 페이지에서 보낸 송금을 더한다
+  const sample = sampleBank(received, scene.info)
+  const bank = { ...sample, entries: [...sample.entries, ...sent] }
 
   return (
     <main>
@@ -291,6 +304,18 @@ export default function SandboxPage() {
               setNoteStatus((prev) => ({ ...prev, [sentenceId]: solved ? 'solved' : 'wrong' }))
               setOpened(`맞춰 보기 (${cardIds.join(', ')})`)
             },
+          }}
+          accounts={accountsOf(bank, weekOne)}
+          onTransfer={(request) => {
+            // 엔진의 송금 함수를 그대로 써서 장부에 적는다. 사건이 없는 빈 대본을 넘긴다
+            const check = checkTransfer(bank, request)
+            const script = { info: scene.info, events: [], evidence: [], sentences: [] }
+            const next = transfer({ ...newStory(scene.info.day), bank }, script, request).state.bank
+            setSent(next.entries.filter((entry) => entry.by === 'player'))
+            setOpened(
+              `송금 ${request.to} ${request.amount}원 (${check}) → ${phoneSignal.transfer(request.to)}`,
+            )
+            return check
           }}
           unlocked={unlockedOn(scene.info.day)}
           // 본편에서는 이 이름으로 엔진에 신호가 간다. 대본의 interact 트리거에 이 이름을 쓴다

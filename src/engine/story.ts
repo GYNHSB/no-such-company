@@ -1,5 +1,7 @@
 import { BLANK_MAX_WRONG_IN_A_ROW, SUSPICION } from '@/data/rules'
 import type { Choice, DayNumber, DayScript, Effect, Message, Trigger } from '@/data/types'
+import { balanceOf, checkTransfer, emptyBank, type Bank, type TransferRequest } from './bank'
+import { phoneSignal } from './phoneSignal'
 
 /** 대본을 진행하면서 쌓이는 상태. 화면은 이 값을 보고 그린다 */
 export interface StoryState {
@@ -30,13 +32,15 @@ export interface StoryState {
   solved: string[]
   /** 문장마다 연달아 틀린 횟수. 맞추면 지우고, 날이 바뀌면 모두 지운다 */
   wrong: Record<string, number>
+  /** 은행 장부. 내 명의의 계좌와 거래. 대본의 효과와 플레이어의 송금이 바꾼다 */
+  bank: Bank
 }
 
 /** 빈칸 문장 하나의 판정 결과. solved: 맞음, wrong: 틀림, locked: 연달아 틀려 오늘은 더 못 맞춤. 없으면 아직 맞춰 보지 않았다 */
 export type SentenceResult = 'solved' | 'wrong' | 'locked'
 
-/** 엔진에 알리는 일. Trigger에서 afterEvent를 뺀 것 */
-export type Signal = Exclude<Trigger, { type: 'afterEvent' }>
+/** 엔진에 알리는 일. Trigger에서 엔진이 스스로 살피는 것(afterEvent, balance)을 뺀 것 */
+export type Signal = Exclude<Trigger, { type: 'afterEvent' } | { type: 'balance' }>
 
 /** delaySec 뒤에 runLater로 실행할 사건. 타이머는 부르는 쪽이 건다 */
 export interface Delayed {
@@ -66,10 +70,11 @@ export function newStory(day: DayNumber = 1): StoryState {
     said: [],
     solved: [],
     wrong: {},
+    bank: emptyBank(),
   }
 }
 
-/** 하루를 시작한다. 경계심, 증거, 기록, 메시지, 맞춘 문장은 이어지고 그날의 사건 기록, 목표, 장면, 날짜 카드, 틀린 횟수는 비운다 */
+/** 하루를 시작한다. 경계심, 증거, 기록, 메시지, 맞춘 문장, 은행 장부는 이어지고 그날의 사건 기록, 목표, 장면, 날짜 카드, 틀린 횟수는 비운다 */
 export function startDay(prev: StoryState, script: DayScript): Step {
   const state: StoryState = {
     ...structuredClone(prev),
@@ -139,6 +144,29 @@ export function sentenceResult(state: StoryState, sentenceId: string): SentenceR
   const wrong = state.wrong[sentenceId] ?? 0
   if (wrong >= BLANK_MAX_WRONG_IN_A_ROW) return 'locked'
   return wrong > 0 ? 'wrong' : undefined
+}
+
+/**
+ * 플레이어가 은행 앱에서 송금했을 때. 보낼 수 없으면(checkTransfer가 ok가 아니면) 아무것도 하지 않는다.
+ * 장부에 나가는 거래를 적고, 대본이 반응할 수 있게 phone_transfer:받는사람 신호를 낸다.
+ */
+export function transfer(prev: StoryState, script: DayScript, request: TransferRequest): Step {
+  if (checkTransfer(prev.bank, request) !== 'ok') return { state: prev, later: [] }
+  return run(structuredClone(prev), (s, later) => {
+    const mine = s.bank.entries.filter((entry) => entry.by === 'player').length
+    s.bank.entries.push({
+      id: `transfer-${mine + 1}`,
+      accountId: request.from,
+      amount: -request.amount,
+      counterparty: request.to.trim(),
+      memo: request.memo,
+      time: request.time,
+      day: script.info,
+      by: 'player',
+    })
+    emit(s, script, { type: 'interact', objectId: phoneSignal.transfer(request.to) }, later)
+    checkBalances(s, script, later)
+  })
 }
 
 /** 특수 장면 화면이 끝났을 때 */
@@ -235,6 +263,31 @@ function applyEffects(s: StoryState, script: DayScript, effects: Effect[], later
       case 'laptop':
         s.laptop = fx.screen
         break
+      case 'bankOpen':
+        if (s.bank.accounts.some((a) => a.id === fx.account.id)) break
+        s.bank.accounts.push({ ...fx.account, day: script.info, time: fx.time ?? fx.notice?.time })
+        if (fx.notice) s.messages.push(fx.notice)
+        checkBalances(s, script, later)
+        break
+      case 'bankEntry':
+        if (s.bank.entries.some((e) => e.id === fx.entry.id)) break
+        s.bank.entries.push({ ...fx.entry, day: script.info, by: 'script' })
+        if (fx.notice) s.messages.push(fx.notice)
+        checkBalances(s, script, later)
+        break
     }
+  }
+}
+
+/** 장부가 바뀐 뒤, 잔액 조건(balance 트리거)이 맞게 된 사건을 실행한다. 없는 계좌는 조건을 보지 않는다 */
+function checkBalances(s: StoryState, script: DayScript, later: Later) {
+  for (const e of script.events) {
+    const t = e.trigger
+    if (t.type !== 'balance' || s.fired.includes(e.id)) continue
+    if (!s.bank.accounts.some((a) => a.id === t.accountId)) continue
+    const balance = balanceOf(s.bank, t.accountId)
+    if (t.atMost !== undefined && balance > t.atMost) continue
+    if (t.atLeast !== undefined && balance < t.atLeast) continue
+    fire(s, script, e.id, later)
   }
 }

@@ -6,6 +6,7 @@ import { useGameStore } from '@/stores/gameStore'
 import { dateOfDay, usePhoneStore } from '@/stores/phoneStore'
 import { useStoryStore } from '@/stores/storyStore'
 import { PhoneCloseup } from '@/ui/kit/phone/PhoneCloseup'
+import { accountsOf } from './bankView'
 import { useFlowingClock } from './clock'
 import {
   HAND_SINK,
@@ -33,6 +34,7 @@ export function PhoneView() {
   const story = useStoryStore((s) => s.story)
   const send = useStoryStore((s) => s.send)
   const submit = useStoryStore((s) => s.submit)
+  const transfer = useStoryStore((s) => s.transfer)
   const { evidence } = story
   const received = usePhoneStore((s) => s.received)
   const weekOne = usePhoneStore((s) => s.weekOne)
@@ -71,6 +73,9 @@ export function PhoneView() {
           status: Object.fromEntries(sentences.map((s) => [s.id, sentenceResult(story, s.id)])),
           onSubmit: submit,
         }}
+        // 계좌와 거래는 엔진의 은행 장부에 있다. 송금도 엔진이 확인하고 장부에 적는다
+        accounts={accountsOf(story.bank, weekOne)}
+        onTransfer={transfer}
         // 블라블라 앱과 원격 관리 페이지는 대본의 사건이 열어 준 뒤에 생긴다
         unlocked={unlockedIn(story.flags)}
         onEvent={notify}
