@@ -1,8 +1,9 @@
 import { day1 } from '@/data/days/day1'
-import type { DayNumber } from '@/data/types'
-import { type DatedMessage, dateOfDay, usePhoneStore } from '@/stores/phoneStore'
+import type { DayInfo, DayNumber, LedgerAccount, LedgerEntry } from '@/data/types'
+import type { Bank } from '@/engine/bank'
+import { dateOfDay, type Received, usePhoneStore } from '@/stores/phoneStore'
 import { INTERVIEW_LINES } from '@/ui/screens/laptop/videoScript'
-import type { BankAccount, BankCard } from './BankApp'
+import type { BankCard } from './BankApp'
 import type { BlablaPost } from './BlablaApp'
 import type { Contact } from './CallApp'
 import type { PhotoVideo } from './PhotosApp'
@@ -47,25 +48,53 @@ export const CARRIER = 'DT'
 export const BANK = '하나로은행'
 
 /**
- * 내 명의 계좌 견본. 대본에는 "계좌 3개"와 "내가 만든 건 하나뿐"만 있어서,
- * 원래 계좌 하나에 2일차 개설 알림 두 건이 올 때마다 하나씩 늘어나게 했다.
- * 계좌 번호와 잔액은 대본에 없어 임의로 넣었다.
+ * 테스트 페이지에서 쓰는 계좌 견본. 본편에서는 대본의 bankOpen 효과가 엔진의 장부에 계좌를 넣는다.
+ * 대본에는 "계좌 3개"와 "내가 만든 건 하나뿐"만 있어서, 원래 계좌 하나에 2일차 개설 알림 두 건이
+ * 올 때마다 하나씩 늘어나게 했다. 계좌 번호와 잔액은 대본에 없어 임의로 넣었다.
  */
-export const ACCOUNTS: (Omit<BankAccount, 'opened'> & { openedBy?: string })[] = [
-  { id: 'mine', label: '입출금통장', number: '412-208-173904', balance: 847_200 },
+export const ACCOUNTS: (LedgerAccount & { openedBy?: string })[] = [
+  { id: 'mine', label: '입출금통장', number: '412-208-173904', opening: 847_200 },
+  { id: 'opened-1', label: '입출금통장', number: '412-208-518327', openedBy: 'd2-bank-open-1' },
+  { id: 'opened-2', label: '입출금통장', number: '412-208-518401', openedBy: 'd2-bank-open-2' },
+]
+
+/**
+ * 테스트 페이지에서 쓰는 거래 견본. 모르는 계좌에 알림 없이 돈이 드나든 흔적이다.
+ * 대본에 없는 임의 값이고, fromDay부터 거래 내역에 보인다.
+ */
+export const ENTRIES: (LedgerEntry & { fromDay: DayNumber })[] = [
   {
-    id: 'opened-1',
-    label: '입출금통장',
-    number: '412-208-518327',
-    balance: 0,
-    openedBy: 'd2-bank-open-1',
+    id: 'e-in-1',
+    accountId: 'opened-1',
+    amount: 3_000_000,
+    counterparty: '박○○',
+    time: '09:14',
+    fromDay: 3,
   },
   {
-    id: 'opened-2',
-    label: '입출금통장',
-    number: '412-208-518401',
-    balance: 0,
-    openedBy: 'd2-bank-open-2',
+    id: 'e-in-2',
+    accountId: 'opened-1',
+    amount: 5_000_000,
+    counterparty: '최○○',
+    time: '10:02',
+    fromDay: 3,
+  },
+  {
+    id: 'e-out-1',
+    accountId: 'opened-1',
+    amount: -7_900_000,
+    counterparty: '세움파트너스',
+    time: '10:05',
+    fromDay: 3,
+  },
+  {
+    id: 'e-in-3',
+    accountId: 'opened-2',
+    amount: 12_000_000,
+    counterparty: '이○○',
+    memo: '투자금',
+    time: '13:40',
+    fromDay: 4,
   },
 ]
 
@@ -251,13 +280,25 @@ export function seedCalls(today: Date, day: DayNumber) {
   })
 }
 
-/** 지금 내 명의로 된 계좌. 개설 알림이 온 계좌만 보이고, 만들어진 때는 그 알림을 받은 때다 */
-export function accountsFrom(notices: DatedMessage[]): BankAccount[] {
-  return ACCOUNTS.flatMap(({ openedBy, ...account }) => {
-    if (!openedBy) return [account]
-    const notice = notices.find((n) => n.id === openedBy)
-    return notice ? [{ ...account, opened: { date: notice.date, time: notice.time } }] : []
+/**
+ * 테스트 페이지에서 엔진 대신 만드는 은행 장부 견본. 개설 알림이 온 계좌만 생기고, 생긴 때는 그 알림을 받은 때다.
+ * 거래는 그 날까지의 견본을 넣는다. 본편에서는 엔진의 장부(story.bank)를 쓴다.
+ */
+export function sampleBank(received: readonly Received[], today: DayInfo): Bank {
+  const accounts = ACCOUNTS.flatMap(({ openedBy, ...account }) => {
+    if (!openedBy) return [{ ...account, day: day1.info }]
+    const notice = received.find((r) => r.message.id === openedBy)
+    return notice ? [{ ...account, day: notice.day, time: notice.message.time }] : []
   })
+  const entries = ENTRIES.filter(
+    (entry) => entry.fromDay <= today.day && accounts.some((a) => a.id === entry.accountId),
+  ).map(({ fromDay, ...entry }) => ({
+    ...entry,
+    // 거래가 일어난 날의 요일과 주 차는 오늘 것을 빌려 쓴다(견본이라 날짜가 정확할 필요가 없다)
+    day: { ...today, day: fromDay },
+    by: 'script' as const,
+  }))
+  return { accounts, entries }
 }
 
 /** 사진 앱에 들어 있는 면접 녹화. 1일차에 찍힌 것이고, 자막의 {name}은 넘긴 이름으로 바뀐다 */
