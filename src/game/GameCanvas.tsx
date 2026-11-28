@@ -1,7 +1,7 @@
 import { KeyboardControls, PerformanceMonitor, StatsGl } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
-import { Suspense, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { RoomSounds } from '@/game/audio/RoomSounds'
 import { keyboardMap, PHONE_KEY, PICK_KEY } from '@/game/input/controls'
 import { useViewKeys } from '@/game/input/useViewKeys'
@@ -18,6 +18,11 @@ import { Room } from '@/game/world/Room'
 import { RoomColliders } from '@/game/world/RoomColliders'
 import { useGameStore, type View } from '@/stores/gameStore'
 import { StoryLayer } from '@/ui/screens/StoryLayer'
+
+/** 개발 모드에서만 불러오는 "엔진 보기" 패널. 배포판 번들에는 들어가지 않는다 */
+const StoryInspector = import.meta.env.DEV
+  ? lazy(() => import('@/ui/screens/dev/StoryInspector'))
+  : null
 
 // 해상도 배율 상한. 고해상도 화면에서 3배 이상으로 렌더링하지 않도록 2로 제한한다.
 const MAX_DPR = Math.min(2, window.devicePixelRatio)
@@ -143,6 +148,11 @@ export default function GameCanvas({ onLoad }: GameCanvasProps) {
       </Canvas>
       <StoryLayer phoneKeyLabel={PHONE_KEY.label} pickKeyLabel={PICK_KEY.label} />
       {import.meta.env.DEV && view === 'laptop' && <LaptopScreenPicker />}
+      {StoryInspector && (
+        <Suspense fallback={null}>
+          <StoryInspector />
+        </Suspense>
+      )}
     </div>
   )
 }

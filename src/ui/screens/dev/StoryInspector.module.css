@@ -1,0 +1,139 @@
+/* 개발 모드에서만 보이는 "엔진 보기" 패널. 왼쪽 위 FPS 표시 아래에 둔다.
+   본편 화면 위의 것들(StoryLayer)보다 위에 오게 가장 큰 z-index를 쓴다.
+   shortcut: 게임 화면용 간격·글자 크기 토큰이 아직 없어 숫자로 둔다. 토큰이 생기면 바꾼다. */
+.toggle,
+.panel {
+  position: fixed;
+  left: 8px;
+  z-index: 2147483647;
+  border: 1px solid color-mix(in srgb, var(--game-ink) 18%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--game-bg) 90%, transparent);
+  color: var(--game-ink);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.toggle {
+  top: 104px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.panel {
+  top: 104px;
+  bottom: 8px;
+  width: min(380px, calc(100% - 16px));
+  overflow-y: auto;
+  padding: 0 10px 10px;
+  word-break: break-all;
+}
+
+.toggle kbd,
+.panel kbd {
+  padding: 0 4px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--game-ink) 16%, transparent);
+  font: inherit;
+}
+
+.head {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  background: var(--game-bg);
+}
+
+.head span {
+  flex: 1;
+  opacity: 0.6;
+}
+
+.head button {
+  padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, var(--game-ink) 25%, transparent);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.section {
+  margin-top: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--game-ink) 6%, transparent);
+}
+
+.section summary {
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.about {
+  margin: 2px 0 6px;
+  opacity: 0.65;
+}
+
+.panel dl,
+.panel ol,
+.panel ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: 8px;
+  padding: 3px 0;
+  border-top: 1px solid color-mix(in srgb, var(--game-ink) 8%, transparent);
+}
+
+.row dt {
+  opacity: 0.7;
+}
+
+.row dd {
+  margin: 0;
+}
+
+.panel code {
+  padding: 0 3px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--game-ink) 12%, transparent);
+  font: inherit;
+}
+
+.log li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 8px;
+  padding: 4px 0;
+  border-top: 1px solid color-mix(in srgb, var(--game-ink) 8%, transparent);
+}
+
+.log time {
+  opacity: 0.55;
+}
+
+.log span {
+  grid-column: 2;
+}
+
+/* 사건이 실행됐으면 또렷하게, 받는 사건이 없었으면 흐리게 */
+.hit {
+  font-weight: 700;
+}
+
+.miss,
+.none,
+.hint {
+  opacity: 0.55;
+}
