@@ -86,6 +86,11 @@ AI 에이전트가 이 레포에서 작업할 때 먼저 읽는 설명서예요.
   - 엔진이 판단에 쓰지 않고 휴대폰만 아는 정보(받은 날, 읽었는지, 통화 기록)는 `phoneStore`에 둬요.
   - 다른 값에서 나오는 것(은행 계좌, 잔액)은 저장하지 않고 받은 메시지와 기록에서 계산해요.
 - 줄거리가 진행되면서 휴대폰에 생기는 것(블라블라 앱, 원격 관리 페이지)은 대본의 사건이 `flag` 효과로 열어요. key는 `src/engine/phoneUnlock.ts`의 `phoneUnlock('blabla')`, `phoneUnlock('remote_admin')`으로 만들어요. 화면은 `unlockedIn(story.flags)`로 읽어요.
+- 은행 계좌와 거래는 엔진의 은행 장부(`story.bank`, `src/engine/bank.ts`)에 있어요. 잔액은 저장하지 않고 `balanceOf`로 계산해요.
+  - 대본에서 계좌를 열 때는 `bankOpen` 효과, 거래를 넣을 때는 `bankEntry` 효과를 써요. `notice`에 은행 알림 메시지를 주면 알림이 함께 오고, 주지 않으면 알림 없이 은행 앱의 거래 내역에만 남아요.
+  - 플레이어의 송금은 `storyStore`의 `transfer(request)`로 넘겨요. 엔진이 보낼 수 있는지 확인하고 장부에 적은 뒤 `phone_transfer:받는사람` 신호를 내요.
+  - 잔액에 따라 사건을 일으키려면 `{ type: 'balance', accountId, atMost, atLeast }` 트리거를 써요.
+  - 은행 앱은 `accountsOf(story.bank, weekOne)`(`src/ui/screens/phone/bankView.ts`)로 장부를 읽어 그려요.
 - 받은 메시지는 날이 바뀌어도 지우지 않아요. 잠금 화면 알림은 "오늘 받았고 아직 읽지 않은 휴대폰 메시지"예요.
 - 사건 실행 코드가 휴대폰 메시지를 도착시킬 때는 `phoneStore`의 `receive(message, 그 날의 DayInfo)`와 `gameStore`의 `buzzPhone()`을 부르고, 새 게임을 시작할 때 `phoneStore`의 `reset()`을 불러요. 증거는 대본의 사건이 줘요(휴대폰에서 읽은 것은 `phone_read:메시지id` 신호로 엔진에 가요).
 - 정해지지 않은 것과 담당이 없는 일은 이슈 #35의 "화면 PR에서 남은 확인 사항" 댓글에 모아 둬요.
