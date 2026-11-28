@@ -98,8 +98,9 @@ export type Effect =
 export type Trigger =
   | { type: 'dayStart' }
   | { type: 'afterEvent'; eventId: string; delaySec?: number }
-  // 3D 오브젝트 interact_* 또는 화면 버튼 id. after가 있으면 그 사건이 실행된 뒤에만 일어난다
-  | { type: 'interact'; objectId: string; after?: string }
+  // 3D 오브젝트 interact_* 또는 화면 버튼 id. after가 있으면 그 사건이 실행된 뒤에만 일어난다.
+  // objectId를 여러 개 적으면 그 가운데 하나만 와도 일어난다
+  | { type: 'interact'; objectId: string | string[]; after?: string }
   | { type: 'evidenceCollected'; cardId: string }
   | { type: 'sentenceSolved'; sentenceId: string }
   // 그 계좌의 잔액이 atMost 이하이고 atLeast 이상이 되면 일어난다. 둘 중 하나만 적어도 된다

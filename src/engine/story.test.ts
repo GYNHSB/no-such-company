@@ -30,7 +30,8 @@ function flush(step: Step, script: DayScript): Step {
 /** 1일차를 플레이어가 하는 순서대로 누른다. 타이머는 바로 끝난 셈 친다 */
 const DAY1_PRESSES = [
   'interact_laptop',
-  'btn_jobsite_close',
+  // 메일함 탭을 앞으로 가져온다(탭을 누르거나, 취업 사이트 탭을 닫아서)
+  'laptop_tab:mail',
   'btn_mail_close',
   'interact_phone',
   'interact_laptop',
@@ -283,5 +284,66 @@ describe('하루의 끝', () => {
       state = flush(signal(state, day1, { type: 'interact', objectId }), day1).state
     }
     expect(state.dayOver).toBe(true)
+  })
+})
+
+describe('노트북에 띄운 화면의 기록', () => {
+  it('1일차는 취업 사이트와 메일함을 탭으로 띄우고 시작한다', () => {
+    const { state } = startDay(newStory(), day1)
+    expect(state.laptopLog).toEqual(['jobsite', 'mail', 'jobsite'])
+    expect(state.laptop).toBe('jobsite')
+  })
+
+  it('메일함 탭을 앞으로 가져오면 불합격 메일 장면으로 넘어간다. 취업 사이트를 보기 전에는 넘어가지 않는다', () => {
+    let state = startDay(newStory(), day1).state
+    state = signal(state, day1, { type: 'interact', objectId: 'laptop_tab:mail' }).state
+    expect(state.fired).not.toContain('d1_rejections')
+    state = signal(state, day1, { type: 'interact', objectId: 'interact_laptop' }).state
+    state = signal(state, day1, { type: 'interact', objectId: 'laptop_tab:mail' }).state
+    expect(state.fired).toContain('d1_rejections')
+  })
+
+  it('날이 바뀌어도 띄운 기록이 이어져서 즐겨찾기가 남는다', () => {
+    const first = startDay(newStory(), day1).state
+    const next = startDay(first, { ...day1, info: { ...day1.info, day: 2 }, events: [] }).state
+    expect(next.laptopLog).toEqual(['jobsite', 'mail', 'jobsite'])
+  })
+})
+
+describe('여러 신호 가운데 하나로 일어나는 사건', () => {
+  it('objectId를 여러 개 적으면 그 가운데 하나만 와도 일어나고, 한 번만 일어난다', () => {
+    const script: DayScript = {
+      info: { day: 1, week: 1, weekday: '월', title: '입사' },
+      evidence: [],
+      sentences: [],
+      events: [
+        {
+          id: 'either',
+          trigger: { type: 'interact', objectId: ['btn_a', 'btn_b'] },
+          effects: [{ type: 'suspicion', delta: 5 }],
+        },
+      ],
+    }
+    const started = startDay(newStory(), script).state
+    expect(signal(started, script, { type: 'interact', objectId: 'btn_c' }).state.fired).toEqual([])
+    const second = signal(started, script, { type: 'interact', objectId: 'btn_b' }).state
+    expect(second.fired).toEqual(['either'])
+    const again = signal(second, script, { type: 'interact', objectId: 'btn_a' }).state
+    expect(again.suspicion).toBe(second.suspicion)
+  })
+
+  it('1일차: 메일함을 본 뒤 탭을 닫거나 노트북에서 눈을 떼면 다음으로 넘어간다', () => {
+    const until = (...presses: string[]) => {
+      let state = startDay(newStory(), day1).state
+      for (const objectId of presses) {
+        state = signal(state, day1, { type: 'interact', objectId }).state
+      }
+      return state
+    }
+    const seen = ['interact_laptop', 'laptop_tab:mail']
+    expect(until(...seen, 'btn_mail_close').fired).toContain('d1_close_mail')
+    expect(until(...seen, 'laptop_leave').fired).toContain('d1_close_mail')
+    // 메일함을 보기 전에 노트북에서 눈을 떼면 넘어가지 않는다
+    expect(until('interact_laptop', 'laptop_leave').fired).not.toContain('d1_close_mail')
   })
 })

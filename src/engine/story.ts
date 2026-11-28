@@ -24,6 +24,11 @@ export interface StoryState {
   webcamOn: boolean
   /** 노트북에 띄울 화면. null이면 대본이 아직 정하지 않았다 */
   laptop: string | null
+  /**
+   * 대본이 노트북에 띄우라고 한 화면을 띄운 순서대로 모두 적은 것('off' 포함). 날이 바뀌어도 이어진다.
+   * 한 사건이 화면 여럿을 띄워도 하나씩 전하려고 순서대로 쌓는다. 브라우저의 즐겨찾기도 여기서 나온다
+   */
+  laptopLog: string[]
   /** 지금 띄울 날짜 카드 문구. 화면이 카드를 다 보여 주면 closeDateCard로 비운다 */
   dateCard: string | null
   /** 지금까지 띄우라고 한 혼잣말 줄. 화면은 새로 늘어난 줄만 창에 넘긴다 */
@@ -41,8 +46,10 @@ export interface StoryState {
 /** 빈칸 문장 하나의 판정 결과. solved: 맞음, wrong: 틀림, locked: 연달아 틀려 오늘은 더 못 맞춤. 없으면 아직 맞춰 보지 않았다 */
 export type SentenceResult = 'solved' | 'wrong' | 'locked'
 
-/** 엔진에 알리는 일. Trigger에서 엔진이 스스로 살피는 것(afterEvent, balance)을 뺀 것 */
-export type Signal = Exclude<Trigger, { type: 'afterEvent' } | { type: 'balance' }>
+/** 엔진에 알리는 일. Trigger에서 엔진이 스스로 살피는 것(afterEvent, balance)을 뺀 것. 누른 것은 한 번에 하나만 알린다 */
+export type Signal =
+  | Exclude<Trigger, { type: 'afterEvent' } | { type: 'balance' } | { type: 'interact' }>
+  | { type: 'interact'; objectId: string }
 
 /** delaySec 뒤에 runLater로 실행할 사건. 타이머는 부르는 쪽이 건다 */
 export interface Delayed {
@@ -68,6 +75,7 @@ export function newStory(day: DayNumber = 1): StoryState {
     choice: null,
     webcamOn: false,
     laptop: null,
+    laptopLog: [],
     dateCard: null,
     said: [],
     solved: [],
@@ -198,7 +206,8 @@ function matches(t: Trigger, sig: Signal): boolean {
     case 'dayStart':
       return t.type === 'dayStart'
     case 'interact':
-      return t.type === 'interact' && t.objectId === sig.objectId
+      // 대본이 여러 개를 적었으면 그 가운데 하나만 와도 된다
+      return t.type === 'interact' && [t.objectId].flat().includes(sig.objectId)
     case 'evidenceCollected':
       return t.type === 'evidenceCollected' && t.cardId === sig.cardId
     case 'sentenceSolved':
@@ -266,6 +275,7 @@ function applyEffects(s: StoryState, script: DayScript, effects: Effect[], later
         break
       case 'laptop':
         s.laptop = fx.screen
+        s.laptopLog.push(fx.screen)
         break
       case 'dayEnd':
         s.dayOver = true
