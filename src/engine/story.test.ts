@@ -245,3 +245,43 @@ describe('빈칸 문장 판정', () => {
     expect(submitSentence(solved, script, 's_sns', ['blabla_posts']).state).toBe(solved)
   })
 })
+
+describe('하루의 끝', () => {
+  const script: DayScript = {
+    info: { day: 1, week: 1, weekday: '월', title: '입사' },
+    evidence: [],
+    sentences: [],
+    events: [
+      {
+        id: 'last',
+        trigger: { type: 'interact', objectId: 'btn_last' },
+        effects: [{ type: 'goal', text: '1일차가 끝났습니다.' }, { type: 'dayEnd' }],
+      },
+    ],
+  }
+
+  it('dayEnd 효과가 실행되면 하루가 끝난 것으로 적힌다', () => {
+    const started = startDay(newStory(), script).state
+    expect(started.dayOver).toBe(false)
+    const ended = signal(started, script, { type: 'interact', objectId: 'btn_last' }).state
+    expect(ended.dayOver).toBe(true)
+  })
+
+  it('다음 날을 시작하면 다시 끝나지 않은 날이 된다', () => {
+    const ended = signal(startDay(newStory(), script).state, script, {
+      type: 'interact',
+      objectId: 'btn_last',
+    }).state
+    const next = startDay(ended, { ...script, info: { ...script.info, day: 2 } }).state
+    expect(next.dayOver).toBe(false)
+    expect(next.day).toBe(2)
+  })
+
+  it('1일차 대본은 마지막 사건에서 끝난다', () => {
+    let state = startDay(newStory(), day1).state
+    for (const objectId of DAY1_PRESSES) {
+      state = flush(signal(state, day1, { type: 'interact', objectId }), day1).state
+    }
+    expect(state.dayOver).toBe(true)
+  })
+})

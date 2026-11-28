@@ -34,6 +34,8 @@ export interface StoryState {
   wrong: Record<string, number>
   /** 은행 장부. 내 명의의 계좌와 거래. 대본의 효과와 플레이어의 송금이 바꾼다 */
   bank: Bank
+  /** 그날의 대본이 끝났는지(dayEnd 효과). 이 뒤에 플레이어가 잠들면 다음 날이 시작된다 */
+  dayOver: boolean
 }
 
 /** 빈칸 문장 하나의 판정 결과. solved: 맞음, wrong: 틀림, locked: 연달아 틀려 오늘은 더 못 맞춤. 없으면 아직 맞춰 보지 않았다 */
@@ -71,10 +73,11 @@ export function newStory(day: DayNumber = 1): StoryState {
     solved: [],
     wrong: {},
     bank: emptyBank(),
+    dayOver: false,
   }
 }
 
-/** 하루를 시작한다. 경계심, 증거, 기록, 메시지, 맞춘 문장, 은행 장부는 이어지고 그날의 사건 기록, 목표, 장면, 날짜 카드, 틀린 횟수는 비운다 */
+/** 하루를 시작한다. 경계심, 증거, 기록, 메시지, 맞춘 문장, 은행 장부는 이어지고 그날의 사건 기록, 목표, 장면, 날짜 카드, 틀린 횟수, 하루가 끝났다는 표시는 비운다 */
 export function startDay(prev: StoryState, script: DayScript): Step {
   const state: StoryState = {
     ...structuredClone(prev),
@@ -85,6 +88,7 @@ export function startDay(prev: StoryState, script: DayScript): Step {
     choice: null,
     dateCard: null,
     wrong: {},
+    dayOver: false,
   }
   return run(state, (s, later) => emit(s, script, { type: 'dayStart' }, later))
 }
@@ -262,6 +266,9 @@ function applyEffects(s: StoryState, script: DayScript, effects: Effect[], later
         break
       case 'laptop':
         s.laptop = fx.screen
+        break
+      case 'dayEnd':
+        s.dayOver = true
         break
       case 'bankOpen':
         if (s.bank.accounts.some((a) => a.id === fx.account.id)) break

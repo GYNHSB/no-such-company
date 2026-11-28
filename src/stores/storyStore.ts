@@ -21,11 +21,43 @@ import { useMonologueStore } from './monologueStore'
 import { PHONE_CHANNELS, usePhoneStore } from './phoneStore'
 import { useStoryLog } from './storyLog'
 
-// shortcut: 대본이 1일차만 있다. day2~5가 생기면 여기에 더하고 하루가 끝날 때 다음 날로 넘긴다.
+// 진행할 날의 대본을 차례대로 둔다. day2~5가 생기면 여기에 더하기만 하면 된다.
 const DAYS: DayScript[] = [day1]
+
+/** 다음 날이 있을 때, 하루가 끝난 뒤 화면 위 안내에 덧붙이는 말 */
+const SLEEP_HINT = '침대에 누워 하루를 마치세요.'
+
+/**
+ * 그 날에 쓸 대본. 사건은 그 날 것만 쓰고, 증거 카드와 빈칸 문장은 첫날부터 그 날까지의 것을 모두 합친다.
+ * 날이 넘어가도 앞날에 얻은 증거와 문장이 메모 앱에 남고, 엔진이 앞날의 문장도 판정할 수 있다.
+ */
+export function scriptOf(days: readonly DayScript[], index: number): DayScript {
+  const until = days.slice(0, index + 1)
+  return {
+    ...days[index],
+    evidence: until.flatMap((d) => d.evidence),
+    sentences: until.flatMap((d) => d.sentences),
+  }
+}
+
+/** 지금 날의 다음 날 대본. 마지막 날이면 null */
+export function nextDayOf(state: Pick<StoryStore, 'days' | 'script'>): DayScript | null {
+  const index = state.days.findIndex((d) => d.info.day === state.script.info.day)
+  return index >= 0 && index + 1 < state.days.length ? scriptOf(state.days, index + 1) : null
+}
+
+/** 화면 위에 보일 안내. 하루가 끝났고 다음 날이 있으면 침대에 누우라는 말을 덧붙인다 */
+export function goalOf(state: Pick<StoryStore, 'days' | 'script' | 'story'>): string | null {
+  const { goal, dayOver } = state.story
+  if (!dayOver || !nextDayOf(state)) return goal
+  return goal ? `${goal} ${SLEEP_HINT}` : SLEEP_HINT
+}
 
 interface StoryStore {
   story: StoryState
+  /** 진행할 날의 대본 전부. 차례대로 넘어간다 */
+  days: DayScript[]
+  /** 지금 날의 대본(scriptOf). 날짜 카드가 떠 있는 동안에는 곧 시작할 날의 대본이다 */
   script: DayScript
   /** 1일차 날짜 카드부터 다시 연다. 날짜 카드가 끝나면 그날 첫 사건이 시작된다 */
   begin: () => void
@@ -40,6 +72,11 @@ interface StoryStore {
    * ok가 아니면 아무것도 바뀌지 않는다. 화면은 돌려받은 값으로 안내를 보여 준다
    */
   transfer: (request: TransferRequest) => TransferCheck
+  /**
+   * 플레이어가 잠들었을 때(침대에 누웠을 때). 하루가 끝났고 다음 날이 있으면 다음 날의 날짜 카드를 띄운다.
+   * 아직 하루가 끝나지 않았거나 마지막 날이면 아무 일도 없다
+   */
+  sleep: () => void
   /** 날짜 카드가 끝났을 때 */
   dateCardDone: () => void
 }
@@ -109,7 +146,8 @@ export const useStoryStore = create<StoryStore>()((set, get) => {
 
   return {
     story: newStory(),
-    script: DAYS[0],
+    days: DAYS,
+    script: scriptOf(DAYS, 0),
     begin: () => {
       timers.forEach(clearTimeout)
       timers = []
@@ -117,10 +155,13 @@ export const useStoryStore = create<StoryStore>()((set, get) => {
       useMonologueStore.setState({ queue: [] })
       useGameStore.getState().setLaptopScreen('off')
       if (import.meta.env.DEV) useStoryLog.getState().clear()
-      set({ story: { ...newStory(), dateCard: dayLabel(DAYS[0].info) }, script: DAYS[0] })
+      const first = scriptOf(get().days, 0)
+      set({ story: { ...newStory(), dateCard: dayLabel(first.info) }, script: first })
     },
     send: (sig) => {
       const before = get().story
+      // 날짜 카드가 떠서 날이 넘어가는 중에는 신호를 받지 않는다. 전날 대본도, 아직 시작하지 않은 다음 날 대본도 아닌 때다
+      if (before.day !== get().script.info.day) return
       apply(signal(before, get().script, sig))
       note(`신호 ${describe(sig)}`, before)
     },
@@ -141,6 +182,16 @@ export const useStoryStore = create<StoryStore>()((set, get) => {
       note(`송금 ${request.to} ${request.amount}원 (${check})`, before)
       return check
     },
+    sleep: () => {
+      const { story } = get()
+      const next = nextDayOf(get())
+      if (!story.dayOver || story.dateCard || !next) return
+      // 전날에 기다리던 사건은 버린다
+      timers.forEach(clearTimeout)
+      timers = []
+      set({ script: next, story: { ...story, dateCard: dayLabel(next.info) } })
+      if (import.meta.env.DEV) useStoryLog.getState().add(`잠듦 → ${next.info.day}일차로`, [])
+    },
     dateCardDone: () => {
       const { story, script } = get()
       set({ story: closeDateCard(story) })
@@ -160,6 +211,9 @@ const VIEW_OBJECT: Partial<Record<string, string>> = {
   phone: 'interact_phone',
 }
 useGameStore.subscribe((s, prev) => {
-  const objectId = s.view !== prev.view ? VIEW_OBJECT[s.view] : undefined
+  if (s.view === prev.view) return
+  const objectId = VIEW_OBJECT[s.view]
   if (objectId) useStoryStore.getState().send({ type: 'interact', objectId })
+  // 침대에 누우면 잠든다. 하루가 끝난 뒤라면 다음 날로 넘어간다
+  if (s.view === 'bed') useStoryStore.getState().sleep()
 })
