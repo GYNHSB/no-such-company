@@ -48,7 +48,8 @@
 .text {
   flex: 1;
   font-size: var(--phone-text-sub);
-  font-weight: 600;
+  /* 혼잣말 창과 같은 굵기. 굵게 쓰면 혼잣말보다 비중이 커 보인다 */
+  font-weight: 400;
   line-height: 1.35;
 }
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useGameStore, type View } from '@/stores/gameStore'
 import { useMonologueStore } from '@/stores/monologueStore'
+import { hintOf } from '@/engine/hint'
 import { goalOf, useStoryStore } from '@/stores/storyStore'
 import { ChoiceMenu } from './common/ChoiceMenu'
 import { DateCard } from './common/DateCard'
@@ -26,6 +27,9 @@ const AIM_LABELS: Record<string, string> = {
 /** 터치로 쓰는 기기인지. 터치에서는 키와 조작 안내를 보여 주지 않는다 */
 const TOUCH = window.matchMedia('(pointer: coarse)').matches
 
+/** 진행이 이만큼(ms) 없으면 힌트를 알림으로 보낸다 */
+const HINT_AFTER_MS = 40_000
+
 /** 걷거나 도는 키(조작 안내에 적힌 키와 방향키). 한 번 누르면 조작 안내를 치운다 */
 const MOVE_CODES = [
   'KeyW',
@@ -47,7 +51,8 @@ const LEAVE_LABELS: Partial<Record<View, string>> = {
 
 /**
  * 본편 3D 방 위에 겹치는 화면 전부. 휴대폰 클로즈업, 왼쪽 위 날짜, 안내, 혼잣말, 선택지, 날짜 카드,
- * 그리고 오른쪽 아래의 소지품 칸과 돌아가기 단추, 커서 옆에 뜨는 고를 수 있는 물건 안내, 조작 안내.
+ * 그리고 오른쪽 아래의 소지품 칸과 돌아가기 단추, 커서 옆에 뜨는 고를 수 있는 물건 안내, 조작 안내,
+ * 진행이 한동안 없으면 안내 자리에 힌트가 알림으로 온다.
  * 무엇을 띄울지는 storyStore(엔진 상태)가 정한다. 그려지면 1일차를 처음부터 시작한다.
  * 노트북 화면은 3D 화면 자리에 붙어 있어서 여기가 아니라 LaptopDisplay가 그린다.
  */
@@ -62,6 +67,17 @@ export function StoryLayer({ phoneKeyLabel, pickKeyLabel }: StoryLayerProps) {
   const story = useStoryStore((s) => s.story)
   // 하루가 끝났고 다음 날이 있으면 침대에 누우라는 말이 덧붙는다
   const goal = useStoryStore(goalOf)
+  // 지금 기다리는 사건의 힌트. 진행이 한동안 없을 때 안내 알림으로 보낸다
+  const hint = useStoryStore((s) => hintOf(s.story, s.script))
+  /** 어디까지 진행됐는지. 사건이 실행되거나 날이 바뀌면 달라진다 */
+  const progress = `${story.day}:${story.fired.length}`
+  const [stuckAt, setStuckAt] = useState<string | null>(null)
+  useEffect(() => {
+    const id = setTimeout(() => setStuckAt(progress), HINT_AFTER_MS)
+    return () => clearTimeout(id)
+  }, [progress])
+  /** 같은 진행에서 정해진 시간이 지났는지. 날짜 카드나 선택지가 떠 있을 때는 막힌 것이 아니다 */
+  const stuck = stuckAt === progress && !story.dateCard && !story.choice
   const pick = useStoryStore((s) => s.pick)
   const dateCardDone = useStoryStore((s) => s.dateCardDone)
   const view = useGameStore((s) => s.view)
@@ -169,7 +185,8 @@ export function StoryLayer({ phoneKeyLabel, pickKeyLabel }: StoryLayerProps) {
       </div>
       <DayBadge text={opening ? null : `${story.day}일차`} />
       <HeartRate />
-      <GuideBanner text={goal} />
+      {/* 진행이 한동안 없으면 안내 자리에 힌트가 새 알림으로 온다. 진행되면 다시 대본의 안내로 돌아간다 */}
+      <GuideBanner text={stuck && hint ? hint : goal} />
       <Monologue line={line} onDone={next} place={view === 'phone' ? 'top' : 'bottom'} />
       {story.choice && (
         <div className={styles.interactive}>

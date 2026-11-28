@@ -83,6 +83,7 @@ export const day1: DayScript = {
       id: 'd1_jobsite',
       trigger: { type: 'interact', objectId: 'interact_laptop', after: 'd1_wake' },
       note: '메일함 탭을 누르거나 취업 사이트 탭을 닫으면 메일함으로 넘어간다',
+      hint: '책상으로 가서 노트북에 커서를 올리고 클릭해 보세요.',
       effects: [{ type: 'monologue', lines: ['서류 탈락. 서류 탈락. 서류 탈락.'] }],
     },
     {
@@ -90,6 +91,7 @@ export const day1: DayScript = {
       // 메일함 탭을 앞으로 가져오면 일어난다. 탭을 눌렀든, 취업 사이트 탭을 닫아서 드러났든 같다
       trigger: { type: 'interact', objectId: laptopSignal.tab('mail'), after: 'd1_jobsite' },
       note: '불합격 메일 53통은 화면에서 목록으로만 보여 준다',
+      hint: '취업 사이트를 다 봤으면 위쪽의 받은편지함 탭을 눌러 보세요.',
       effects: [
         { type: 'laptop', screen: 'mail' },
         {
@@ -113,6 +115,7 @@ export const day1: DayScript = {
         objectId: ['btn_mail_close', laptopSignal.leave()],
         after: 'd1_rejections',
       },
+      hint: '메일함을 다 봤으면 Esc를 눌러 노트북에서 일어나 보세요.',
       effects: [{ type: 'laptop', screen: 'off' }],
     },
 
@@ -137,6 +140,7 @@ export const day1: DayScript = {
     {
       id: 'd1_sms_read',
       trigger: { type: 'interact', objectId: 'interact_phone', after: 'd1_sms' },
+      hint: '휴대폰에 문자가 왔어요. 책상 위 휴대폰을 클릭해서 확인해 보세요.',
       effects: [
         {
           type: 'monologue',
@@ -159,6 +163,7 @@ export const day1: DayScript = {
     {
       id: 'd1_pass',
       trigger: { type: 'interact', objectId: 'interact_laptop', after: 'd1_sms_read' },
+      hint: '휴대폰을 내려놓고 노트북에서 메일을 확인해 보세요.',
       effects: [
         { type: 'evidence', cardId: 'offer_mail' },
         {
@@ -193,6 +198,7 @@ export const day1: DayScript = {
     {
       id: 'd1_install',
       trigger: { type: 'interact', objectId: 'btn_install_interview_app', after: 'd1_app' },
+      hint: '받은편지함에서 면접 안내 메일을 열고 면접 앱을 설치해 보세요.',
       effects: [{ type: 'laptop', screen: 'install' }],
     },
 
@@ -201,6 +207,7 @@ export const day1: DayScript = {
       id: 'd1_interview',
       trigger: { type: 'interact', objectId: 'btn_interview_join', after: 'd1_install' },
       note: '팀장이 SNS 내용을 포트폴리오로 착각해 칭찬. 5초 간격 깜빡임은 숨은 위화감',
+      hint: '설치 화면에서 면접에 접속해 보세요.',
       effects: [
         { type: 'laptop', screen: 'interview' },
         { type: 'evidence', cardId: 'interview_recording' },
@@ -248,6 +255,7 @@ export const day1: DayScript = {
     {
       id: 'd1_work_laptop',
       trigger: { type: 'interact', objectId: 'interact_laptop', after: 'd1_final' },
+      hint: '노트북을 다시 확인해 보세요.',
       effects: [
         {
           type: 'monologue',
@@ -283,6 +291,7 @@ export const day1: DayScript = {
     {
       id: 'd1_documents_sent',
       trigger: { type: 'interact', objectId: 'btn_work_send', after: 'd1_documents' },
+      hint: '메신저에서 팀장이 요청한 서류를 골라 보내 보세요.',
       effects: [{ type: 'flag', key: 'submittedDocuments', value: true }],
     },
 
@@ -317,6 +326,7 @@ export const day1: DayScript = {
     {
       id: 'd1_first_work',
       trigger: { type: 'interact', objectId: 'btn_work_video_send', after: 'd1_face_video' },
+      hint: '메신저에서 얼굴 영상을 찍어 보내 보세요.',
       effects: [
         {
           type: 'message',
