@@ -8,7 +8,8 @@ const press = (target: Locator) => target.dispatchEvent('click')
 test.skip(({ isMobile }) => isMobile, '노트북 화면은 PC 화면만 확인한다')
 
 test('노트북 화면을 대본 순서대로 넘기며 버튼을 누른다', async ({ page }) => {
-  test.setTimeout(60_000)
+  // 혼자 돌리면 30~55초가 걸린다. 다른 테스트(3D를 띄우는 1일차 테스트)와 함께 돌리면 더 느려져서 넉넉히 잡는다
+  test.setTimeout(150_000)
   const errors: Error[] = []
   page.on('pageerror', (error) => errors.push(error))
   const id = (name: string) => page.locator(`#${name}`)
