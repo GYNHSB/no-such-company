@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { day1 } from '@/data/days/day1'
 import type { BlankSentence, DayInfo, EvidenceCard, Message } from '@/data/types'
+import type { PhoneEvent } from '@/engine/phoneSignal'
+import type { PhoneFeature } from '@/engine/phoneUnlock'
 import {
   dateOfDay,
   lockNotifications,
@@ -22,7 +24,6 @@ import {
   accountsFrom,
   BANK,
   BLABLA,
-  BLABLA_FROM_DAY,
   BLABLA_POSTS,
   BLABLA_SUGGESTIONS,
   CARDS,
@@ -39,28 +40,8 @@ import { PhotosApp, type PhotoVideo } from './PhotosApp'
 import { RemoteAdminPage } from './RemoteAdminPage'
 import { SnsApp } from './SnsApp'
 
-/** 휴대폰 화면에서 플레이어가 한 일. 받는 쪽(엔진, 테스트 페이지)이 이걸 보고 다음 일을 정한다 */
-export type PhoneEvent =
-  /** 잠금 화면에서 알림을 눌렀다 */
-  | { type: 'openNotification'; message: Message }
-  /** 문자나 은행 알림이 화면에 보였다 */
-  | { type: 'read'; ids: string[] }
-  /** 전화를 걸었다. 숫자만 온다 */
-  | { type: 'call'; number: string }
-  /** 건 전화가 연결됐다 */
-  | { type: 'callConnected'; number: string }
-  | { type: 'hangUp'; number: string }
-  /** 사진 앱에서 영상을 재생하기 시작했다, 끝까지 봤다 */
-  | { type: 'playVideo'; id: string }
-  | { type: 'endVideo'; id: string }
-  /** SNS 게시물의 사진이 보였다. index는 0부터 */
-  | { type: 'seePhoto'; postId: string; index: number }
-  /** 블라블라나 인터넷에서 검색했다 */
-  | { type: 'search'; app: 'blabla' | 'browser'; query: string }
-  /** 블라블라 글 본문을 열었다 */
-  | { type: 'readPost'; id: string }
-  /** 원격 관리 프로그램의 기기 정보 페이지가 보였다 */
-  | { type: 'seeRemoteAdmin' }
+// 휴대폰 화면에서 플레이어가 한 일. 모양은 엔진 쪽에 있다(신호 이름으로 바꾸는 곳과 함께 둔다)
+export type { PhoneEvent }
 
 interface Props {
   /** 지금 시각 "10:11" */
@@ -78,6 +59,11 @@ interface Props {
     status: Record<string, SentenceStatus | undefined>
     onSubmit: (sentenceId: string, cardIds: string[]) => void
   }
+  /**
+   * 줄거리가 진행되면서 휴대폰에 생긴 것. 블라블라 앱과 원격 관리 페이지는 여기에 있을 때만 보인다.
+   * 본편에서는 엔진의 기록에서 읽어 넘긴다(unlockedIn).
+   */
+  unlocked: PhoneFeature[]
   onEvent?: (event: PhoneEvent) => void
 }
 
@@ -89,7 +75,7 @@ const ANSWER_MS = 2000
  * 어느 화면이 떠 있는지, 받은 메시지, 읽음, 통화 기록은 phoneStore에 있고, 앱에 들어가는 내용은 phoneContent에 있다.
  * PhoneCloseup(손 이미지) 안에 넣어 쓴다. 본편(PhoneView)과 테스트 페이지가 함께 쓴다.
  */
-export function PhoneDevice({ time, info, name, videos, notes, onEvent }: Props) {
+export function PhoneDevice({ time, info, name, videos, notes, unlocked, onEvent }: Props) {
   const received = usePhoneStore((s) => s.received)
   const readIds = usePhoneStore((s) => s.readIds)
   const calls = usePhoneStore((s) => s.calls)
@@ -118,11 +104,11 @@ export function PhoneDevice({ time, info, name, videos, notes, onEvent }: Props)
     onEvent?.({ type: 'read', ids })
   }
 
-  // 홈 화면에는 화면이 있는 앱만 놓는다. 블라블라는 입사한 뒤(2일차부터)에 생긴다
+  // 홈 화면에는 화면이 있는 앱만 놓는다. 블라블라는 대본이 열어 준 뒤(입사한 뒤)에 생긴다
   const apps: HomeApp<PhoneApp>[] = [
     { id: 'photos', label: '사진', icon: 'photos' },
     { id: 'sns', label: SNS, icon: 'sns' },
-    ...(info.day >= BLABLA_FROM_DAY
+    ...(unlocked.includes('blabla')
       ? [{ id: 'blabla' as const, label: BLABLA, icon: 'blabla' as const }]
       : []),
     { id: 'notes', label: '메모', icon: 'notes' },
@@ -224,27 +210,32 @@ export function PhoneDevice({ time, info, name, videos, notes, onEvent }: Props)
         <BrowserApp
           time={time}
           search={SEARCH_SITE}
-          sites={[
-            {
-              id: 'remote',
-              title: REMOTE.program,
-              address: REMOTE.address,
-              description: '이 계정에 등록된 기기와 관리자 계정을 확인합니다.',
-              content: (
-                <RemoteAdminPage
-                  program={REMOTE.program}
-                  devices={[
-                    { name: `${name}의 노트북`, kind: 'laptop' },
-                    { name: `${name}의 휴대폰`, kind: 'phone' },
-                  ]}
-                  admin={INVITE_SENDER_ADDRESS}
-                  registeredOn={dateOfDay(weekOne, day1.info)}
-                  permissions={REMOTE.permissions}
-                  onSee={() => onEvent?.({ type: 'seeRemoteAdmin' })}
-                />
-              ),
-            },
-          ]}
+          // 원격 관리 페이지는 대본이 열어 준 뒤에만 바로 가기와 검색 결과에 나온다
+          sites={
+            unlocked.includes('remote_admin')
+              ? [
+                  {
+                    id: 'remote',
+                    title: REMOTE.program,
+                    address: REMOTE.address,
+                    description: '이 계정에 등록된 기기와 관리자 계정을 확인합니다.',
+                    content: (
+                      <RemoteAdminPage
+                        program={REMOTE.program}
+                        devices={[
+                          { name: `${name}의 노트북`, kind: 'laptop' },
+                          { name: `${name}의 휴대폰`, kind: 'phone' },
+                        ]}
+                        admin={INVITE_SENDER_ADDRESS}
+                        registeredOn={dateOfDay(weekOne, day1.info)}
+                        permissions={REMOTE.permissions}
+                        onSee={() => onEvent?.({ type: 'seeRemoteAdmin' })}
+                      />
+                    ),
+                  },
+                ]
+              : []
+          }
           onSearch={(query) => onEvent?.({ type: 'search', app: 'browser', query })}
           onHome={goHome}
         />

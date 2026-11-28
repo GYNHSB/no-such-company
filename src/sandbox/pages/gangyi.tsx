@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { BlankSentence, DayInfo, EvidenceCard, Message } from '@/data/types'
+import { phoneSignalsOf } from '@/engine/phoneSignal'
+import type { PhoneFeature } from '@/engine/phoneUnlock'
 import { useGameStore } from '@/stores/gameStore'
 import { dateOfDay, type PhoneApp, usePhoneStore } from '@/stores/phoneStore'
 import { PhoneCloseup } from '@/ui/kit/phone/PhoneCloseup'
@@ -188,6 +190,15 @@ const startScene = (id: string) => {
   seedCalls(dateOfDay(usePhoneStore.getState().weekOne, SCENES[index].info), SCENES[index].info.day)
 }
 
+/**
+ * 그 날 휴대폰에 생겨 있는 것. 본편에서는 대본의 사건이 열어 주고, 여기서는 대본 문서의 흐름대로 흉내 낸다.
+ * 블라블라는 입사한 뒤(2일차부터), 원격 관리 페이지는 5일차에 생긴다.
+ */
+const unlockedOn = (day: number): PhoneFeature[] => [
+  ...(day >= 2 ? (['blabla'] as const) : []),
+  ...(day >= 5 ? (['remote_admin'] as const) : []),
+]
+
 /** 휴대폰 화면에서 온 신호를 조작 패널에 보여 줄 글로 바꾼다. 실제 게임에서는 이 신호를 엔진이 받는다 */
 const describe = (event: PhoneEvent): string => {
   switch (event.type) {
@@ -281,7 +292,9 @@ export default function SandboxPage() {
               setOpened(`맞춰 보기 (${cardIds.join(', ')})`)
             },
           }}
-          onEvent={(event) => setOpened(describe(event))}
+          unlocked={unlockedOn(scene.info.day)}
+          // 본편에서는 이 이름으로 엔진에 신호가 간다. 대본의 interact 트리거에 이 이름을 쓴다
+          onEvent={(event) => setOpened(`${describe(event)} → ${phoneSignalsOf(event).join(', ')}`)}
         />
       </PhoneCloseup>
 
