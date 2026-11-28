@@ -1,4 +1,7 @@
 import { useEffect } from 'react'
+import { phoneSignalsOf, type PhoneEvent } from '@/engine/phoneSignal'
+import { unlockedIn } from '@/engine/phoneUnlock'
+import { sentenceResult } from '@/engine/story'
 import { useGameStore } from '@/stores/gameStore'
 import { dateOfDay, usePhoneStore } from '@/stores/phoneStore'
 import { useStoryStore } from '@/stores/storyStore'
@@ -21,12 +24,16 @@ const MORNING = '09:58'
 /**
  * 본편에서 휴대폰을 볼 때의 클로즈업. 뒤로는 방금까지 보던 방이 흐리게 비친다.
  * 받은 메시지와 읽음은 phoneStore에 있고, 메시지를 넣는 건 storyStore(엔진)가 한다.
+ * 휴대폰에서 한 일(읽음, 영상 재생, 검색, 전화 등)은 신호 이름으로 바꿔 엔진에 알리고, 빈칸 문장도 엔진이 판정한다.
  * 어느 화면을 그릴지는 PhoneDevice가 정한다. 테스트 페이지(?sandbox=gangyi)도 같은 것을 쓴다.
  */
 export function PhoneView() {
   const name = useGameStore((s) => s.playerName)
   const script = useStoryStore((s) => s.script)
-  const evidence = useStoryStore((s) => s.story.evidence)
+  const story = useStoryStore((s) => s.story)
+  const send = useStoryStore((s) => s.send)
+  const submit = useStoryStore((s) => s.submit)
+  const { evidence } = story
   const received = usePhoneStore((s) => s.received)
   const weekOne = usePhoneStore((s) => s.weekOne)
   const { info } = script
@@ -37,6 +44,12 @@ export function PhoneView() {
   useEffect(() => {
     if (usePhoneStore.getState().calls.length === 0) seedCalls(dateOfDay(weekOne, info), info.day)
   }, [weekOne, info])
+
+  /** 오늘까지 열린 빈칸 문장 */
+  const sentences = script.sentences.filter((sentence) => sentence.day <= story.day)
+  const notify = (event: PhoneEvent) => {
+    for (const objectId of phoneSignalsOf(event)) send({ type: 'interact', objectId })
+  }
 
   return (
     <PhoneCloseup
@@ -54,11 +67,13 @@ export function PhoneView() {
         videos={evidence.includes(RECORDING.id) ? [interviewRecording(weekOne, name)] : []}
         notes={{
           cards: script.evidence.filter((card) => evidence.includes(card.id)),
-          sentences: script.sentences,
-          // shortcut: 빈칸 문장의 판정을 엔진에 넘기는 길이 아직 없다. 화면의 신호를 엔진에 잇는 일에서 한다
-          status: {},
-          onSubmit: () => {},
+          sentences,
+          status: Object.fromEntries(sentences.map((s) => [s.id, sentenceResult(story, s.id)])),
+          onSubmit: submit,
         }}
+        // 블라블라 앱과 원격 관리 페이지는 대본의 사건이 열어 준 뒤에 생긴다
+        unlocked={unlockedIn(story.flags)}
+        onEvent={notify}
       />
     </PhoneCloseup>
   )

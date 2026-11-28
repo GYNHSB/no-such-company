@@ -126,9 +126,6 @@ export const REPORT_NUMBERS = ['112', '1332']
 /** 대본의 직장인 익명 게시판 이름 */
 export const BLABLA = '블라블라'
 
-/** 블라블라가 홈 화면에 나타나는 날. 1일차에는 아직 입사하기 전이라 없다 */
-export const BLABLA_FROM_DAY: DayNumber = 2
-
 /** 내가 다니는 회사. 대본: "모레온 게시판에는 글이 하나도 없다." */
 export const MY_COMPANY = '모레온'
 
