@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import type { DayScript } from '@/data/types'
+import { balanceOf, entriesOf } from '@/engine/bank'
 import { unlockedIn, type PhoneFeature } from '@/engine/phoneUnlock'
 import { sentenceResult, type StoryState } from '@/engine/story'
 import { useGameStore, type View } from '@/stores/gameStore'
@@ -48,6 +49,8 @@ function meaning(name: string): string {
   if (name.startsWith('phone_call:')) return '그 번호로 전화 걸기'
   if (name.startsWith('phone_hang_up:')) return '전화 끊기'
   if (name === 'phone_remote_admin') return '휴대폰에서 원격 관리 정보 보기'
+  if (name.startsWith('phone_bank_account:')) return '은행 앱에서 그 계좌의 거래 내역 보기'
+  if (name.startsWith('phone_transfer:')) return '은행 앱에서 그 사람에게 송금하기'
   return '화면이 보내는 신호'
 }
 
@@ -65,6 +68,18 @@ function waiting(story: StoryState, script: DayScript) {
       list.push({ id: event.id, need: `${t.delaySec ?? 0}초 뒤 저절로`, hint: '기다리면 일어난다' })
     } else if (t.type === 'evidenceCollected') {
       list.push({ id: event.id, need: `증거 ${t.cardId} 획득`, hint: '그 증거를 얻으면 일어난다' })
+    } else if (t.type === 'balance') {
+      const range = [
+        t.atLeast !== undefined ? `${t.atLeast.toLocaleString('ko-KR')}원 이상` : '',
+        t.atMost !== undefined ? `${t.atMost.toLocaleString('ko-KR')}원 이하` : '',
+      ]
+        .filter(Boolean)
+        .join(', ')
+      list.push({
+        id: event.id,
+        need: `계좌 ${t.accountId} 잔액 ${range}`,
+        hint: '잔액이 그렇게 되면 일어난다',
+      })
     } else if (t.type === 'sentenceSolved') {
       list.push({
         id: event.id,
@@ -148,6 +163,8 @@ export default function StoryInspector() {
 
   useEffect(() => {
     const press = (e: KeyboardEvent) => {
+      // 글을 쓰는 칸에서 누른 것은 여닫지 않는다
+      if (e.target instanceof Element && e.target.closest('input, textarea')) return
       if (e.code === TOGGLE_KEY.code && !e.repeat) setOpen((value) => !value)
     }
     window.addEventListener('keydown', press)
@@ -276,6 +293,31 @@ export default function StoryInspector() {
             />
           </Row>
         </dl>
+      </Section>
+
+      <Section
+        title={`은행 장부 (계좌 ${story.bank.accounts.length}개)`}
+        about="엔진이 갖고 있는 계좌와 거래예요(story.bank). 잔액은 저장하지 않고 거래를 더해서 계산해요."
+      >
+        <List
+          items={story.bank.accounts.map((account) => (
+            <>
+              <code>{account.id}</code> {account.label} {account.number} · 잔액{' '}
+              {balanceOf(story.bank, account.id).toLocaleString('ko-KR')}원 · {account.day.day}일차
+              {account.time ? ` ${account.time}` : ''} 생김
+              <List
+                items={entriesOf(story.bank, account.id).map((entry) => (
+                  <>
+                    <code>{entry.id}</code> {entry.amount > 0 ? '+' : ''}
+                    {entry.amount.toLocaleString('ko-KR')}원 · {entry.counterparty} ·{' '}
+                    {entry.day.day}
+                    일차 {entry.time} · {entry.by === 'player' ? '플레이어가 보냄' : '대본'}
+                  </>
+                ))}
+              />
+            </>
+          ))}
+        />
       </Section>
 
       <Section title="방과 진행 상태" about="3D 방에서 지금 무엇을 하고 있는지예요(gameStore).">
