@@ -20,6 +20,10 @@ interface Props {
   screen: ScreenRect
   /** 손이 떨리는 상태 (경계심이 높을 때 등) */
   shaking?: boolean
+  /** 뒤 배경. solid는 어두운 단색으로 덮고, blur는 뒤에 있는 화면(3D 방)을 흐리고 어둡게 비춘다 */
+  backdrop?: 'solid' | 'blur'
+  /** 손 이미지를 아래로 내리는 정도(이미지 높이에 대한 비율, 0~1). 이미지 아래쪽의 잘린 소매를 화면 밖으로 내보낸다 */
+  sink?: number
   children: ReactNode
 }
 
@@ -30,15 +34,28 @@ const pct = (v: number, total: number) => `${(v / total) * 100}%`
  * 레이어: 손 이미지 → 화면 UI → 화면 빛.
  * 흔들림은 묶음 전체에 주어 UI가 화면 위치에서 어긋나지 않는다.
  */
-export function PhoneCloseup({ handSrc, imageSize, screen, shaking, children }: Props) {
+export function PhoneCloseup({
+  handSrc,
+  imageSize,
+  screen,
+  shaking,
+  backdrop = 'solid',
+  sink = 0,
+  children,
+}: Props) {
   const { width, height } = imageSize
   const screenWidth = screen.right - screen.left
   const screenHeight = screen.bottom - screen.top
   return (
-    <div className={styles.stage}>
+    <div className={`${styles.stage} ${backdrop === 'blur' ? styles.seeThrough : ''}`}>
       <div
         className={`${styles.sway} ${shaking ? styles.shaking : ''}`}
-        style={{ aspectRatio: `${width} / ${height}`, ['--ar' as string]: width / height }}
+        style={{
+          aspectRatio: `${width} / ${height}`,
+          ['--ar' as string]: width / height,
+          // 숨 쉬는 움직임(transform)과 겹치지 않게 translate로 내린다
+          translate: `0 ${sink * 100}%`,
+        }}
       >
         {handSrc ? (
           <img className={styles.hand} src={handSrc} alt="" draggable={false} />

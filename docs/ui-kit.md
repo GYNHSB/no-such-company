@@ -34,6 +34,8 @@
 | `imageSize` | 손 이미지 원본 크기 `{ width, height }` (px)                                                                                                |
 | `screen`    | 손 이미지 속 화면 영역 `{ left, top, right, bottom }` (px). 에셋 담당이 주는 좌표 `.txt`의 값. 모서리 둥글기 `radius`(px)를 함께 줄 수 있다 |
 | `shaking`   | 손 떨림 (경계심이 높을 때, 항의 문자가 쏟아질 때)                                                                                           |
+| `backdrop`  | 뒤 배경. `solid`(기본)는 어두운 단색, `blur`는 뒤에 있는 화면(3D 방)을 흐리고 어둡게 비춘다                                                 |
+| `sink`      | 손 이미지를 아래로 내리는 정도(이미지 높이에 대한 비율). 이미지 아래쪽의 잘린 소매를 화면 밖으로 내보낸다                                   |
 
 ```tsx
 <PhoneCloseup

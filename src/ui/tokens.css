@@ -42,6 +42,7 @@
     radial-gradient(120% 55% at 15% 0%, #41538c 0%, transparent 65%),
     radial-gradient(110% 50% at 95% 100%, #8a4f5f 0%, transparent 65%),
     linear-gradient(#1a2140, #0d0f1c);
+  --phone-closeup-dim: rgb(6 8 14 / 0.55); /* 휴대폰을 들었을 때 뒤의 방 위에 덮는 어둠 */
   /* 연락처 사진 자리. 위는 옅은 푸른 회색, 아래는 짙은 남보라 */
   --phone-avatar: linear-gradient(#a9b4d8, #6c72a6);
   --phone-surface: #1c1c1e; /* 카드, 목록 묶음 */

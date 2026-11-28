@@ -1,34 +1,25 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { BlankSentence, DayInfo, EvidenceCard, Message } from '@/data/types'
 import { useGameStore } from '@/stores/gameStore'
-import {
-  dateOfDay,
-  lockNotifications,
-  messagesOf,
-  type PhoneApp,
-  usePhoneStore,
-} from '@/stores/phoneStore'
+import { dateOfDay, type PhoneApp, usePhoneStore } from '@/stores/phoneStore'
 import { PhoneCloseup } from '@/ui/kit/phone/PhoneCloseup'
-import { INTERVIEW_LINES } from '@/ui/screens/laptop/videoScript'
-import { INVITE_SENDER_ADDRESS } from '@/ui/screens/work/mailScript'
-import { type BankAccount, BankApp, type BankCard } from '@/ui/screens/phone/BankApp'
-import { BlablaApp, type BlablaPost } from '@/ui/screens/phone/BlablaApp'
-import { BrowserApp } from '@/ui/screens/phone/BrowserApp'
-import { CallApp, type Contact } from '@/ui/screens/phone/CallApp'
 import { useFlowingClock } from '@/ui/screens/phone/clock'
-import { type HomeApp, HomeScreen } from '@/ui/screens/phone/HomeScreen'
-import { LockScreen } from '@/ui/screens/phone/LockScreen'
-import { MessagesApp } from '@/ui/screens/phone/MessagesApp'
-import { NotesApp } from '@/ui/screens/phone/NotesApp'
-import { RemoteAdminPage } from '@/ui/screens/phone/RemoteAdminPage'
-import { PhotosApp, type PhotoVideo } from '@/ui/screens/phone/PhotosApp'
-import { SnsApp, type SnsPost } from '@/ui/screens/phone/SnsApp'
+import {
+  HAND_SINK,
+  HAND_URL,
+  IMAGE_SIZE,
+  interviewRecording,
+  SCREEN,
+  seedCalls,
+} from '@/ui/screens/phone/phoneContent'
+import { PhoneDevice, type PhoneEvent } from '@/ui/screens/phone/PhoneDevice'
 import styles from './gangyi.module.css'
 
 /**
  * 강이의 테스트 페이지. 개발 서버에서 `?sandbox=gangyi` 주소로 연다.
  * 휴대폰 화면(#35)을 하나씩 띄워 본다. 지금은 잠금 화면 알림(#49), 홈 화면(#101), 문자 앱(#50), 은행 앱(#51), 사진 앱(#52), SNS(#53), 블라블라(#54), 인터넷과 원격 관리 정보(#55), 전화 앱(#56), 메모 앱(#62).
  * 받은 메시지와 읽음은 phoneStore가 들고 있고, 이 페이지의 버튼이 사건 실행 코드 대신 메시지를 도착시킨다.
+ * 휴대폰 화면을 고르는 부분(PhoneDevice)과 앱에 들어가는 내용(phoneContent)은 본편과 함께 쓴다.
  */
 
 interface Scene {
@@ -139,209 +130,6 @@ const SCENES: Scene[] = [
   },
 ]
 
-/** 잠금 화면 왼쪽 위에 보이는 가상 통신망 이름(도담텔레콤의 줄임말). 실존 통신사 이름은 쓰지 않는다 */
-const CARRIER = 'DT'
-
-/** 대본의 은행 이름. 실존 은행과 겹치지 않는지 팀 확인이 필요하다 */
-const BANK = '하나로은행'
-
-/**
- * 내 명의 계좌 견본. 대본에는 "계좌 3개"와 "내가 만든 건 하나뿐"만 있어서,
- * 원래 계좌 하나에 2일차 개설 알림 두 건이 올 때마다 하나씩 늘어나게 했다.
- * 계좌 번호와 잔액은 대본에 없어 임의로 넣었다.
- */
-const ACCOUNTS: (Omit<BankAccount, 'opened'> & { openedBy?: string })[] = [
-  { id: 'mine', label: '입출금통장', number: '412-208-173904', balance: 847_200 },
-  {
-    id: 'opened-1',
-    label: '입출금통장',
-    number: '412-208-518327',
-    balance: 0,
-    openedBy: 'd2-bank-open-1',
-  },
-  {
-    id: 'opened-2',
-    label: '입출금통장',
-    number: '412-208-518401',
-    balance: 0,
-    openedBy: 'd2-bank-open-2',
-  },
-]
-
-/** 내 카드 견본. 대본에 없어 임의로 넣었다 */
-const CARDS: BankCard[] = [{ id: 'check', label: '하나로 체크카드', last4: '2917', spent: 128_400 }]
-
-/**
- * 사진 앱에 들어 있는 면접 녹화(1일차 장면 5, 약 30초). 영상 파일은 아직 없어서 임시 화면으로 재생된다.
- * 자막은 노트북의 화상 면접 화면과 같은 대사다.
- */
-const RECORDING = { id: 'interview_recording', label: '김아영 · 모레온', duration: 30 }
-
-/** 가상 SNS 이름. 대본에는 "SNS"라고만 있어 임시로 지었다. 팀 확인이 필요하다 */
-const SNS = '픽담'
-
-/**
- * 내 SNS 게시물(4일차 장면 3). 글은 대본 그대로다.
- * 사진 일곱 장은 아직 없어 임시 그림이 나오고, 대본대로 세 번째 사진(3/7)부터 보인다.
- * 좋아요, 팔로워, 팔로잉 수는 대본에 없어 임의로 넣었다.
- */
-const SNS_POSTS: SnsPost[] = [
-  {
-    id: 'sns_handwriting',
-    ago: '2년 전',
-    photos: Array.from({ length: 7 }, () => undefined),
-    photoLabel: '손글씨 메뉴판·안내문',
-    startAt: 2,
-    lines: ['동네 가게들의 손글씨 메뉴판·안내문', '삐뚤빼뚤한 글씨인데 이상하게 제일 잘 읽힌다.'],
-    likes: 4,
-  },
-]
-
-/**
- * 연락처 견본. 대본에는 "엄마한테 전화해야 하는데"만 있어서 엄마를 넣었고, 나머지는 임의로 넣었다.
- * 번호는 실제로 쓰이지 않게 010-0000으로 시작한다.
- */
-const CONTACTS: Contact[] = [
-  { id: 'mom', name: '엄마', number: '01000000412' },
-  { id: 'dad', name: '아빠', number: '01000000413' },
-  { id: 'landlord', name: '집주인', number: '01000002207' },
-  { id: 'office', name: '관리실', number: '01000003301' },
-  { id: 'friend', name: '서준', number: '01000005128' },
-  { id: 'senior', name: '박 대리', number: '01000007744' },
-]
-
-/**
- * 통화 기록 견본. 대본에 없어 임의로 넣었다. 장면을 시작할 때 그날을 기준으로 스토어에 넣어 둔다.
- * daysAgo는 그 장면의 날에서 며칠 전인지다. 오늘 통화는 장면이 시작하는 시각보다 이르게 잡았다.
- * only가 있는 통화는 그 장면에서만 넣는다. 4일차의 부재중 전화는 항의 문자의 "전화 좀 받으세요"에 맞췄다.
- */
-const CALL_HISTORY: {
-  number: string
-  kind: 'in' | 'out' | 'missed'
-  daysAgo: number
-  time: string
-  only?: string
-}[] = [
-  { number: '01000007744', kind: 'out', daysAgo: 9, time: '18:44' },
-  { number: '01000003301', kind: 'in', daysAgo: 4, time: '11:30' },
-  { number: '01000000412', kind: 'missed', daysAgo: 2, time: '20:17' },
-  { number: '01000000412', kind: 'out', daysAgo: 2, time: '20:41' },
-  { number: '01000005128', kind: 'out', daysAgo: 1, time: '21:05' },
-  { number: '01000000412', kind: 'in', daysAgo: 0, time: '08:52' },
-  { number: '01000009031', kind: 'missed', daysAgo: 0, time: '15:09', only: 'd4s5' },
-  { number: '01000006618', kind: 'missed', daysAgo: 0, time: '15:10', only: 'd4s5' },
-]
-
-/** 신고처 번호. 엔딩 화면의 안내와 같은 번호(경찰 112, 금융감독원 1332)만 연결된다 */
-const REPORT_NUMBERS = ['112', '1332']
-
-/** 대본의 직장인 익명 게시판 이름 */
-const BLABLA = '블라블라'
-
-/** 내가 다니는 회사. 대본: "모레온 게시판에는 글이 하나도 없다." */
-const MY_COMPANY = '모레온'
-
-/**
- * 블라블라 게시글. 아래 두 글(4일차 장면 4)은 제목, 회사, 올린 때, 본문이 대본 그대로다.
- * 위의 "실시간 인기 글" 네 개는 앱이 비어 보이지 않게 임의로 넣은 것이고, 줄거리와 상관없다.
- * 임의로 넣은 글은 회사 이름을 짓지 않고 업종으로만 적었다. 조회, 좋아요, 댓글 수도 임의 값이다.
- */
-const BLABLA_POSTS: BlablaPost[] = [
-  {
-    id: 'filler_lunch',
-    topic: '회사생활',
-    title: '출근하니까 점심값이 제일 무섭다',
-    company: '금융권',
-    ago: '12분 전',
-    body: '재택 끝나고 다시 나오는데 김치찌개가 만 이천 원이에요. 도시락 싸는 분들 어떻게 하세요?',
-    views: 1284,
-    likes: 46,
-    comments: 31,
-    hot: true,
-  },
-  {
-    id: 'filler_raise',
-    topic: '연봉',
-    title: '연봉 협상 시즌인데 다들 몇 프로 부르세요',
-    company: 'IT 스타트업',
-    ago: '1시간 전',
-    body: '작년엔 동결이었고 올해는 말이라도 꺼내 보려고요. 기준을 어떻게 잡아야 할지 모르겠네요.',
-    views: 3912,
-    likes: 88,
-    comments: 104,
-    hot: true,
-  },
-  {
-    id: 'filler_meeting',
-    topic: '자유',
-    title: '월요일 아침 회의만 없어도 살 것 같다',
-    company: '제조 대기업',
-    ago: '3시간 전',
-    body: '주말에 쉬다 와서 바로 한 시간 회의. 저만 힘든가요.',
-    views: 760,
-    likes: 23,
-    comments: 12,
-    hot: true,
-  },
-  {
-    id: 'filler_move',
-    topic: '취업·이직',
-    title: '3년 차 이직, 지금이 맞을까요',
-    company: '유통',
-    ago: '어제',
-    body: '일은 익숙해졌는데 배우는 게 없는 느낌이에요. 비슷한 고민 해 보신 분 계신가요.',
-    views: 2105,
-    likes: 37,
-    comments: 45,
-    hot: true,
-  },
-  {
-    id: 'blabla_hanbit',
-    topic: '취업·이직',
-    title: '꿈의 회사 붙었습니다',
-    company: '주식회사 한빛웍스',
-    ago: '2주 전',
-    body: '"남들이 안 보는 걸 보시더라고요." 이 한마디에 바로 입사 서류 냈네요.',
-    views: 214,
-    likes: 7,
-    comments: 2,
-  },
-  {
-    id: 'blabla_daon',
-    topic: '취업·이직',
-    title: '재택 풀타임 합격했어요',
-    company: '주식회사 다온링크',
-    ago: '3주 전',
-    body: '면접관이 제 포트폴리오 보고 "남들이 안 보는 걸 보시더라고요"래요. 6년 만에 처음 듣는 말이라 울컥했어요.',
-    views: 389,
-    likes: 12,
-    comments: 3,
-  },
-]
-
-/** 검색창 아래에 미리 보여 줄 검색어. 내 회사 이름과, 면접에서 들은 칭찬이다 */
-const BLABLA_SUGGESTIONS = [MY_COMPANY, '남들이 안 보는 걸 보시더라고요']
-
-/**
- * 휴대폰 브라우저의 첫 화면. 노트북의 검색 화면(SearchScreen)과 같은 이름의 가상 검색 사이트 "찾아봄"이다.
- * 주소는 실제로 쓰이지 않는 것으로 골랐다(2026-11-27에 등록되지 않은 것을 확인).
- */
-const SEARCH_SITE = { name: '찾아봄', address: 'm.chajabom.co.kr' }
-
-/**
- * 원격 관리 프로그램의 기기 정보(5일차 장면 4). 대본에는 "관리자 계정"과 "초대 메일을 보낸 그 주소"만 있다.
- * 프로그램 이름은 노트북의 원격 초기화 화면과 같고, 허용된 것은 면접 앱 설치 화면의 권한 목록과 같다.
- * 페이지 주소는 임의로 지었다(2026-11-27에 등록되지 않은 것을 확인).
- */
-const REMOTE = {
-  address: 'remote-agent.co.kr/device',
-  program: '원격 관리 에이전트',
-  permissions: ['카메라와 마이크 사용', '화면 녹화', '원격 지원 연결', '부팅할 때 자동 실행'],
-}
-
-/** 누른 알림이 여는 앱 */
-const APP_NAMES: Partial<Record<Message['channel'], string>> = { sms: '문자 앱', bank: '은행 앱' }
-
 const VIEWS: { id: PhoneApp; label: string }[] = [
   { id: 'lock', label: '잠금 화면 (#49)' },
   { id: 'home', label: '홈 화면 (#101)' },
@@ -382,11 +170,6 @@ const NOTE_SENTENCES: BlankSentence[] = [
   },
 ]
 
-// 손 이미지(협성 님 테스트 페이지와 같은 파일)와 그 안의 화면 자리. 이미지의 검은 화면 영역을 픽셀로 잰 값이다
-const HAND_URL = `${import.meta.env.BASE_URL}images/hand_phone_day.webp`
-const IMAGE_SIZE = { width: 1239, height: 1269 }
-const SCREEN = { left: 418, top: 149, right: 818, bottom: 1000, radius: 41 }
-
 /**
  * 장면을 처음부터 시작한다. 새 게임처럼 휴대폰을 비운 뒤,
  * 앞 장면에서 온 메시지는 이미 받아서 읽은 것으로 넣어 두고, 통화 기록 견본을 그날 기준으로 넣는다.
@@ -402,32 +185,48 @@ const startScene = (id: string) => {
   earlier.forEach((s) => s.messages.forEach((m) => phone.receive(m, s.info)))
   phone.markRead(earlier.flatMap((s) => s.messages.map((m) => m.id)))
 
-  const today = dateOfDay(usePhoneStore.getState().weekOne, SCENES[index].info)
-  CALL_HISTORY.filter((c) => !c.only || c.only === id).forEach((c) => {
-    const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - c.daysAgo)
-    phone.logCall({ number: c.number, kind: c.kind, time: c.time, date })
-  })
+  seedCalls(dateOfDay(usePhoneStore.getState().weekOne, SCENES[index].info), SCENES[index].info.day)
+}
+
+/** 휴대폰 화면에서 온 신호를 조작 패널에 보여 줄 글로 바꾼다. 실제 게임에서는 이 신호를 엔진이 받는다 */
+const describe = (event: PhoneEvent): string => {
+  switch (event.type) {
+    case 'openNotification':
+      return `알림 누름 (${event.message.from} ${event.message.time})`
+    case 'read':
+      return `읽음 (${event.ids.join(', ')})`
+    case 'call':
+      return `전화 걸기 (${event.number})`
+    case 'callConnected':
+      return `전화 연결됨 (${event.number})`
+    case 'hangUp':
+      return `전화 끊기 (${event.number})`
+    case 'playVideo':
+      return `영상 재생 (${event.id})`
+    case 'endVideo':
+      return `영상 끝까지 봄 (${event.id})`
+    case 'seePhoto':
+      return `SNS 사진 봄 (${event.postId} ${event.index + 1}번째)`
+    case 'search':
+      return `${event.app === 'blabla' ? '블라블라' : '인터넷'} 검색 (${event.query})`
+    case 'readPost':
+      return `블라블라 글 읽음 (${event.id})`
+    case 'seeRemoteAdmin':
+      return '원격 관리 정보 봄'
+  }
 }
 
 export default function SandboxPage() {
   const [sceneId, setSceneId] = useState(SCENES[0].id)
-  // 지금 건 전화가 연결됐는지. 실제 게임에서는 엔진이 정한다
-  const [connected, setConnected] = useState(false)
-  const connectTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
   // 맞춰 본 문장의 결과. 실제 게임에서는 엔진이 판정해서 넘긴다
   const [noteStatus, setNoteStatus] = useState<Record<string, 'solved' | 'wrong'>>({})
   const [opened, setOpened] = useState('')
   const [fast, setFast] = useState(false)
 
   const received = usePhoneStore((s) => s.received)
-  const readIds = usePhoneStore((s) => s.readIds)
   const app = usePhoneStore((s) => s.app)
-  const thread = usePhoneStore((s) => s.thread)
   const weekOne = usePhoneStore((s) => s.weekOne)
   const receive = usePhoneStore((s) => s.receive)
-  const markRead = usePhoneStore((s) => s.markRead)
-  const calls = usePhoneStore((s) => s.calls)
-  const logCall = usePhoneStore((s) => s.logCall)
   const openApp = usePhoneStore((s) => s.openApp)
 
   // 이름은 시작 화면에서 입력해 gameStore에 들어 있는 값을 쓴다. 이 페이지는 시작 화면을 거치지 않아 견본 이름을 넣는다
@@ -440,52 +239,8 @@ export default function SandboxPage() {
   }, [])
 
   const scene = SCENES.find((s) => s.id === sceneId) ?? SCENES[0]
-  const today = dateOfDay(weekOne, scene.info)
   // 이 장면의 메시지 가운데 지금까지 도착한 수
   const arrived = scene.messages.filter((m) => received.some((r) => r.message.id === m.id)).length
-  // 이름 바꾸기는 화면에 넘길 때 한다. 스토어에는 대본 그대로({name}) 들어 있다
-  const fill = (text: string) => text.replaceAll('{name}', name)
-  const texts = messagesOf(received, weekOne, 'sms')
-  const goHome = () => openApp('home')
-  // 홈 화면의 앱. 화면이 있는 앱만 놓는다
-  const notices = messagesOf(received, weekOne, 'bank')
-  // 개설 알림이 온 계좌만 보인다. 만들어진 때는 그 알림을 받은 때다
-  const accounts: BankAccount[] = ACCOUNTS.flatMap(({ openedBy, ...account }) => {
-    if (!openedBy) return [account]
-    const notice = notices.find((n) => n.id === openedBy)
-    return notice ? [{ ...account, opened: { date: notice.date, time: notice.time } }] : []
-  })
-  // 면접 녹화는 1일차에 찍힌 것이다
-  const videos: PhotoVideo[] = [
-    {
-      ...RECORDING,
-      date: dateOfDay(weekOne, SCENES[0].info),
-      captions: INTERVIEW_LINES.map((line) => ({ ...line, text: fill(line.text) })),
-    },
-  ]
-  const homeApps: HomeApp<PhoneApp>[] = [
-    { id: 'photos', label: '사진', icon: 'photos' },
-    { id: 'sns', label: SNS, icon: 'sns' },
-    { id: 'blabla', label: BLABLA, icon: 'blabla' },
-    { id: 'notes', label: '메모', icon: 'notes' },
-    {
-      id: 'bank',
-      label: BANK,
-      icon: 'bank',
-      badge: notices.filter((n) => !readIds.includes(n.id)).length,
-    },
-  ]
-  const dockApps: HomeApp<PhoneApp>[] = [
-    { id: 'phone', label: '전화', icon: 'phone' },
-    {
-      id: 'messages',
-      label: '메시지',
-      icon: 'message',
-      badge: texts.filter((m) => !readIds.includes(m.id)).length,
-    },
-    { id: 'browser', label: '인터넷', icon: 'browser' },
-  ]
-  const withName = <T extends Message>(m: T): T => ({ ...m, body: fill(m.body) })
   // 마지막으로 도착한 알림의 시각(대본)에서 시작해 실제 시간만큼 흐른다
   const time = useFlowingClock(
     (scene.messages[arrived - 1] ?? scene.messages[0])?.time ?? scene.clock ?? '09:00',
@@ -505,164 +260,29 @@ export default function SandboxPage() {
         handSrc={HAND_URL}
         imageSize={IMAGE_SIZE}
         screen={SCREEN}
+        sink={HAND_SINK}
         shaking={scene.shaking && arrived > 0}
       >
-        {app === 'lock' ? (
-          <LockScreen
-            time={time}
-            carrier={CARRIER}
-            date={today}
-            messages={lockNotifications(received, readIds, scene.info.day).map(withName)}
-            onOpen={(m) => {
-              setOpened(`${APP_NAMES[m.channel] ?? m.channel} 열기 (${m.from} ${m.time})`)
-              if (m.channel === 'sms') openApp('messages', m.from)
-              if (m.channel === 'bank') {
-                // 누른 알림은 읽은 것으로 친다. 나머지는 은행 앱의 알림 탭에서 읽는다
-                markRead([m.id])
-                openApp('bank')
-              }
-            }}
-            onUnlock={goHome}
-          />
-        ) : app === 'home' ? (
-          <HomeScreen time={time} apps={homeApps} dock={dockApps} onOpen={(id) => openApp(id)} />
-        ) : app === 'bank' ? (
-          <BankApp
-            time={time}
-            today={today}
-            bank={BANK}
-            owner={name}
-            accounts={accounts}
-            cards={CARDS}
-            notices={notices.map(withName)}
-            readIds={readIds}
-            onRead={(ids) => {
-              markRead(ids)
-              setOpened(`은행 알림 읽음 (${ids.join(', ')})`)
-            }}
-            onHome={goHome}
-          />
-        ) : app === 'photos' ? (
-          <PhotosApp
-            key={scene.id}
-            time={time}
-            today={today}
-            videos={videos}
-            onPlay={(id) => setOpened(`영상 재생 (${id})`)}
-            onEnded={(id) => setOpened(`영상 끝까지 봄 (${id})`)}
-            onHome={goHome}
-          />
-        ) : app === 'sns' ? (
-          <SnsApp
-            key={scene.id}
-            time={time}
-            app={SNS}
-            author={name}
-            followers={23}
-            following={41}
-            posts={SNS_POSTS}
-            onSeePhoto={(id, index) => setOpened(`SNS 사진 봄 (${id} ${index + 1}/7)`)}
-            onHome={goHome}
-          />
-        ) : app === 'phone' ? (
-          <CallApp
-            key={scene.id}
-            time={time}
-            today={today}
-            contacts={CONTACTS}
-            calls={calls}
-            connected={connected}
-            onCall={(number) => {
-              // 건 전화를 통화 기록에 남긴다
-              logCall({ number, kind: 'out', date: today, time })
-              setConnected(false)
-              setOpened(`전화 걸기 (${number})`)
-              // 엔진 대신: 신고처 번호만 2초 뒤에 연결된다
-              if (REPORT_NUMBERS.includes(number)) {
-                connectTimer.current = setTimeout(() => {
-                  setConnected(true)
-                  setOpened(`신고 전화 연결됨 (${number})`)
-                }, 2000)
-              }
-            }}
-            onHangUp={(number) => {
-              clearTimeout(connectTimer.current)
-              setConnected(false)
-              setOpened(`전화 끊기 (${number})`)
-            }}
-            onHome={goHome}
-          />
-        ) : app === 'blabla' ? (
-          <BlablaApp
-            key={scene.id}
-            time={time}
-            app={BLABLA}
-            myCompany={MY_COMPANY}
-            posts={BLABLA_POSTS}
-            suggestions={BLABLA_SUGGESTIONS}
-            onSearch={(query) => setOpened(`블라블라 검색 (${query})`)}
-            onRead={(id) => setOpened(`블라블라 글 읽음 (${id})`)}
-            onHome={goHome}
-          />
-        ) : app === 'browser' ? (
-          <BrowserApp
-            key={scene.id}
-            time={time}
-            search={SEARCH_SITE}
-            sites={[
-              {
-                id: 'remote',
-                title: REMOTE.program,
-                address: REMOTE.address,
-                description: '이 계정에 등록된 기기와 관리자 계정을 확인합니다.',
-                content: (
-                  <RemoteAdminPage
-                    program={REMOTE.program}
-                    devices={[
-                      { name: `${name}의 노트북`, kind: 'laptop' },
-                      { name: `${name}의 휴대폰`, kind: 'phone' },
-                    ]}
-                    admin={INVITE_SENDER_ADDRESS}
-                    registeredOn={dateOfDay(weekOne, SCENES[0].info)}
-                    permissions={REMOTE.permissions}
-                    onSee={() => setOpened('원격 관리 정보 봄')}
-                  />
-                ),
-              },
-            ]}
-            onSearch={(query) => setOpened(`인터넷 검색 (${query})`)}
-            onHome={goHome}
-          />
-        ) : app === 'notes' ? (
-          <NotesApp
-            time={time}
-            cards={NOTE_CARDS.map((c) => ({ ...c, detail: fill(c.detail) }))}
-            sentences={NOTE_SENTENCES}
-            status={noteStatus}
-            onSubmit={(sentenceId, cardIds) => {
+        <PhoneDevice
+          key={scene.id}
+          time={time}
+          info={scene.info}
+          name={name}
+          videos={[interviewRecording(weekOne, name)]}
+          notes={{
+            cards: NOTE_CARDS,
+            sentences: NOTE_SENTENCES,
+            status: noteStatus,
+            onSubmit: (sentenceId, cardIds) => {
               // 엔진 대신 정답을 견줘 본다
               const answers = NOTE_SENTENCES.find((s) => s.id === sentenceId)?.answers ?? []
               const solved = answers.every((id, i) => id === cardIds[i])
               setNoteStatus((prev) => ({ ...prev, [sentenceId]: solved ? 'solved' : 'wrong' }))
               setOpened(`맞춰 보기 (${cardIds.join(', ')})`)
-            }}
-            onHome={goHome}
-          />
-        ) : (
-          <MessagesApp
-            key={`${scene.id}-${thread ?? ''}`}
-            time={time}
-            today={today}
-            messages={texts.map(withName)}
-            readIds={readIds}
-            onRead={(ids) => {
-              markRead(ids)
-              setOpened(`문자 읽음 (${ids.join(', ')})`)
-            }}
-            defaultThread={thread ?? undefined}
-            onHome={goHome}
-          />
-        )}
+            },
+          }}
+          onEvent={(event) => setOpened(describe(event))}
+        />
       </PhoneCloseup>
 
       <aside className={styles.panel}>
