@@ -1,0 +1,89 @@
+/* 왼쪽 위 날짜(DayBadge)와 같은 글꼴과 그림자를 써서 한 묶음으로 읽히게 한다. 빨강은 경계심 색이다. */
+.rate {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--game-ink);
+  font-family: var(--font-ui);
+  line-height: 1;
+  text-shadow: 0 1px 8px color-mix(in srgb, var(--game-bg) 70%, transparent);
+  white-space: nowrap;
+  pointer-events: none;
+  isolation: isolate;
+  animation: on 400ms ease-out both;
+}
+
+/* 날짜와 같은 옅은 받침. 밝은 웹페이지 위에서도 읽힌다. */
+.rate::before {
+  content: '';
+  position: absolute;
+  inset: -6px -10px;
+  z-index: -1;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--game-bg) 55%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.heart,
+.line {
+  filter: drop-shadow(0 1px 4px color-mix(in srgb, var(--game-bg) 70%, transparent));
+}
+
+/* 박동마다 다시 그려져서(key) 한 번 뛴다 */
+.heart {
+  width: 16px;
+  height: 16px;
+  fill: var(--danger);
+  animation: beat 320ms ease-out;
+}
+
+.line {
+  width: 56px;
+  height: 18px;
+  fill: none;
+  stroke: var(--danger);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  animation: trace 600ms ease-out;
+}
+
+.number {
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+}
+
+.unit {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  opacity: 0.7;
+}
+
+@keyframes on {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes beat {
+  15% {
+    transform: scale(1.3);
+  }
+}
+
+@keyframes trace {
+  from {
+    stroke-dashoffset: 100;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rate,
+  .heart,
+  .line {
+    animation: none;
+  }
+}

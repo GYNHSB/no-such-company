@@ -14,6 +14,20 @@
   text-shadow: 0 1px 8px color-mix(in srgb, var(--game-bg) 70%, transparent);
   white-space: nowrap;
   pointer-events: none;
+  isolation: isolate;
+}
+
+/* 노트북 화면처럼 밝은 웹페이지 위에서도 읽히게 까는 옅은 받침.
+   글자 자리를 움직이지 않으려고 여백 대신 바깥으로 넓힌 뒤판으로 둔다(날아온 날짜와 딱 겹쳐야 한다). */
+.badge::before {
+  content: '';
+  position: absolute;
+  inset: -6px -10px;
+  z-index: -1;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--game-bg) 55%, transparent);
+  backdrop-filter: blur(8px);
+  animation: on 400ms ease-out both;
 }
 
 /* 웹캠 불빛처럼 천천히 깜빡이는 초록 점. 날짜가 내려앉은 뒤에 켜진다. */

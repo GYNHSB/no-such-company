@@ -240,34 +240,6 @@ export function buzz(level: number, muffled: boolean) {
   }
 }
 
-/** 의자 삐걱. 나무가 미끄러졌다 걸리기를 반복하는 짧은 딸깍들을 이어 만든다. */
-export function creak(level: number) {
-  const { ctx, out } = audio()
-  const length = 0.5
-  const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * length), ctx.sampleRate)
-  const data = buffer.getChannelData(0)
-  for (let t = 0.01; t < length - 0.03; t += 0.014 + (t / length) * 0.014 + Math.random() * 0.004) {
-    const freq = 520 + (t / length) * 240
-    const fade = Math.min(1, t / 0.05) * Math.min(1, (length - t) / 0.15)
-    const strength = (0.5 + Math.random() * 0.5) * fade
-    const start = Math.floor(t * ctx.sampleRate)
-    for (let i = 0; i < ctx.sampleRate * 0.012 && start + i < data.length; i++) {
-      const s = i / ctx.sampleRate
-      data[start + i] += strength * Math.sin(2 * Math.PI * freq * s) * Math.exp(-s / 0.004)
-    }
-  }
-  const source = ctx.createBufferSource()
-  source.buffer = buffer
-  const filter = ctx.createBiquadFilter()
-  filter.type = 'bandpass'
-  filter.frequency.value = 700
-  filter.Q.value = 2
-  const gain = ctx.createGain()
-  gain.gain.value = 0.35 * level
-  source.connect(filter).connect(gain).connect(out)
-  source.start()
-}
-
 /** 현관 문틈으로 우편물이 들어와 바닥에 떨어지는 소리: 덮개 딸깍 → 종이 툭 → 미끄러짐 → 덮개 닫힘 */
 export function mailDrop(level: number) {
   const { ctx } = audio()

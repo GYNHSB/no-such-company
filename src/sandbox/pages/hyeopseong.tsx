@@ -373,6 +373,9 @@ const DAYS = Object.values(
   .flatMap((module) => Object.values(module))
   .sort((a, b) => a.info.day - b.info.day)
 
+/** 테스트 버튼 자리. 왼쪽 위 날짜와 그 아래 심박수 표시와 겹치지 않게 그 밑에 둔다. */
+const BELOW_BADGE = { position: 'absolute', left: 16, top: 104 } as const
+
 const NO_GUIDE = '(없음)'
 /** 자료에 적힌 안내 문구(사건의 goal) 전부. 엔진이 붙으면 엔진이 그때그때 하나를 고른다. */
 const GUIDES = [
@@ -387,7 +390,8 @@ function useCommonControls() {
   // 같은 문구도 다시 내려오게 할 때 늘리는 번호(배너를 새로 그린다)
   const [replay, setReplay] = useState(0)
   const { 안내 } = useControls('공통 화면', {
-    안내: { value: GUIDES[1] ?? NO_GUIDE, options: GUIDES },
+    // 처음엔 비워 둔다. 게임 화면(StoryLayer)이 엔진의 안내를 이미 띄워서, 여기까지 띄우면 두 개가 겹친다.
+    안내: { value: NO_GUIDE, options: GUIDES },
     '안내 다시 보기': button(() => setReplay((n) => n + 1)),
   })
   return { guide: 안내 === NO_GUIDE ? null : 안내, replay }
@@ -533,6 +537,7 @@ export default function SandboxPage() {
   const notebook = useNotebookTest()
   // 휴대폰 안에서 보고 있는 것. 휴대폰을 꺼낼 때마다 홈 화면부터 보인다.
   const [phoneApp, setPhoneApp] = useState<'home' | 'notes'>('home')
+  const [levaAt, setLevaAt] = useState<{ x?: number; y?: number }>({ x: 0, y: 88 })
   const endingTest = useEndingTest()
   const { choice, choose } = useChoiceTest(signTest)
   const { mail, name, closeMail, onStage } = useMailTest()
@@ -613,7 +618,7 @@ export default function SandboxPage() {
           />
         </>
       ) : (
-        <div style={{ position: 'absolute', left: 16, top: 16, display: 'flex', gap: 8 }}>
+        <div style={{ ...BELOW_BADGE, display: 'flex', gap: 8 }}>
           <button
             type="button"
             style={{ ...panel, cursor: 'pointer' }}
@@ -647,7 +652,12 @@ export default function SandboxPage() {
       )}
 
       {/* 서명 화면을 보는 동안에는 오른쪽 위 테스트 패널이 서명 완료 버튼을 가리지 않게 숨긴다 */}
-      <Leva collapsed hidden={signTest.call !== null} />
+      {/* 오른쪽 위 안내 알림과 겹치지 않게 그 아래에서 시작한다. 끌어서 옮길 수 있다. */}
+      <Leva
+        collapsed
+        hidden={signTest.call !== null}
+        titleBar={{ position: levaAt, onDrag: setLevaAt }}
+      />
       {signTest.call && (
         <div
           style={{
@@ -673,7 +683,7 @@ export default function SandboxPage() {
           </div>
           <button
             type="button"
-            style={{ ...panel, position: 'absolute', left: 16, top: 16, cursor: 'pointer' }}
+            style={{ ...panel, ...BELOW_BADGE, cursor: 'pointer' }}
             onClick={signTest.close}
           >
             닫기 (테스트)

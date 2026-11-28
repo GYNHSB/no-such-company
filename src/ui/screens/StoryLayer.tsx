@@ -6,6 +6,7 @@ import { ChoiceMenu } from './common/ChoiceMenu'
 import { DateCard } from './common/DateCard'
 import { DayBadge } from './common/DayBadge'
 import { GuideBanner } from './common/GuideBanner'
+import { HeartRate } from './common/HeartRate'
 import { Monologue } from './common/Monologue'
 import { PhoneView } from './phone/PhoneView'
 import styles from './StoryLayer.module.css'
@@ -36,6 +37,7 @@ export function StoryLayer() {
         </div>
       )}
       <DayBadge text={opening ? null : `${story.day}일차`} />
+      <HeartRate />
       <GuideBanner text={story.goal} />
       <Monologue line={line} onDone={next} />
       {story.choice && (
