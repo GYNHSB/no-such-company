@@ -41,11 +41,42 @@
 .head {
   position: sticky;
   top: 0;
+  z-index: 1;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   padding: 8px 0;
   background: var(--game-bg);
+}
+
+/* 탭과 날 고르기. 눌린 것은 글자색으로 채운다 */
+.tabs,
+.days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  width: 100%;
+}
+
+.tabs button,
+.days button {
+  flex: 1;
+  padding: 3px 8px;
+  border: 1px solid color-mix(in srgb, var(--game-ink) 25%, transparent);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.tabs button[aria-pressed='true'],
+.days button[aria-pressed='true'] {
+  border-color: var(--game-ink);
+  background: var(--game-ink);
+  color: var(--game-bg);
+  font-weight: 700;
 }
 
 .head span {
@@ -136,4 +167,77 @@
 .none,
 .hint {
   opacity: 0.55;
+}
+
+/* ── 대본 순서 ── */
+
+.timeline {
+  margin-top: 6px;
+}
+
+.events {
+  display: grid;
+  gap: 6px;
+}
+
+/* 사건 하나. 실행된 것은 흐리게, 지금 일어날 수 있는 것은 테두리로 도드라지게 */
+.event {
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--game-ink) 6%, transparent);
+}
+
+.event[data-status='done'] {
+  opacity: 0.55;
+}
+
+.event[data-status='next'] {
+  border-color: var(--game-ink);
+  background: color-mix(in srgb, var(--game-ink) 14%, transparent);
+}
+
+.eventHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.order {
+  min-width: 18px;
+  opacity: 0.6;
+  text-align: right;
+}
+
+.status {
+  margin-left: auto;
+  padding: 0 6px;
+  border: 1px solid color-mix(in srgb, var(--game-ink) 35%, transparent);
+  border-radius: 999px;
+}
+
+.event[data-status='next'] .status {
+  border-color: var(--game-ink);
+  background: var(--game-ink);
+  color: var(--game-bg);
+  font-weight: 700;
+}
+
+.when {
+  margin: 4px 0 2px;
+}
+
+.when strong {
+  margin-right: 4px;
+  opacity: 0.6;
+}
+
+.panel .effects {
+  padding-left: 14px;
+  list-style: disc;
+}
+
+.note {
+  margin: 4px 0 0;
+  opacity: 0.6;
 }
