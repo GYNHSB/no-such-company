@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import type { DayScript } from '@/data/types'
 import { sentenceResult } from '@/engine/story'
 import { useGameStore } from './gameStore'
+import { useLaptopStore } from './laptopStore'
 import { goalOf, nextDayOf, scriptOf, useStoryStore } from './storyStore'
 
 /** 이틀 치 대본. 첫날은 증거 하나와 문장 하나를 주고 끝나고, 둘째 날은 시작하면서 안내를 바꾼다 */
@@ -143,5 +144,56 @@ describe('scriptOf', () => {
     expect(merged.evidence).toHaveLength(2)
     expect(merged.sentences).toHaveLength(2)
     expect(scriptOf([first, second], 0).evidence).toHaveLength(1)
+  })
+})
+
+describe('노트북 화면 띄우기', () => {
+  const day: DayScript = {
+    info: { day: 1, week: 1, weekday: '월', title: '입사' },
+    evidence: [],
+    sentences: [],
+    events: [
+      {
+        id: 'start',
+        trigger: { type: 'dayStart' },
+        effects: [
+          { type: 'laptop', screen: 'jobsite' },
+          { type: 'laptop', screen: 'mail' },
+          { type: 'laptop', screen: 'jobsite' },
+        ],
+      },
+      {
+        id: 'mail_seen',
+        trigger: { type: 'interact', objectId: 'laptop_tab:mail' },
+        effects: [{ type: 'flag', key: 'saw_mail', value: true }],
+      },
+      {
+        id: 'off',
+        trigger: { type: 'interact', objectId: 'btn_mail_close' },
+        effects: [{ type: 'laptop', screen: 'off' }],
+      },
+    ],
+  }
+  beforeEach(() => startWith([day]))
+
+  it('한 사건이 사이트 여럿을 띄우면 탭이 차례로 열리고 마지막 것이 앞에 온다', () => {
+    expect(useLaptopStore.getState()).toMatchObject({
+      tabs: ['jobsite', 'mail'],
+      active: 'jobsite',
+    })
+    expect(useGameStore.getState().laptopScreen).toBe('jobsite')
+    expect(store().story.laptopLog).toEqual(['jobsite', 'mail', 'jobsite'])
+  })
+
+  it('대본이 노트북을 꺼도 열린 탭은 남는다', () => {
+    press('btn_mail_close')
+    expect(useGameStore.getState().laptopScreen).toBe('off')
+    expect(useLaptopStore.getState().tabs).toEqual(['jobsite', 'mail'])
+  })
+
+  it('새 게임을 시작하면 탭이 지워졌다가 첫 사건이 다시 연다', () => {
+    useLaptopStore.getState().open('search')
+    startWith([day])
+    expect(useLaptopStore.getState().tabs).toEqual(['jobsite', 'mail'])
   })
 })

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { day1 } from '@/data/days/day1'
 import type { DayScript } from '@/data/types'
+import { laptopSignal } from '@/engine/laptopSignal'
 import { checkTransfer, type TransferCheck, type TransferRequest } from '@/engine/bank'
 import {
   choose,
@@ -17,6 +18,7 @@ import {
 } from '@/engine/story'
 import { dayLabel } from '@/ui/screens/common/dayLabel'
 import { useGameStore, type LaptopScreen } from './gameStore'
+import { showOnLaptop, useLaptopStore } from './laptopStore'
 import { useMonologueStore } from './monologueStore'
 import { PHONE_CHANNELS, usePhoneStore } from './phoneStore'
 import { useStoryLog } from './storyLog'
@@ -116,8 +118,10 @@ export const useStoryStore = create<StoryStore>()((set, get) => {
     }
 
     const game = useGameStore.getState()
-    if (state.laptop !== prev.laptop && state.laptop)
-      game.setLaptopScreen(state.laptop as LaptopScreen)
+    // 대본이 노트북에 띄우라고 한 화면을 순서대로 띄운다. 한 사건이 사이트 여럿을 띄우면 탭이 차례로 열린다
+    for (const screen of state.laptopLog.slice(prev.laptopLog.length)) {
+      showOnLaptop(screen as LaptopScreen)
+    }
     if (state.suspicion !== prev.suspicion) game.setSuspicion(state.suspicion)
     if (state.webcamOn !== prev.webcamOn) game.setWebcam(state.webcamOn)
 
@@ -153,6 +157,7 @@ export const useStoryStore = create<StoryStore>()((set, get) => {
       timers = []
       usePhoneStore.getState().reset()
       useMonologueStore.setState({ queue: [] })
+      useLaptopStore.getState().reset()
       useGameStore.getState().setLaptopScreen('off')
       if (import.meta.env.DEV) useStoryLog.getState().clear()
       const first = scriptOf(get().days, 0)
@@ -212,6 +217,10 @@ const VIEW_OBJECT: Partial<Record<string, string>> = {
 }
 useGameStore.subscribe((s, prev) => {
   if (s.view === prev.view) return
+  // 노트북을 보다가 다른 곳을 보면 노트북에서 눈을 뗀 것이다
+  if (prev.view === 'laptop') {
+    useStoryStore.getState().send({ type: 'interact', objectId: laptopSignal.leave() })
+  }
   const objectId = VIEW_OBJECT[s.view]
   if (objectId) useStoryStore.getState().send({ type: 'interact', objectId })
   // 침대에 누우면 잠든다. 하루가 끝난 뒤라면 다음 날로 넘어간다
