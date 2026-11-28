@@ -25,6 +25,21 @@ export const SCREEN = { left: 418, top: 149, right: 818, bottom: 1000, radius: 4
  */
 export const HAND_SINK = 0.055
 
+let hand: HTMLImageElement | undefined
+
+/**
+ * 손 이미지를 미리 받아서 풀어 둔다. 본편이 시작될 때 한 번 부른다.
+ * 하지 않으면 휴대폰을 처음 드는 순간에 이미지를 받기 시작해서 손이 늦게 나타난다.
+ * 풀어 둔 이미지를 브라우저가 버리지 않게 변수에 쥐고 있는다.
+ */
+export function preloadHand() {
+  if (hand) return
+  hand = new Image()
+  hand.src = HAND_URL
+  // 못 받아도 게임은 그대로 간다. 휴대폰을 들 때 다시 받는다
+  hand.decode().catch(() => {})
+}
+
 /** 잠금 화면 왼쪽 위에 보이는 가상 통신망 이름(도담텔레콤의 줄임말). 실존 통신사 이름은 쓰지 않는다 */
 export const CARRIER = 'DT'
 

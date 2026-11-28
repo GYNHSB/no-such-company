@@ -9,6 +9,7 @@ import { GuideBanner } from './common/GuideBanner'
 import { HeartRate } from './common/HeartRate'
 import { Monologue } from './common/Monologue'
 import { PhoneIcon, Pocket } from './common/Pocket'
+import { preloadHand } from './phone/phoneContent'
 import { PhoneView } from './phone/PhoneView'
 import styles from './StoryLayer.module.css'
 
@@ -105,6 +106,8 @@ export function StoryLayer({ phoneKeyLabel, pickKeyLabel }: StoryLayerProps) {
   }, [moved])
 
   useEffect(() => useStoryStore.getState().begin(), [])
+  // 휴대폰을 처음 들 때 손 이미지가 늦게 뜨지 않게 미리 받아 둔다
+  useEffect(preloadHand, [])
 
   // 하루를 여는 날짜 카드가 끝나기 전에는 왼쪽 위 날짜를 감춘다(카드의 날짜가 그 자리로 날아와 내려앉는다)
   const opening = story.dateCard !== null && story.fired.length === 0
